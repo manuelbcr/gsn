@@ -35,7 +35,7 @@ def index(request):
     """
     Renders the base template of the app
     """
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         context = {
             'log_page': 'logout',
             'logged_in': 'true',
@@ -64,7 +64,7 @@ def sensors(request):
         'latestValues': True,
     }
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         return JsonResponse(
             json.loads(requests.get(oauth_sensors_url, params=payload, headers=create_headers(request.user)).text))
     else:
@@ -145,7 +145,7 @@ def sensor_detail(request, sensor_name, from_date, to_date):
     If the user is logged out, returns the details stripped from the value field.
     """
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
 
         headers = create_headers(request.user)
 
