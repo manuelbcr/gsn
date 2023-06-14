@@ -396,3 +396,23 @@ Then you can run the following tasks in sbt:
 In the project core you can use ``re-start`` to launch gsn-core for development.
 
 In the project services you can use ``run`` to start the web api in development mode.
+
+
+
+### login credentials for http://localhost:9000/ws/login
+username: root@localhost
+pw: changeme
+
+
+#### in the management board at clients: 
+edit client: such that client id and client secret are the same as in app/settingsLocal.py and link user
+```
+GSN = {
+    'CLIENT_ID': 'web-gui-public',
+    'CLIENT_SECRET': 'web-gui-public',
+    'SERVICE_URL_PUBLIC': 'http://localhost:9000/ws/', # used for in-browser redirects
+    'SERVICE_URL_LOCAL': 'http://localhost:9000/ws/',  # used for on-server direct calls
+    'WEBUI_URL': 'http://localhost:8000/',             # used for in-browser redirects
+    'MAX_QUERY_SIZE': 5000,
+}
+```
