@@ -17,3 +17,7 @@ csv-check-points/
 *.sqlite3
 *.sqlite
 *.pyc
+
+.vagrant/machines/default/virtualbox/
+
+.vagrant/rgloader/
