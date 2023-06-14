@@ -82,7 +82,6 @@ Vagrant.configure(2) do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
 
-  #sudo git clone --depth 1 https://github.com/davedscl/gsn.git
   config.vm.provision "shell", inline: <<-SHELL
     sudo apt-get update
     sudo apt-get install -y python3 python3-pip python3-virtualenv virtualenv nginx wget git curl nodejs npm
