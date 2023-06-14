@@ -379,3 +379,20 @@ npm install command for other modules:
 ```
 npm install angular-utils-pagination angular-bootstrap angular-tabs angular-local-storage ngmap highcharts-ng ng-autocomplete angular-spinner moment angular-websocket jquery-ui-dist
 ```
+
+
+
+#### starting sbt
+in /gsn/
+```sbt```
+
+Then you can run the following tasks in sbt:
+
+* clean: remove generated files
+* compile: compiles the modules
+* package: build jar packages
+* project [core|extra|tools|services|webui]: select a specific projet
+
+In the project core you can use ``re-start`` to launch gsn-core for development.
+
+In the project services you can use ``run`` to start the web api in development mode.
