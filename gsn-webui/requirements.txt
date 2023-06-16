@@ -2,3 +2,4 @@ django
 requests
 jsonfield
 gunicorn
+django-all-access
