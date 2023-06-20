@@ -13,14 +13,14 @@
     <link href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
 
     <!-- MetisMenu CSS -->
-    <link href="{% static 'metisMenu/dist/metisMenu.min.css' %}" rel="stylesheet">
+    <link href="{% static 'metismenu/dist/metisMenu.min.css' %}" rel="stylesheet">
 
     <!-- Timeline CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/sb-admin-2.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/timeline.css' %}"/>
 
     <!-- Angular Chart CSS -->
-    <link rel="stylesheet" href="{% static 'angular-chart.js/dist/angular-chart.min.css' %}">
+    <link rel="stylesheet" href="{% static 'angular-chart.js/dist/angular-chart.css' %}">
 
     <!-- DateTimePicker CSS-->
     <link rel="stylesheet" href="{% static 'angular-bootstrap-datetimepicker/src/css/datetimepicker.css' %}">
@@ -34,7 +34,7 @@
 
     <!-- jQuery -->
     <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-    <script src="{% static 'jquery-ui/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'jquery-ui/dist/jquery-ui.min.js' %}"></script>
 
     <!-- AngularJS -->
     <script src="{% static 'angular/angular.min.js' %}"></script>
@@ -42,6 +42,8 @@
     <script src="{% static 'angular-route/angular-route.min.js' %}"></script>
     <script src="{% static 'js/controllers.js' %}"></script>
     <script src="{% static 'js/app.js' %}"></script>
+    <script src="{% static 'angular-ui-bootstrap/dist/ui-bootstrap.js' %}"></script>
+
 
     <!-- Moments -->
     <script src="{% static 'moment/min/moment.min.js' %}"></script>
@@ -58,7 +60,7 @@
     <!-- angular tables -->
     <script src="{% static 'tabs/tabs.js' %}"></script>
     <!-- DirPaginate-->
-    <script src="{% static 'dirPagination/dirPagination.js' %}"></script>
+    <script src="{% static 'angular-utils-pagination/dirPagination.js' %}"></script>
 
     <!-- Angular Local Storage -->
     <script src="{% static 'angular-local-storage/dist/angular-local-storage.min.js' %}"></script>
@@ -70,7 +72,7 @@
 
     <!-- Charts and Angular Chart -->
     <script src="{% static 'js/Chart.js' %}"></script>
-    <script src="{% static 'angular-chart.js/dist/angular-chart.min.js' %}"></script>
+    <script src="{% static 'angular-chart.js/dist/angular-chart.js' %}"></script>
 
     <!-- HighPlots -->
     <script src="{% static 'highcharts/highstock.js' %}"></script>
@@ -87,7 +89,7 @@
     <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
 
     <!-- Metis Menu Plugin JavaScript -->
-    <script src="{% static 'metisMenu/dist/metisMenu.min.js' %}"></script>
+    <script src="{% static 'metismenu/dist/metisMenu.min.js' %}"></script>
 
     <!-- Custom Theme JavaScript -->
     <script src="{% static 'js/sb-admin-2.js' %}"></script>
@@ -128,6 +130,7 @@
                     <li style="display: table-cell;vertical-align: middle;">
                         <a href="{% url 'oauth_logging_redirect' %}" class="btn btn-default">Log in</a>
                     </li>
+                    
                 {% endif %}
 
                 {% if logged_in %}
@@ -227,8 +230,9 @@
     </div>
 </footer>
 
+
 <script type="text/javascript">
-    
+
     gsnApp.config(function(paginationTemplateProvider) {
         paginationTemplateProvider.setPath("{% static 'dirPagination/dirPagination.tpl.html' %}");
     });

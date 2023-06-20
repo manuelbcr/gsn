@@ -21,3 +21,5 @@ csv-check-points/
 .vagrant/machines/default/virtualbox/
 
 .vagrant/rgloader/
+
+.DS_Store
