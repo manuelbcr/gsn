@@ -37,12 +37,12 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'djangobower',
+    'corsheaders',
     'gsn',
-    'allaccess',
     )
 
 MIDDLEWARE = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -70,40 +70,14 @@ TEMPLATES = [{
 
 AUTHENTICATION_BACKENDS = (  # Default backend
     'django.contrib.auth.backends.ModelBackend',  # Additional backend
-    'allaccess.backends.AuthorizedServiceBackend',
-    )
+)
 
 WSGI_APPLICATION = 'app.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
+CORS_ALLOWED_ORIGINS = [
+   "http://localhost:4200",
+]
 
-BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components')
-
-BOWER_INSTALLED_APPS = (
-    "angularjs",
-    "angular-route",
-    "angular-bootstrap-datetimepicker",
-    "angular-date-time-input",
-    "dirPagination",
-    "angular-bootstrap",
-    "bootstrap",
-    "font-awesome",
-    "metisMenu#",
-    "jquery",
-    "jquery-ui",
-    "angular-tabs",
-    "angular-local-storage",
-    "ngmap",
-    "markerclustererplus",
-    "angular-chart.js",
-    "highcharts",
-    "highcharts-ng",
-    "ngAutocomplete",
-    "angular-spinner",
-    "moment",
-    "angular-websocket",
-)
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -132,7 +106,6 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'djangobower.finders.BowerFinder',
 )
 
 # Custom setting

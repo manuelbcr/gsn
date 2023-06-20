@@ -5,3 +5,4 @@ requests-cache
 jsonfield
 django-all-access
 gunicorn
+django-cors-headers
