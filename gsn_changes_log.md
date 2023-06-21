@@ -415,4 +415,10 @@ GSN = {
     'WEBUI_URL': 'http://localhost:8000/',             # used for in-browser redirects
     'MAX_QUERY_SIZE': 5000,
 }
+
+
+
+# New GSN-WEBUI-FRONTEND: 
+
+install sudo npm install -g @angular/cli
 ```
