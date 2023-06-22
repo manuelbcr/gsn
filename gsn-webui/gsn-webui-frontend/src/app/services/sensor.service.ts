@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class SensorListService {
+export class SensorService {
 
   constructor(private http: HttpClient) { }
 
@@ -14,3 +14,4 @@ export class SensorListService {
   }
 
 }
+
