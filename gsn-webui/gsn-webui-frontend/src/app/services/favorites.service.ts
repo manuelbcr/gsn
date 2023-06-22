@@ -11,16 +11,16 @@ export class FavoritesService {
 
   remove(sensor_name: string): Observable<any> {
     const params = new HttpParams().set('remove', sensor_name);
-    return this.http.get('http://localhost:8001/favorites/', { params });
+    return this.http.get('http://localhost:8000/favorites/', { params });
   }
 
   add(sensor_name: string): Observable<any> {
     const params = new HttpParams().set('add', sensor_name);
-    return this.http.get('http://localhost:8001/favorites/', { params });
+    return this.http.get('http://localhost:8000/favorites/', { params });
   }
 
   list(): Observable<any> {
-    return this.http.get('http://localhost:8001/favorites_list/');
+    return this.http.get('http://localhost:8000/favorites_list/');
   }
 
 

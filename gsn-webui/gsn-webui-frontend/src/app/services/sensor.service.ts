@@ -10,8 +10,6 @@ export class SensorService {
   constructor(private http: HttpClient) { }
 
   getSensors(): Observable<any> {
-    return this.http.get('http://localhost:8001/sensors');
+    return this.http.get('http://localhost:8000/sensors');
   }
-
 }
-
