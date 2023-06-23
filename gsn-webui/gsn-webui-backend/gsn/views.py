@@ -20,7 +20,7 @@ from gsn.models import GSNUser
 # OAUTH2
 oauth_client_id = settings.GSN['CLIENT_ID']
 oauth_client_secret = settings.GSN['CLIENT_SECRET']
-oauth_redirection_url = settings.GSN['WEBUI_URL'] + "profile/"
+oauth_redirection_url = settings.GSN['WEBUI_URL']
 oauth_sensors_url = settings.GSN['SERVICE_URL_LOCAL'] + "api/sensors"
 oauth_auth_url = settings.GSN['SERVICE_URL_PUBLIC'] + "oauth2/auth"
 oauth_token_url = settings.GSN['SERVICE_URL_LOCAL'] + "oauth2/token"
@@ -293,14 +293,23 @@ def profile(request):
         if user:
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
-    return redirect('index')
+        
+            return JsonResponse({
+                'username': user.username,
+                'logged_in': True
+            })
+        
+    return ({
+        'username': 'Anonym',
+        'logged_in': False
+    })   
 
 
 def oauth_get_code(request):
     """
     Redirects to the oauth server
     """
-    return HttpResponseRedirect(oauth_auth_url + '?' + 'response_type=code' + '&client_id=' + oauth_client_id + '&client_secret=' + oauth_client_secret)
+    return JsonResponse({'url': oauth_auth_url + '?' + 'response_type=code' + '&client_id=' + oauth_client_id + '&client_secret=' + oauth_client_secret})
 
 
 def create_headers(user):
@@ -351,7 +360,6 @@ def get_or_create_user(code):
     }
 
     data = requests.post(oauth_token_url, data=payload)
-
     data = json.loads(data.text)
 
     if "error" in data:
