@@ -6,7 +6,6 @@ import { AppComponent } from './app.component';
 import { SensorListComponent } from './sensor-list/sensor-list.component';
 import { HttpClientModule } from '@angular/common/http';
 import { SensorDetailComponent } from './sensor-detail/sensor-detail.component';
-import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ReactiveFormsModule } from '@angular/forms';
 
 
@@ -20,7 +19,6 @@ import { ReactiveFormsModule } from '@angular/forms';
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    MatDatepickerModule,
     ReactiveFormsModule,
   ],
   providers: [],
