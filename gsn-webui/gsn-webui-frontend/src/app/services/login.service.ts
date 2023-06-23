@@ -2,6 +2,16 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
+export class GSNUser {
+  'id' : number;
+  'username' : string
+  'access_token' : string
+  'refresh_token' : string
+  'token_created_date' : string
+  'token_expire_date' : string
+  'logged_in' : boolean
+}
+
 @Injectable({
   providedIn: 'root'
 })

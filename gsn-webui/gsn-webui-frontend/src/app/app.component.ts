@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { LoginService } from './services/login.service';
+import { GSNUser, LoginService } from './services/login.service';
 import { DOCUMENT } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 
@@ -17,10 +17,14 @@ export class AppComponent implements OnInit {
     private loginService: LoginService) { }
 
   login_url : string = ''
-  username : string = ''
-  logged_in : boolean = false
+  user : GSNUser = new GSNUser()
 
   ngOnInit(): void {
+
+    // get stored user credentials
+    const storedUser = localStorage.getItem('user');
+    this.user = storedUser ? JSON.parse(storedUser) : null;
+    
     // if redirected from login
     this.route.queryParams
       .subscribe(params => {
@@ -35,10 +39,9 @@ export class AppComponent implements OnInit {
           console.log("query_params", query_params);
 
           // creates profile after logging in
-          this.loginService.createProfile(query_params).subscribe((data: any) => {
-            this.username = data.username;
-            this.logged_in = data.logged_in;
-            console.log("data", data)
+          this.loginService.createProfile(query_params).subscribe((data: GSNUser) => {
+            this.user = data;
+            localStorage.setItem('user', JSON.stringify(this.user));
           }, (error: any) => {
             console.error(error);
           });
@@ -59,6 +62,12 @@ export class AppComponent implements OnInit {
 
   login(): void {
     this.document.location.href = this.login_url;
+  }
+
+  logout(): void {
+    localStorage.removeItem('user');
+    this.user = new GSNUser();
+    this.user.logged_in = false;
   }
 
 }

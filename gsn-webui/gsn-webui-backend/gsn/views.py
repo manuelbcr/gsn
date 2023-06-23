@@ -293,16 +293,10 @@ def profile(request):
         if user:
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
+
+            return JsonResponse(user.serialize())
         
-            return JsonResponse({
-                'username': user.username,
-                'logged_in': True
-            })
-        
-    return JsonResponse({
-        'username': 'Anonym',
-        'logged_in': False
-    })   
+    return JsonResponse({'logged_in': False})   
 
 
 def oauth_get_code(request):

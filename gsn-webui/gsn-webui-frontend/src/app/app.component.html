@@ -65,24 +65,24 @@
                 </ul>
                 <hr>
                 <div class="dropdown pb-4">
-                    <div *ngIf="logged_in==false">
-                        <a (click)="login()" class="nav-link px-0 align-middle">
+                    <div *ngIf="user == null || user.logged_in == false">
+                        <button (click)="login()" class="nav-link px-0 align-middle">
                             <i class="fs-4 bi-box-arrow-in-right"></i> <span
-                                class="ms-1 d-none d-sm-inline">Login</span></a>
+                                class="ms-1 d-none d-sm-inline">Login</span></button>
                     </div>
-                    <div *ngIf="logged_in==true">
+                    <div *ngIf="user && user.logged_in == true">
                         <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                             id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="d-none d-sm-inline mx-1">{{username}}</span>
+                            <span class="d-none d-sm-inline mx-1">{{user.username}}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-                            <li><a class="dropdown-item" href="#">New project...</a></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><button class="dropdown-item" href="#">New project...</button></li>
+                            <li><button class="dropdown-item" href="#">Settings</button></li>
+                            <li><button class="dropdown-item" href="#">Profile</button></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" href="#">Sign out</a></li>
+                            <li><button class="dropdown-item" (click)="logout()">Log out</button></li>
                         </ul>
                     </div>
                 </div>
