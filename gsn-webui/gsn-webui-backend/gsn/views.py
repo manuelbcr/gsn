@@ -299,7 +299,7 @@ def profile(request):
                 'logged_in': True
             })
         
-    return ({
+    return JsonResponse({
         'username': 'Anonym',
         'logged_in': False
     })   
