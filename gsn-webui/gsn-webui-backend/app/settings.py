@@ -78,6 +78,7 @@ CORS_ALLOWED_ORIGINS = [
    "http://localhost:4200",
 ]
 
+CORS_ALLOW_CREDENTIALS = True
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -109,8 +110,7 @@ STATICFILES_FINDERS = (
 )
 
 # Custom setting
-
-LOGIN_URL = '/login/'
+LOGIN_URL = '/auth/'
 
 
 try:

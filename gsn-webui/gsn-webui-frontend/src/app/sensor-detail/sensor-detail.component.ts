@@ -1,9 +1,12 @@
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, Inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FavoritesService } from '../services/favorites.service';
 import { DownloadService } from '../services/download.service';
 import { FormBuilder, FormControl } from '@angular/forms';
+import { AppComponent } from '../app.component';
+import { LoginService } from '../services/login.service';
+import { DOCUMENT } from '@angular/common';
 
 @Component({
   selector: 'app-sensor-detail',
@@ -92,10 +95,13 @@ pageSize = new FormControl('');
   details: any;
   series: any;
   constructor(
+    @Inject(DOCUMENT) private document: Document,
     private http: HttpClient,
     private route: ActivatedRoute,
+    private router: Router,
     private downloadService: DownloadService,
     private favoritesService: FavoritesService,
+    private loginService: LoginService,
     private formBuilder: FormBuilder
   ) { }
 
@@ -184,8 +190,23 @@ pageSize = new FormControl('');
   }
 
   addFavorite(sensorName: string) {
-    this.favoritesService.add(sensorName).subscribe(() => {
-      this.load();
+    this.favoritesService.add(sensorName).subscribe((resp) => {
+      console.log(resp);
+    }, (error: any) => {
+      if(error.status == 302){
+        console.log(error)
+        this.login();
+      }else{
+        console.error(error);
+      }
+    });
+  }
+
+  login(): void {
+    this.loginService.getLoginUrl().subscribe((data: any) => {
+      this.document.location.href = data.url;
+    }, (error: any) => {
+      console.error(error);
     });
   }
 
@@ -194,7 +215,6 @@ pageSize = new FormControl('');
       this.load();
     });
   }
-
 
   downloadCsv() {
     //window.open(`download/${this.sensorName}/${this.date.from.date}/${this.date.to.date}`);

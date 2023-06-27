@@ -9,6 +9,7 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+
   title = 'gsn-webui-frontend';
 
   constructor(
@@ -48,26 +49,31 @@ export class AppComponent implements OnInit {
         }
       }
     );
-
-    this.getLoginUrl();
-  }
-
-  getLoginUrl() {
-    this.loginService.getLoginUrl().subscribe((data: any) => {
-      this.login_url = data.url
-    }, (error: any) => {
-      console.error(error);
-    });
   }
 
   login(): void {
-    this.document.location.href = this.login_url;
+    this.loginService.getLoginUrl().subscribe((data: any) => {
+      this.document.location.href = data.url;
+    }, (error: any) => {
+      console.error(error);
+    });
   }
 
   logout(): void {
     localStorage.removeItem('user');
     this.user = new GSNUser();
     this.user.logged_in = false;
+
+    this.http.get('http://localhost:8000/logout/', {withCredentials: true}).subscribe(
+      (data: any) => {
+       console.log(data);
+      },
+      error => {
+        console.log(error)
+        // Handle error
+      }
+    );
+
   }
 
 }

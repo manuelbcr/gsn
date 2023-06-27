@@ -30,6 +30,10 @@ max_query_size = settings.GSN['MAX_QUERY_SIZE']
 
 
 # Views
+def auth(request):
+    print("AUTH", auth)
+    return JsonResponse({'message': 'not logged in'}, status=302)
+
 
 def index(request):
     """
@@ -103,27 +107,47 @@ def dashboard(request, sensor_name):
 
 @login_required
 def favorites_list(request):
-    list = []
 
-    for key, value in request.user.favorites.items():
-        list.append(key)
+    favorites_dict = json.loads(request.user.favorites)
 
-    if len(list) > 0:
-        return JsonResponse({
-            'favorites_list': list
-        })
-    else:
-        return HttpResponseNotFound()
+    if(len(favorites_dict) > 0):
+        list = []
+
+        for key, value in favorites_dict.items():
+            list.append(key)
+
+        if len(list) > 0:
+            return JsonResponse({
+                'favorites_list': list
+            })
+    
+    return HttpResponse()
 
 
 @login_required
 def favorites_manage(request):
+    
     add = request.GET.get('add')
 
     if add is not None:
-        request.user.favorites[add] = ''
+        if request.user.favorites:
+            try:
+                favorites_dict = json.loads(request.user.favorites)
+            except json.decoder.JSONDecodeError:
+                # Handle the case where the value is not a valid JSON string
+                favorites_dict = {}
+        else:
+            # Handle the case where the value is empty or None
+            favorites_dict = {}
+
+        # Modify the dictionary
+        favorites_dict[add] = ''
+        # Serialize the dictionary back into a JSON string
+        favorites_json = json.dumps(favorites_dict)
+        # Update the request.user.favorites with the modified JSON string
+        request.user.favorites = favorites_json
         request.user.save()
-        return HttpResponse('added')
+        return JsonResponse({'message': 'added'}, status=200)
 
     remove = request.GET.get('remove')
 
@@ -282,7 +306,7 @@ def logout_view(request):
     Logs out the user then redirected them to the / page
     """
     logout(request)
-    return redirect('index')
+    return JsonResponse({'message': 'logged out'}, status=200)
 
 
 def profile(request):

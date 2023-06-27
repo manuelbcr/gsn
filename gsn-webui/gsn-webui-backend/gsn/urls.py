@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^favorites/$', views.favorites_manage, name='favorites'),
     url(r'^favorites_list/$', views.favorites_list, name='favorites_list'),
     url(r'^dashboard/(?P<sensor_name>(\w)+)/$', views.dashboard, name='dashboard'),
+    url(r'^auth/$', views.auth, name='auth'),
 
     # url(r'^logged/$', views.oauth_after_log, name='oauth_after_log'),
     url(r'^accounts/', include('allaccess.urls')),
