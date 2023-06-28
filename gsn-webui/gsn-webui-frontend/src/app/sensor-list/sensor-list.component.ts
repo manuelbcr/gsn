@@ -25,6 +25,7 @@ import { fromLonLat } from 'ol/proj';
 import { Style, Icon } from 'ol/style';
 import { Vector } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
+import { FavoritesService } from '../services/favorites.service';
 
 
 @Component({
@@ -42,7 +43,8 @@ export class SensorListComponent implements OnInit {
 
 
   constructor(
-    private sensorService: SensorService) {
+    private sensorService: SensorService,
+    private favoritesService: FavoritesService) {
 
   }
 
@@ -63,6 +65,14 @@ export class SensorListComponent implements OnInit {
           this.lng = firstSensor.geometry.coordinates[1];
           this.initMap(); // Initialize the map
         }
+        this.favoritesService.list().subscribe(
+          (data) => {
+            this.favorites = data.favorites_list;
+          },
+          (error) => {
+            console.error(error);
+          }
+        );
       },
       (error: any) => {
         console.error(error);

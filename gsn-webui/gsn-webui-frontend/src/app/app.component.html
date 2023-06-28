@@ -39,23 +39,9 @@
                         </ul>
                     </li>
                     <li>
-                        <a href="#submenu3" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
+                        <a href="/map" class="nav-link px-0 align-middle">
                             <i class="fs-4 bi-globe-europe-africa"></i> <span class="ms-1 d-none d-sm-inline">Around
                                 Me</span> </a>
-                        <ul class="collapse nav flex-column ms-1" id="submenu3" data-bs-parent="#menu">
-                            <li class="w-100">
-                                <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Product</span> 1</a>
-                            </li>
-                            <li>
-                                <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Product</span> 2</a>
-                            </li>
-                            <li>
-                                <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Product</span> 3</a>
-                            </li>
-                            <li>
-                                <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Product</span> 4</a>
-                            </li>
-                        </ul>
                     </li>
                     <li>
                         <a href="#" class="nav-link px-0 align-middle">
@@ -73,7 +59,7 @@
                     <div *ngIf="user && user.logged_in == true">
                         <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                             id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="d-none d-sm-inline mx-1">{{user.username}}</span>
+                            <span class="d-none d-sm-inline mx-1" style="color: gray;">{{user.username}}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
                             <li><button class="dropdown-item" href="#">New project...</button></li>

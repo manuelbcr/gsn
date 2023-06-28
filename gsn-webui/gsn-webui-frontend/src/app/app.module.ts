@@ -7,19 +7,23 @@ import { SensorListComponent } from './sensor-list/sensor-list.component';
 import { HttpClientModule } from '@angular/common/http';
 import { SensorDetailComponent } from './sensor-detail/sensor-detail.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MapComponent } from './map/map.component';
+import { FormsModule } from '@angular/forms';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     SensorListComponent,
-    SensorDetailComponent
+    SensorDetailComponent,
+    MapComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
     ReactiveFormsModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

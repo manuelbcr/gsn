@@ -1,0 +1,89 @@
+
+.panel {
+    margin-bottom: 20px;
+    background-color: #fff;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  }
+
+.panel-heading {
+    padding: 10px 15px;;
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: (4px - 1);
+    border-top-right-radius: (4px - 1);
+}
+
+.panel-info {
+    border-color: #d9edf7;
+    color: #31708f;
+    background-color: #d9edf7;
+    border: #d9edf7
+  }
+
+.panel-body {
+    padding: 15px;
+    clear: both;
+  }
+  .btn {
+    display: inline-block;
+    margin-bottom: 0;
+    font-weight: var(--btn-font-weight);
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    background-image: none;
+    border: 1px solid transparent;
+    padding: var(--padding-base-vertical) var(--padding-base-horizontal);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    border-radius: var(--btn-border-radius-base);
+    user-select: none;
+  }
+  
+  .btn,
+  .btn:active,
+  .btn.active {
+    &:focus,
+    &.focus {
+      outline: 0;
+      /* Add the styles for tab focus */
+    }
+  }
+  
+  .btn:hover,
+  .btn:focus,
+  .btn.focus {
+    color: var(--btn-default-color);
+    text-decoration: none;
+  }
+  
+  .btn:active,
+  .btn.active {
+    background-image: none;
+    outline: 0;
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  }
+  
+  .btn.disabled,
+  .btn[disabled],
+  fieldset[disabled] .btn {
+    cursor: not-allowed;
+    opacity: 0.65;
+    box-shadow: none;
+  }
+  
+  a.btn.disabled,
+  fieldset[disabled] a.btn {
+    pointer-events: none;
+  }
+  
+  
+  .btn-primary {
+    color: #fff;;
+    background-color: #428bca;
+    border-color: #3b81bd;
+  }
+
