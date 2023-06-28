@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { GSNUser, LoginService } from './services/login.service';
 import { DOCUMENT } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +16,8 @@ export class AppComponent implements OnInit {
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private route: ActivatedRoute,
-    private loginService: LoginService) { }
+    private loginService: LoginService,
+    private http: HttpClient) { }
 
   login_url : string = ''
   user : GSNUser = new GSNUser()
