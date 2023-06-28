@@ -14,17 +14,9 @@
                             <i class="fs-4 bi-card-list"></i> <span class="ms-1 d-none d-sm-inline">Sensors</span></a>
                     </li>
                     <li>
-                        <a href="#submenu1" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
+                        <a href="/dashboard" class="nav-link px-0 align-middle">
                             <i class="fs-4 bi-card-list"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
                         </a>
-                        <ul class="collapse show nav flex-column ms-1" id="submenu1" data-bs-parent="#menu">
-                            <li class="w-100">
-                                <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Item</span> 1 </a>
-                            </li>
-                            <li>
-                                <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Item</span> 2 </a>
-                            </li>
-                        </ul>
                     </li>
                     <li>
                         <a href="#submenu2" data-bs-toggle="collapse" class="nav-link px-0 align-middle ">
@@ -52,14 +44,14 @@
                 <hr>
                 <div class="dropdown pb-4">
                     <div *ngIf="user == null || user.logged_in == false">
-                        <button (click)="login()" class="nav-link px-0 align-middle" style="color: gray;">
+                        <button style="color:gray;"  (click)="login()" class="nav-link px-0 align-middle">
                             <i class="fs-4 bi-box-arrow-in-right"></i> <span
                                 class="ms-1 d-none d-sm-inline">Login</span></button>
                     </div>
                     <div *ngIf="user && user.logged_in == true">
-                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" style="color:gray;"
                             id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="d-none d-sm-inline mx-1" style="color: gray;">{{user.username}}</span>
+                            <span class="d-none d-sm-inline mx-1">{{user.username}}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
                             <li><button class="dropdown-item" href="#">New project...</button></li>
@@ -68,7 +60,7 @@
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><button class="dropdown-item" (click)="logout()" style="color: gray;">Log out</button></li>
+                            <li><button class="dropdown-item" (click)="logout()">Log out</button></li>
                         </ul>
                     </div>
                 </div>

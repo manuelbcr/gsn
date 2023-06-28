@@ -111,17 +111,15 @@ def favorites_list(request):
     favorites_dict = json.loads(request.user.favorites)
 
     if(len(favorites_dict) > 0):
-        list = []
+        favorites_list = []
 
         for key, value in favorites_dict.items():
-            list.append(key)
+            favorites_list.append(key)
 
-        if len(list) > 0:
-            return JsonResponse({
-                'favorites_list': list
-            })
+        if len(favorites_list) > 0:
+            return JsonResponse({'favorites_list': favorites_list})
     
-    return HttpResponse()
+    return JsonResponse({'favorites_list': []})
 
 
 @login_required
@@ -129,17 +127,16 @@ def favorites_manage(request):
     
     add = request.GET.get('add')
 
-    if add is not None:
-        if request.user.favorites:
-            try:
-                favorites_dict = json.loads(request.user.favorites)
-            except json.decoder.JSONDecodeError:
-                # Handle the case where the value is not a valid JSON string
-                favorites_dict = {}
-        else:
-            # Handle the case where the value is empty or None
+    if request.user.favorites:
+        try:
+            favorites_dict = json.loads(request.user.favorites)
+        except json.decoder.JSONDecodeError:
+            # Handle the case where the value is not a valid JSON string
             favorites_dict = {}
+    else:
+        favorites_dict = {}
 
+    if add is not None:
         # Modify the dictionary
         favorites_dict[add] = ''
         # Serialize the dictionary back into a JSON string
@@ -153,11 +150,15 @@ def favorites_manage(request):
 
     if remove is not None:
         try:
-            request.user.favorites.pop(remove)
+            favorites_dict.pop(remove)
+            # Serialize the dictionary back into a JSON string
+            favorites_json = json.dumps(favorites_dict)
+             # Update the request.user.favorites with the modified JSON string
+            request.user.favorites = favorites_json
             request.user.save()
         except KeyError:
             pass
-        return HttpResponse('removed')
+        return JsonResponse({'message': 'removed'}, status=200)
 
     return HttpResponseNotFound()
 
