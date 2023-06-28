@@ -66,7 +66,7 @@
                 <hr>
                 <div class="dropdown pb-4">
                     <div *ngIf="user == null || user.logged_in == false">
-                        <button (click)="login()" class="nav-link px-0 align-middle">
+                        <button (click)="login()" class="nav-link px-0 align-middle" style="color: gray;">
                             <i class="fs-4 bi-box-arrow-in-right"></i> <span
                                 class="ms-1 d-none d-sm-inline">Login</span></button>
                     </div>
@@ -82,7 +82,7 @@
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><button class="dropdown-item" (click)="logout()">Log out</button></li>
+                            <li><button class="dropdown-item" (click)="logout()" style="color: gray;">Log out</button></li>
                         </ul>
                     </div>
                 </div>
