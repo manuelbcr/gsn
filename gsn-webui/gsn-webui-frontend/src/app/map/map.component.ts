@@ -24,7 +24,7 @@ import XYZ from 'ol/source/XYZ';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import { Stroke, Style, Fill } from 'ol/style';
-import { fromLonLat, toLonLat } from 'ol/proj';
+import { fromLonLat, toLonLat ,transform,} from 'ol/proj';
 import Vector from 'ol/layer/Vector';
 import Point from 'ol/geom/Point';
 import { Icon } from 'ol/style';
@@ -37,7 +37,7 @@ import { Icon } from 'ol/style';
 export class MapComponent implements OnInit {
   loading: boolean = true;
   test: string = "TEST";
-  radius: number = 10000;
+  radius: number = 1000;
   radiusInput: any;
   zoomLevel: number = 6;
   locationSearchResult: string = '';
@@ -117,8 +117,8 @@ export class MapComponent implements OnInit {
      const markerLayer = new Vector({
        source: markerSource
      });
- 
-    // TODO change marker based on circle
+    // Set a custom property for the marker layer to hold the name
+    markerLayer.set('name', 'markerLayer');
      this.map.addLayer(markerLayer);
      this.sensors.forEach(sensor => {
       const coordinates = sensor.geometry.coordinates;
@@ -144,7 +144,7 @@ export class MapComponent implements OnInit {
     this.radiusInput = (event.target as HTMLInputElement).value;
     this.radius = Number(this.radiusInput);
     this.circle.getGeometry().setRadius(this.radius);
-    // TODO update markers which are in the circle
+    this.updateMarkers();
   }
 
   updateCirclePosition() {
@@ -159,8 +159,7 @@ export class MapComponent implements OnInit {
         this.circle.getGeometry().setCenter(fromLonLat(this.circlePosition))
         this.map.getView().setCenter(fromLonLat(this.circlePosition));
     }
-    
-    // TODO update markers which are in the circle
+    this.updateMarkers()
   }
 
   centerOnMe() {
@@ -185,6 +184,60 @@ export class MapComponent implements OnInit {
       console.log('Geolocation is not supported');
     }
   }
+
+
+  /**
+   * Method to update the display of markers according to if they are in the circle
+   * coordinates in OpenLayers are typically in the Web Mercator projection (EPSG:3857) by default, 
+   * which uses meters as the unit of measurement. 
+   * latitude and longitude coordinates are in the geographic coordinate system (EPSG:4326), 
+   * which uses degrees as the unit of measurement.
+   * so we have to transform them before calculating the distance 
+   */
+  updateMarkers() {
+    const nearbysensors: any[] = [];
+  
+    const centerCoords = transform(this.circlePosition, 'EPSG:4326', 'EPSG:3857');
+  
+    // Remove existing markers from the layer
+    const markerLayer = this.map.getLayers().getArray().find(layer => layer.get('name') === 'markerLayer');
+    if (markerLayer instanceof Vector) {
+      const markerSource = markerLayer.getSource();
+      markerSource.clear();
+  
+      this.sensors.forEach(sensor => {
+        const sensorCoords = transform(sensor.geometry.coordinates, 'EPSG:4326', 'EPSG:3857');
+        const distance = this.calculateDistance(centerCoords[0], centerCoords[1], sensorCoords[0], sensorCoords[1]);
+        console.log(distance, this.radius);
+  
+        if (distance <= this.radius) {
+          nearbysensors.push(sensor);
+          const marker = new Feature({
+            geometry: new Point(sensorCoords)
+          });
+  
+          const markerStyle = new Style({
+            image: new Icon({
+              src: '../../assets/285659_marker_map_icon.svg', // Provide the path to your marker icon
+              anchor: [0.5, 1] // Set the anchor point of the icon (adjust if needed)
+            })
+          });
+  
+          marker.setStyle(markerStyle);
+          markerSource.addFeature(marker);
+        }
+      });
+  
+      console.log(nearbysensors);
+    }
+  }
+  
+
+  // Function to calculate distance using the Web Mercator coordinates
+  calculateDistance(x1: number, y1: number, x2: number, y2: number): number {
+    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  }
+
 
   locationSearch() {
    
