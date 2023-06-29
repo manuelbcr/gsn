@@ -167,7 +167,6 @@ def sensor_detail(request, sensor_name, from_date, to_date):
     """
     Returns the details of a sensor and its values for a specified time frame in iso8601. Adds a time value to the
     data.
-
     If the user is logged out, returns the details stripped from the value field.
     """
 
@@ -213,8 +212,8 @@ def sensor_detail(request, sensor_name, from_date, to_date):
     else:
 
         user_data = {
-            'logged': True,
-            'has_access': True 
+            'logged': False,
+            'has_access': False
         }
 
         payload = {
