@@ -24,7 +24,7 @@ export class DashboardService {
   
         // For each favorite in favoritesList, create an observable for the dashboard request
         favoritesList.forEach((favorite: string) => {
-          dashboardRequests[favorite] = this.http.get(`http://localhost:8001/dashboard/${favorite}/`, { withCredentials: true });
+          dashboardRequests[favorite] = this.http.get(`http://localhost:8000/dashboard/${favorite}/`, { withCredentials: true });
         });
   
         // Use forkJoin to combine all the dashboard requests into a single observable
