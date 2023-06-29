@@ -192,6 +192,7 @@ pageSize = new FormControl('');
   addFavorite(sensorName: string) {
     this.favoritesService.add(sensorName).subscribe((resp) => {
       console.log(resp);
+      this.load();
     }, (error: any) => {
       if(error.status == 302){
         console.log(error)
