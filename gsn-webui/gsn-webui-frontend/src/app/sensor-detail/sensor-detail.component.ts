@@ -16,7 +16,6 @@ import { DOCUMENT } from '@angular/common';
 export class SensorDetailComponent {
   loading: boolean = true;
   sensorName: string = '';
-  truePageSize: number = 25;
   today = new Date().toJSON();
   yesterday = new Date((new Date()).getTime() - (1000 * 60 * 60)).toJSON();
 
@@ -49,51 +48,56 @@ export class SensorDetailComponent {
 
   chartConfig = {
     options: {
-        chart: {
-            zoomType: 'x'
-        },
-        rangeSelector: {
-            enabled: true
-        },
-        navigator: {
-            enabled: true
-        },
-        legend: {
-            enabled: true
-        },
-        plotOptions: {
-            series: {
-                marker: {
-                    enabled: false
-                }
-            }
+      chart: {
+        zoomType: 'x'
+      },
+      rangeSelector: {
+        enabled: true
+      },
+      navigator: {
+        enabled: true
+      },
+      legend: {
+        enabled: true
+      },
+      plotOptions: {
+        series: {
+          marker: {
+            enabled: false
+          }
         }
+      }
     },
     series: [] as any[],
     title: {
-        text: 'Data'
+      text: 'Data'
     },
     useHighStocks: true,
     size: {
-        height: 500
+      height: 500
     },
     yAxis: {
-        labels: {
-            align: 'left'
-        }
+      labels: {
+        align: 'left'
+      }
     }
-}
-formGroup = this.formBuilder.group({
-  fromDate: [''], // Initial value for fromDate
-  toDate: [''], // Initial value for toDate
-});
-pageSize = new FormControl('');
+  }
+  formGroup = this.formBuilder.group({
+    fromDate: [''], // Initial value for fromDate
+    toDate: [''], // Initial value for toDate
+  });
+  pageSize: FormControl = new FormControl(25);
+  truePageSize: number = 25;
   columns: boolean[] = [true, false, true];
   filterFunctionList: (() => boolean)[] = [];
   filterValuesList: any[] = [];
   filterOperators: string[] = ['==', '!=', '>=', '>', '<=', '<'];
   details: any;
   series: any;
+
+  // Pagination properties
+  pagedValues: any[] = [];
+  currentPage: number = 1;
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private http: HttpClient,
@@ -108,10 +112,12 @@ pageSize = new FormControl('');
   ngOnInit() {
     this.sensorName = this.route.snapshot.params['sensorname'];
     this.load();
+
   }
 
-  updateRowCount(pageSize:any) {
-    this.truePageSize = Number(pageSize);
+  updateRowCount() {
+    this.truePageSize = Number(this.pageSize.value)
+    this.updatePagedValues();
   }
 
   load() {
@@ -121,12 +127,13 @@ pageSize = new FormControl('');
     this.date.from.date = yesterday.slice(0, 19);
     this.date.to.date = today.slice(0, 19);
 
-    this.http.get(`http://localhost:8000/sensors/${this.sensorName}/${this.date.from.date}/${this.date.to.date}/`).subscribe(
+    this.http.get(`http://localhost:8001/sensors/${this.sensorName}/${this.date.from.date}/${this.date.to.date}/`, { withCredentials: true }).subscribe(
       (data: any) => {
         this.loading = false;
         this.details = data.properties ? data : undefined;
         console.log(this.details)
         this.buildData(this.details);
+        this.updatePagedValues();
       },
       error => {
         console.log(error)
@@ -135,6 +142,9 @@ pageSize = new FormControl('');
     );
   }
 
+  submit() {
+    this.load();
+  }
   onFromDateChange() {
     if (new Date(this.date.from.date) > new Date(this.date.to.date)) {
       this.date.to.date = this.date.from.date;
@@ -148,7 +158,7 @@ pageSize = new FormControl('');
   }
 
   buildData(details: any) {
-    if (details !=undefined && details.properties.values) {
+    if (details != undefined && details.properties.values) {
       let offset = 0;
 
       /**
@@ -194,10 +204,10 @@ pageSize = new FormControl('');
       console.log(resp);
       this.load();
     }, (error: any) => {
-      if(error.status == 302){
+      if (error.status == 302) {
         console.log(error)
         this.login();
-      }else{
+      } else {
         console.error(error);
       }
     });
@@ -219,5 +229,36 @@ pageSize = new FormControl('');
 
   downloadCsv() {
     //window.open(`download/${this.sensorName}/${this.date.from.date}/${this.date.to.date}`);
+  }
+
+
+
+  pageChanged(page: number) {
+    this.currentPage = page;
+    this.updatePagedValues();
+  }
+
+  updatePagedValues() {
+    const startIndex = (this.currentPage - 1) * this.truePageSize;
+    const endIndex = startIndex + this.truePageSize;
+    this.pagedValues = this.details.properties.values.slice(startIndex, endIndex);
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.details.properties.values.length / this.truePageSize);
+  }
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePagedValues();
+    }
+  }
+  
+  nextPage() {
+    const totalPages = this.totalPages();
+    if (this.currentPage < totalPages) {
+      this.currentPage++;
+      this.updatePagedValues();
+    }
   }
 }
