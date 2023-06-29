@@ -127,7 +127,7 @@ export class SensorDetailComponent {
     this.date.from.date = yesterday.slice(0, 19);
     this.date.to.date = today.slice(0, 19);
 
-    this.http.get(`http://localhost:8001/sensors/${this.sensorName}/${this.date.from.date}/${this.date.to.date}/`, { withCredentials: true }).subscribe(
+    this.http.get(`http://localhost:8000/sensors/${this.sensorName}/${this.date.from.date}/${this.date.to.date}/`, { withCredentials: true }).subscribe(
       (data: any) => {
         this.loading = false;
         this.details = data.properties ? data : undefined;
