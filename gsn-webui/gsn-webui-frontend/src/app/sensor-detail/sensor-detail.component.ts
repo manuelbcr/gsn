@@ -87,7 +87,7 @@ export class SensorDetailComponent {
     toDate: [''], // Initial value for toDate
   });
   pageSize: FormControl = new FormControl(25);
-  tmp = this.formBuilder.group({
+  dateFormGroup = this.formBuilder.group({
     startDate: new FormControl(new Date()),
     endDate:  new FormControl(new Date(new Date().getTime() - 1000 * 60 * 60))
   }
@@ -149,7 +149,33 @@ export class SensorDetailComponent {
   }
 
   submit() {
-    this.load();
+    const startDateControl = this.dateFormGroup.get('startDate');
+    const startDate= startDateControl ? startDateControl.value: null ;
+    const endDateControl = this.dateFormGroup.get('endDate');
+    const endDate = endDateControl ? endDateControl.value : null;
+
+    if(startDate != null && endDate != null){
+      const from = new Date(startDate).toJSON();
+      const to = new Date(endDate).toJSON();
+      this.date.from.date = from.slice(0, 19);
+      this.date.to.date = to.slice(0, 19);
+      this.http.get(`http://localhost:8001/sensors/${this.sensorName}/${this.date.from.date}/${this.date.to.date}/`, { withCredentials: true }).subscribe(
+        (data: any) => {
+          this.loading = false;
+          this.details = data.properties ? data : undefined;
+          console.log(this.details)
+          this.buildData(this.details);
+          this.updatePagedValues();
+        },
+        error => {
+          console.log(error)
+          // Handle error
+        }
+      );
+    } else {
+      this.load()
+    }
+
   }
   onFromDateChange() {
     if (new Date(this.date.from.date) > new Date(this.date.to.date)) {
