@@ -5,52 +5,51 @@
 </div>
 
 <div class="row">
-    <div class="col-lg-12" style="padding: 1em;">
+    <div class="col-lg-10" style="padding: 1em;">
         <div id="map" style="height: 20em"></div>
-        <label><b>Radius (meters): </b>
-            <input class="form-control" type="text" [(ngModel)]="radiusInput" (input)="onRadiusInputChange($event)">
-          </label>
-          <label><b>Coordinates (Lat, Long): </b>
-            <input class="form-control" style="width: 25em" type="text" [(ngModel)]="circlePosition">
-          </label>
-          <button class="btn btn-primary" (click)="updateCirclePosition()">Update Circle Position</button>
-          <br>
-          <label>
+        <label><b>Radius (meters): </b></label>
+        <input class="form-control" type="text" [(ngModel)]="radiusInput" (input)="onRadiusInputChange($event)">
+        
+        <label><b>Coordinates (Lat, Long): </b></label>
+        <input class="form-control" style="width: 25em" type="text" [(ngModel)]="circlePosition">
+        
+        <button class="btn btn-primary" (click)="updateCirclePosition()">Update Circle Position</button>
+        <br><br>
+        
+        <label>
             <button class="btn btn-primary" (click)="centerOnMe()">Center on me (Needs geolocation to be enabled)</button>
-          </label>
+        </label>
       
-          <br>
-          <br>
-          <label>
+        <br><br>
+        
+        <label>
             <input type="text" id="Autocomplete" class="form-control"/>
-          </label>
-          <label>
+        </label>
+        
+        <label>
             <button class="btn btn-primary" (click)="locationSearch()">Go to</button>
-          </label>
-        </div>
-      </div>
-      
-      <div class="row" *ngIf="!loading">
-        <div class="col-lg-6">
-          <div *ngFor="let sensor of sensors">
-            <div class="panel panel-info">
-              <div class="panel-heading">
-                <a [href]="'sensors/' + sensor.properties.vs_name" [name]="sensor.properties.vs_name"
-                   [innerHTML]="sensor.properties.vs_name"></a>
-              </div>
-      
-              <div class="panel-body">
+        </label>
+    </div>
+</div>
+
+<div class="row" *ngIf="!loading">
+    <div class="col-lg-5">
+        <div *ngFor="let sensor of sensors" class="card">
+            <div class="card-header">
+                <a [href]="'sensors/' + sensor.properties.vs_name" [name]="sensor.properties.vs_name" [innerHTML]="sensor.properties.vs_name"></a>
+            </div>
+
+            <div class="card-body">
                 <p><b>Description:</b> {{ sensor.properties.description }}</p>
-      
+
                 <p *ngIf="sensor.properties.geographical"><b>Location:</b> {{ sensor.properties.geographical }}</p>
                 <ul *ngIf="sensor.geometry.coordinates">
-                  <li><b>Longitude:</b> {{ sensor.geometry.coordinates[0] }}</li>
-                  <li><b>Latitude:</b> {{ sensor.geometry.coordinates[1] }}</li>
-                  <li *ngIf="sensor.geometry.coordinates[2]"><b>Altitude:</b> {{ sensor.geometry.coordinates[2] }}</li>
+                    <li><b>Longitude:</b> {{ sensor.geometry.coordinates[0] }}</li>
+                    <li><b>Latitude:</b> {{ sensor.geometry.coordinates[1] }}</li>
+                    <li *ngIf="sensor.geometry.coordinates[2]"><b>Altitude:</b> {{ sensor.geometry.coordinates[2] }}</li>
                 </ul>
                 <p><b>Public:</b> {{ sensor.properties.is_public }}</p>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
+    </div>
+</div>

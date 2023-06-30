@@ -1,19 +1,19 @@
 <div class="row">
-  <div class="col-lg-12">
+  <div class="col-lg-10">
     <h1 class="page-header">Sensor Detail: {{ sensorName }}</h1>
   </div>
 
   <div *ngIf="loading" us-spinner style="position: relative"></div>
 
-  <p class="col-lg-12 lead" *ngIf="details==undefined && !loading">
+  <p class="col-lg-10 lead" *ngIf="details==undefined && !loading">
     This sensor does not exist or you do not have access to it.
   </p>
 
   <div *ngIf="details != undefined">
     <div class="col-lg-6" *ngIf="!loading">
-      <div class="panel panel-info">
-        <div class="panel-heading">Properties</div>
-        <div class="panel-body">
+      <div class="card mb-3">
+        <div class="card-header">Properties</div>
+        <div class="card-body">
           <div *ngFor="let item of details.properties | keyvalue">
             <p
               *ngIf="item.key !== 'fields' && item.key !== 'geographical' && item.key !== 'values' && item.key !== 'latitude' && item.key !== 'longitude'">
@@ -21,16 +21,16 @@
             </p>
           </div>
           <div *ngIf="details.user.logged">
-            <button *ngIf="details.user.favorite" (click)="removeFavorite(sensorName)">Remove from favorites</button>
-            <button *ngIf="!details.user.favorite" (click)="addFavorite(sensorName)">Add to favorites</button>
+            <button *ngIf="details.user.favorite" class="btn btn-danger" (click)="removeFavorite(sensorName)">Remove from favorites</button>
+            <button *ngIf="!details.user.favorite" class="btn btn-success" (click)="addFavorite(sensorName)">Add to favorites</button>
           </div>
         </div>
       </div>
     </div>
     <div class="col-lg-6" *ngIf="!loading">
-      <div class="panel panel-info">
-        <div class="panel-heading">Geographical data</div>
-        <div class="panel-body">
+      <div class="card mb-3">
+        <div class="card-header">Geographical data</div>
+        <div class="card-body">
           <p *ngIf="details.properties.geographical">
             <b>Location:</b> {{ details.properties.geographical }}
           </p>
@@ -54,10 +54,10 @@
       </div>
     </div>
 
-    <div class="panel panel-info"
+    <div class="card mb-3"
       *ngIf="details.properties.stats && (details.properties.stats['start-datetime'] || details.properties.stats['end-datetime'])">
-      <div class="panel-heading">Statistics</div>
-      <div class="panel-body">
+      <div class="card-header">Statistics</div>
+      <div class="card-body">
         <div *ngFor="let item of details.properties.stats | keyvalue">
           <p *ngIf="item.key !== 'coordinates'">
             <b>{{ item.key }}:</b> {{ item.value }}
@@ -68,32 +68,32 @@
 
   </div>
 
-  <p class="col-lg-12 lead" *ngIf="!loading && details.user.logged && !details.user.has_access">
+  <p class="col-lg-10 lead" *ngIf="!loading && details.user.logged && !details.user.has_access">
     You do not have access to this sensor's data. If you think you should have access, please contact your organization
     or make sure you have linked this account to your server's account.
   </p>
 
-  <p class="col-lg-12 lead" *ngIf="!loading && !details.user.logged">
+  <p class="col-lg-10 lead" *ngIf="!loading && !details.user.logged">
     As a non-registered user, you do not have access to this sensor's data, only its metadata. Please log in or create
     an account.
   </p>
 
-  <div class="col-lg-12" *ngIf="!loading && details.user.has_access">
-    <div class="panel panel-primary">
-      <div class="panel-heading">Data</div>
-      <div class="panel-body">
+  <div class="col-lg-10" *ngIf="!loading && details.user.has_access">
+    <div class="card">
+      <div class="card-header">Data</div>
+      <div class="card-body">
         <form novalidate class="form" (ngSubmit)="submit()">
-          <div class="row">
+          <div class="row"[formGroup]="tmp">
             <div class="col-lg-6">
               <b>From:</b><br>
               <div>
-                <input type="text" class="form-control"/> 
+                <app-date-time-picker formControlName="startDate" name="startDate"></app-date-time-picker>
               </div>
             </div>
             <div class="col-lg-6">
               <label>To:</label><br>
               <div>
-                <input type="text" class="form-control"/>
+                <app-date-time-picker formControlName="endDate" name="startDate"></app-date-time-picker>
               </div>
             </div>
           </div>
@@ -136,14 +136,14 @@
               </tr>
             </tbody>
           </table>
-          <button (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
-          <button (click)="nextPage()" [disabled]="currentPage === totalPages()">Next</button>
+          <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn btn-primary">Previous</button>
+          <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="btn btn-primary">Next</button>
 
           
           <div class="row">
             <div class="col-lg-6">
               <button class="btn btn-success btn-block" [disabled]="!details.properties.values" (click)="download()">
-                <i class="fa fa-download"></i>
+                <i class="bi bi-download"></i>
                 Download
               </button>
             </div>
@@ -183,3 +183,4 @@
       </div>
     </div>
   </div>
+</div>

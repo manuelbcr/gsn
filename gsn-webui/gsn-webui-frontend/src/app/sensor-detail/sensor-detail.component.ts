@@ -3,7 +3,7 @@ import { Component, Inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FavoritesService } from '../services/favorites.service';
 import { DownloadService } from '../services/download.service';
-import { FormBuilder, FormControl } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { AppComponent } from '../app.component';
 import { LoginService } from '../services/login.service';
 import { DOCUMENT } from '@angular/common';
@@ -87,6 +87,12 @@ export class SensorDetailComponent {
     toDate: [''], // Initial value for toDate
   });
   pageSize: FormControl = new FormControl(25);
+  tmp = this.formBuilder.group({
+    startDate: new FormControl(new Date()),
+    endDate:  new FormControl(new Date(new Date().getTime() - 1000 * 60 * 60))
+  }
+  )
+
   truePageSize: number = 25;
   columns: boolean[] = [true, false, true];
   filterFunctionList: (() => boolean)[] = [];

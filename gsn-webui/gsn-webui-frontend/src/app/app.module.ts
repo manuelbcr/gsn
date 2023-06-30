@@ -10,6 +10,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { MapComponent } from './map/map.component';
 import { FormsModule } from '@angular/forms';
+import { NgbDatepickerModule, NgbTimepickerModule , NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
+import { DateTimePickerComponent } from './utils/date-time-picker/date-time-picker.component';
 
 @NgModule({
   declarations: [
@@ -17,14 +19,18 @@ import { FormsModule } from '@angular/forms';
     SensorListComponent,
     SensorDetailComponent,
     DashboardComponent,
-    MapComponent
+    MapComponent,
+    DateTimePickerComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    NgbDatepickerModule,
+    NgbTimepickerModule,
+    NgbPopoverModule
   ],
   providers: [],
   bootstrap: [AppComponent]
