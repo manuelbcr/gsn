@@ -88,8 +88,8 @@ export class SensorDetailComponent {
   });
   pageSize: FormControl = new FormControl(25);
   dateFormGroup = this.formBuilder.group({
-    startDate: new FormControl(new Date()),
-    endDate:  new FormControl(new Date(new Date().getTime() - 1000 * 60 * 60))
+    startDate: new FormControl(new Date(new Date().getTime() - 1000 * 60 * 60)),
+    endDate:  new FormControl(new Date())
   }
   )
 
