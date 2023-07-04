@@ -37,9 +37,9 @@ import { Icon } from 'ol/style';
 export class MapComponent implements OnInit {
   loading: boolean = true;
   test: string = "TEST";
-  radius: number = 1000;
+  radius: number = 10000;
   radiusInput: any;
-  zoomLevel: number = 6;
+  zoomLevel: number = 10;
   locationSearchResult: string = '';
   locationSearchDetails: string = '';
   sensors: any[] = [];
