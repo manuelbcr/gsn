@@ -153,35 +153,48 @@
           </div>
           <br>
           <br>
+          <div>
+            <div style="display: block">
+              <canvas baseChart [datasets]="lineChartData" [labels]="lineChartLabels" [options]="lineChartOptions"
+                [legend]="lineChartLegend" type="line">
+              </canvas>
+            </div>
+          </div>
           <!-- <highchart *ngIf="details.properties.values" id="chart1" [config]="chartConfig"></highchart> -->
           <br>
-          <!-- <button class="btn btn-primary" (click)="compare()" [disabled]="!details.properties.values">Compare this graph</button> -->
+          <button class="btn btn-primary" (click)="compare()" [disabled]="!details.properties.values">Compare this
+            graph</button>
           <br>
           <br>
-          <!-- <button class="btn btn-info" (click)="addFilter(1, '>', 1, filterFunctionList.length)">Add a filter</button> -->
+          <button class="btn btn-info" (click)="addFilter(1, '>', 1, filterFunctionList.length)">Add a filter</button>
+
           <br>
           <br>
+
           <div class="form-group" *ngFor="let fil of filterFunctionList; let i = index">
             <div class="row">
               <div class="col-lg-3">
                 <select class="form-control" [(ngModel)]="filterValuesList[i][0]">
                   <option value="">-- choose a column --</option>
-                  <option *ngFor="let field of details.properties.fields" [ngValue]="field">{{ field.name }}</option>
+                  <option *ngFor="let field of details.properties.fields" [ngValue]="field">{{field.name}}</option>
                 </select>
               </div>
               <div class="col-lg-3">
                 <select class="form-control" [(ngModel)]="filterValuesList[i][1]">
                   <option value="">-- choose an operator --</option>
-                  <option *ngFor="let op of filterOperators" [ngValue]="op">{{ op }}</option>
+                  <option *ngFor="let op of filterOperators" [value]="op">{{op}}</option>
                 </select>
               </div>
               <div class="col-lg-3">
-                <input type="number" class="form-control" [(ngModel)]="filterValuesList[i][2]" />
+                <input type="number" class="form-control" [(ngModel)]="filterValuesList[i][2]" value="10">
               </div>
-              <!-- <button class="btn btn-danger" (click)="removeFilter(i)">Remove filter</button> -->
+              <button class="btn btn-danger" (click)="removeFilter(i)">Remove filter</button>
             </div>
           </div>
-          <!-- <button class="btn btn-info" (click)="applyFilterChanges(); filter()" [disabled]="!filterFunctionList.length">Apply filters</button> -->
+
+          <button class="btn btn-info" (click)="applyFilterChanges()" [disabled]="!filterFunctionList.length">Apply
+            filters</button>
+
         </div>
       </div>
     </div>

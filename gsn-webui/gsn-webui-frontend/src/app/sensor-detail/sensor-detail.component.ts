@@ -46,42 +46,13 @@ export class SensorDetailComponent {
     },
   };
 
-  chartConfig = {
-    options: {
-      chart: {
-        zoomType: 'x'
-      },
-      rangeSelector: {
-        enabled: true
-      },
-      navigator: {
-        enabled: true
-      },
-      legend: {
-        enabled: true
-      },
-      plotOptions: {
-        series: {
-          marker: {
-            enabled: false
-          }
-        }
-      }
-    },
-    series: [] as any[],
-    title: {
-      text: 'Data'
-    },
-    useHighStocks: true,
-    size: {
-      height: 500
-    },
-    yAxis: {
-      labels: {
-        align: 'left'
-      }
-    }
-  }
+  lineChartData: any[] = [];
+  lineChartLabels: string[] = [];
+  lineChartOptions: any = {
+    responsive: true
+  };
+  lineChartLegend = true;
+
   formGroup = this.formBuilder.group({
     fromDate: [''], // Initial value for fromDate
     toDate: [''], // Initial value for toDate
@@ -95,10 +66,11 @@ export class SensorDetailComponent {
 
   truePageSize: number = 25;
   columns: boolean[] = [true, false, true];
-  filterFunctionList: (() => boolean)[] = [];
-  filterValuesList: any[] = [];
+  filterFunctionList: any[] = [];
+  filterValuesList: any[][] = [[]]; // Initialize with a sample filter
   filterOperators: string[] = ['==', '!=', '>=', '>', '<=', '<'];
   details: any;
+  sensorDetails: any;
   series: any;
 
   // Pagination properties
@@ -136,6 +108,7 @@ export class SensorDetailComponent {
     this.http.get(`http://localhost:8000/sensors/${this.sensorName}/${this.date.from.date}/${this.date.to.date}/`, { withCredentials: true }).subscribe(
       (data: any) => {
         this.loading = false;
+        this.sensorDetails = data;
         this.details = data.properties ? data : undefined;
         console.log(this.details)
         this.buildData(this.details);
@@ -193,37 +166,53 @@ export class SensorDetailComponent {
     if (details != undefined && details.properties.values) {
       let offset = 0;
 
-      /**
-       * 
-       *       this.chartConfig.series = [] as { name: string; id: number; data: Array<Array<any>> }[];
-  
+      this.lineChartData = [];
+      this.lineChartLabels = [];
+      const colors: { [key: string]: string } = {
+        temperature: 'red',
+        time: 'green',
+        timestamp: 'blue',
+        light: 'yellow',
+        packet_type: 'grey'
+        // Add more key-value pairs for other field names and colors
+      };
+
       for (let k = 2; k < details.properties.fields.length; k++) {
-        const series = {
-          name: `${details.properties.fields[k].name} (${details.properties.fields[k].unit !== null ? details.properties.fields[k].unit : 'no unit'})`,
-          id: k,
-          data: [] as Array<Array<any>>
+        const dataset = {
+          data: [] as number[],
+          label: `${details.properties.fields[k].name} (${details.properties.fields[k].unit !== null ? details.properties.fields[k].unit : 'no unit'})`,
+          backgroundColor: '',
+          borderColor: ''
         };
-  
+        const fieldName = details.properties.fields[k].name;
+        if (colors.hasOwnProperty(fieldName)) {
+          dataset.backgroundColor = colors[fieldName];
+          dataset.borderColor = colors[fieldName];
+        } else {
+          dataset.backgroundColor = 'rgba(0, 123, 255, 0.5)';
+          dataset.borderColor = 'rgba(0, 123, 255, 1)';
+        }
+
+        console.log(details.properties.values.length)
         for (let i = 0; i < details.properties.values.length; i++) {
           if (typeof details.properties.values[i][k] === 'string' || details.properties.values[i][k] instanceof String) {
             offset++;
             break;
           }
-          const array = [details.properties.values[i][1], details.properties.values[i][k]];
-          series.data.push(array);
+          const dataPoint = details.properties.values[i][k];
+          dataset.data.push(dataPoint);
         }
-  
-        series.data.sort((a: any, b: any) => a[0] - b[0]);
-        this.chartConfig.series.push(series);
-      }
-  
-      this.chartConfig.series = this.chartConfig.series.filter((serie: any) => serie.data.length > 0);
-       * 
-       * 
-       */
 
+        if (dataset.data.length > 0) {
+          this.lineChartData.push(dataset);
+        }
+      }
+      for (let i = 0; i < details.properties.values.length; i++) {
+        this.lineChartLabels.push(String(i))
+      }
     }
   }
+
 
 
 
@@ -317,4 +306,76 @@ export class SensorDetailComponent {
       this.updatePagedValues();
     }
   }
+
+  addFilter(ind: number, op: string, value: number, index: number) {
+    this.filterValuesList.push([]);
+    const filterFunc = (ind: number, op: string, value: number) => (a: any) => {
+      try {
+        return eval(a[ind] + op + value);
+      } catch (e) {
+        return false;
+      }
+    };
+
+    this.filterFunctionList.splice(index, 1, filterFunc(ind, op, value));
+  }
+
+  filter() {
+    let dataset = JSON.parse(JSON.stringify(this.details.properties.values));
+
+    for (let j = 0; j < this.filterFunctionList.length; j++) {
+      //console.log('Filter Criteria:', this.filterValuesList[j]);
+      dataset = dataset.filter(this.filterFunctionList[j]);
+    }
+
+    const c = JSON.parse(JSON.stringify(this.details));
+
+    c.properties.values = dataset;
+
+    //console.log('Filtered Dataset:', dataset);
+
+    this.buildData(c);
+  }
+
+  removeFilter(index: number) {
+    this.filterFunctionList.splice(index, 1);
+    this.filterValuesList.splice(index, 1);
+    if (this.filterValuesList.length == 0) {
+      this.filterValuesList = [[]]
+      this.load()
+    }
+  }
+
+  applyFilterChanges() {
+    for (let i = 0; i < this.filterFunctionList.length; i++) {
+      if (
+        this.filterFunctionList[i] &&
+        this.filterValuesList[i] &&
+        this.filterValuesList[i][0] &&
+        this.filterValuesList[i][1] &&
+        this.filterValuesList[i][2]
+      ) {
+        this.addFilter(
+          this.details.properties.fields.indexOf(this.filterValuesList[i][0]),
+          this.filterValuesList[i][1],
+          this.filterValuesList[i][2],
+          i
+        );
+      }
+    }
+    this.filter()
+  }
+
+  compare() {
+    /**
+    localStorage.setItem(this.sensorName,JSON.stringify(this.lineChartData));
+    const test = localStorage.getItem(this.sensorName);
+    console.log(test)
+    */
+  }
+
+
 }
+
+
+
