@@ -254,7 +254,7 @@ def download_csv(request, sensor_name, from_date, to_date):
 
     headers = create_headers(request.user)
 
-    data = json.loads(requests.get(oauth_sensors_url + '/' + sensor_name + '/data', headers=headers, params=payload))
+    data = json.loads(requests.get(oauth_sensors_url + '/' + sensor_name + '/data', headers=headers, params=payload).text)
 
     data = add_time(data)
 

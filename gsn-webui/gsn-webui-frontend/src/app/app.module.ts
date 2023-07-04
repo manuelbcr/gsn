@@ -12,6 +12,7 @@ import { MapComponent } from './map/map.component';
 import { FormsModule } from '@angular/forms';
 import { NgbDatepickerModule, NgbTimepickerModule , NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { DateTimePickerComponent } from './utils/date-time-picker/date-time-picker.component';
+import { DownloadComponent } from './download/download.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { DateTimePickerComponent } from './utils/date-time-picker/date-time-pick
     SensorDetailComponent,
     DashboardComponent,
     MapComponent,
-    DateTimePickerComponent
+    DateTimePickerComponent,
+    DownloadComponent
   ],
   imports: [
     BrowserModule,
