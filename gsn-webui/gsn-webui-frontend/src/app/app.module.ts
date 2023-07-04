@@ -13,6 +13,8 @@ import { FormsModule } from '@angular/forms';
 import { NgbDatepickerModule, NgbTimepickerModule , NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 import { DateTimePickerComponent } from './utils/date-time-picker/date-time-picker.component';
 import { DownloadComponent } from './download/download.component';
+import { NgChartsModule } from 'ng2-charts';
+import { CompareComponent } from './compare/compare.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +24,8 @@ import { DownloadComponent } from './download/download.component';
     DashboardComponent,
     MapComponent,
     DateTimePickerComponent,
-    DownloadComponent
+    DownloadComponent,
+    CompareComponent
   ],
   imports: [
     BrowserModule,
@@ -30,9 +33,10 @@ import { DownloadComponent } from './download/download.component';
     HttpClientModule,
     ReactiveFormsModule,
     FormsModule,
+    NgChartsModule,
     NgbDatepickerModule,
     NgbTimepickerModule,
-    NgbPopoverModule
+    NgbPopoverModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

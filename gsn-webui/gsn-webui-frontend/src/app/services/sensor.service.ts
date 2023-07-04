@@ -12,4 +12,10 @@ export class SensorService {
   getSensors(): Observable<any> {
     return this.http.get('http://localhost:8000/sensors');
   }
+
+  getSensorData(sensorName: string, from: string, to: string): Observable<any>{
+    console.log("SERVICE", from);
+    console.log("SERVICE", to);
+    return this.http.get(`http://localhost:8000/sensors/${sensorName}/${from}/${to}/`, { withCredentials: true });
+  }
 }
