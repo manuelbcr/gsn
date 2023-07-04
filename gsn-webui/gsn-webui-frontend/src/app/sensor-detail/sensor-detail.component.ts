@@ -89,7 +89,7 @@ export class SensorDetailComponent {
   pageSize: FormControl = new FormControl(25);
   dateFormGroup = this.formBuilder.group({
     startDate: new FormControl(new Date(new Date().getTime() - 1000 * 60 * 60)),
-    endDate:  new FormControl(new Date())
+    endDate: new FormControl(new Date())
   }
   )
 
@@ -150,16 +150,16 @@ export class SensorDetailComponent {
 
   submit() {
     const startDateControl = this.dateFormGroup.get('startDate');
-    const startDate= startDateControl ? startDateControl.value: null ;
+    const startDate = startDateControl ? startDateControl.value : null;
     const endDateControl = this.dateFormGroup.get('endDate');
     const endDate = endDateControl ? endDateControl.value : null;
 
-    if(startDate != null && endDate != null){
+    if (startDate != null && endDate != null) {
       const from = new Date(startDate).toJSON();
       const to = new Date(endDate).toJSON();
       this.date.from.date = from.slice(0, 19);
       this.date.to.date = to.slice(0, 19);
-      this.http.get(`http://localhost:8001/sensors/${this.sensorName}/${this.date.from.date}/${this.date.to.date}/`, { withCredentials: true }).subscribe(
+      this.http.get(`http://localhost:8000/sensors/${this.sensorName}/${this.date.from.date}/${this.date.to.date}/`, { withCredentials: true }).subscribe(
         (data: any) => {
           this.loading = false;
           this.details = data.properties ? data : undefined;
@@ -260,7 +260,31 @@ export class SensorDetailComponent {
   }
 
   downloadCsv() {
-    //window.open(`download/${this.sensorName}/${this.date.from.date}/${this.date.to.date}`);
+    const sensorList = []
+    sensorList.push(this.sensorName);
+    const start = this.dateFormGroup.get('startDate');
+    const end = this.dateFormGroup.get('endDate');
+    let from;
+    let to;
+    if (start && start.value && start.value instanceof Date) {
+      from = start && start.value ? start.value.toJSON() : '0';
+    } else {
+      from = start && start.value ? new Date(start.value).toJSON() : '0';
+    }
+
+    if (end && end.value && end.value instanceof Date) {
+      to = end && end.value ? end.value.toJSON() : '0';
+    } else {
+      to = end && end.value ? new Date(end.value).toJSON() : '0';
+    }
+
+
+    if (from != '0' && to != '0') {
+      this.downloadService.downloadMultiple(sensorList, from.slice(0, 19), to.slice(0, 19));
+    } else {
+      console.log("no dates")
+    }
+
   }
 
 
@@ -285,7 +309,7 @@ export class SensorDetailComponent {
       this.updatePagedValues();
     }
   }
-  
+
   nextPage() {
     const totalPages = this.totalPages();
     if (this.currentPage < totalPages) {

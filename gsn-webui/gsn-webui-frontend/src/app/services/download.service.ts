@@ -22,7 +22,7 @@ export class DownloadService {
 
   downloadMultiple(sensorList: string[], from: string, to: string): void {
     sensorList.forEach((sensor: string) => {
-      this.http.get(`http://localhost:8000/download/${sensor}/${from}/${to}/`, { responseType: 'blob' })
+      this.http.get(`http://localhost:8000/download/${sensor}/${from}/${to}/`, { withCredentials: true, responseType: 'blob' })
         .subscribe((data: any) => {
           const blobURL = URL.createObjectURL(data);
           const anchor = document.createElement('a');

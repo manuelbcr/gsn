@@ -21,8 +21,10 @@
             </p>
           </div>
           <div *ngIf="details.user.logged">
-            <button *ngIf="details.user.favorite" class="btn btn-danger" (click)="removeFavorite(sensorName)">Remove from favorites</button>
-            <button *ngIf="!details.user.favorite" class="btn btn-success" (click)="addFavorite(sensorName)">Add to favorites</button>
+            <button *ngIf="details.user.favorite" class="btn btn-danger" (click)="removeFavorite(sensorName)">Remove
+              from favorites</button>
+            <button *ngIf="!details.user.favorite" class="btn btn-success" (click)="addFavorite(sensorName)">Add to
+              favorites</button>
           </div>
         </div>
       </div>
@@ -83,7 +85,7 @@
       <div class="card-header">Data</div>
       <div class="card-body">
         <form novalidate class="form" (ngSubmit)="submit()">
-          <div class="row"[formGroup]="dateFormGroup">
+          <div class="row" [formGroup]="dateFormGroup">
             <div class="col-lg-6">
               <b>From:</b><br>
               <div>
@@ -122,7 +124,8 @@
               {{ field.name }}
             </label>
           </div>
-          <table id="sensor_data_table_id" class="table table-bordered table-hover table-striped" *ngIf="details.properties.fields">
+          <table id="sensor_data_table_id" class="table table-bordered table-hover table-striped"
+            *ngIf="details.properties.fields">
             <thead>
               <tr>
                 <th *ngFor="let field of details.properties.fields; let i = index" [hidden]="!columns[i]">
@@ -139,10 +142,10 @@
           <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn btn-primary">Previous</button>
           <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="btn btn-primary">Next</button>
 
-          
+
           <div class="row">
             <div class="col-lg-6">
-              <button class="btn btn-success btn-block" [disabled]="!details.properties.values" (click)="download()">
+              <button class="btn btn-success btn-block" [disabled]="!details.properties.values" (click)="downloadCsv()">
                 <i class="bi bi-download"></i>
                 Download
               </button>
