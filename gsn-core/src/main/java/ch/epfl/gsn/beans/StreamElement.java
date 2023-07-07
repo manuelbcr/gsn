@@ -71,6 +71,7 @@ public final class StreamElement implements Serializable {
 	private static final String NULL_ENCODING = "NULL"; // null encoding for transmission over xml-rpc
 
 	private boolean timestampProvided = false;
+	private Long volume = null;
 
 
 	public StreamElement (StreamElement other) {
@@ -84,6 +85,7 @@ public final class StreamElement implements Serializable {
 		}
 		this.timeStamp=other.timeStamp;
 		this.internalPrimayKey = other.internalPrimayKey;
+		this.volume = other.volume;
 	}
 	
 	public StreamElement(){ //constructor for serialization
@@ -103,6 +105,7 @@ public final class StreamElement implements Serializable {
 		if ( this.fieldNames.length != data.length ) throw new IllegalArgumentException( "The length of dataFileNames and the actual data provided in the constructor of StreamElement doesn't match." );
 		this.verifyTypesCompatibility( this.fieldTypes , data );
 		this.fieldValues = data;
+		this.volume = null;
 	}
 
 	public StreamElement ( final String [ ] dataFieldNames , final Byte [ ] dataFieldTypes , final Serializable [ ] data ) {
@@ -118,6 +121,7 @@ public final class StreamElement implements Serializable {
 		this.fieldTypes = dataFieldTypes;
 		this.fieldNames = dataFieldNames;
 		this.fieldValues = data;
+		this.volume = null;
 		this.verifyTypesCompatibility( dataFieldTypes , data );
 	}
 
@@ -154,7 +158,52 @@ public final class StreamElement implements Serializable {
 		this.fieldValues=fieldValues;
 		this.indexedFieldNames=indexedFieldNames;
 		this.timeStamp=timestamp;
+		this.volume = null;
 	}
+
+	
+	public StreamElement (StreamElement other, final DataField [ ] outputStructure , final Serializable [ ] data) {
+		int len = other.fieldNames.length + outputStructure.length;
+		this.fieldNames=new String[len];
+		this.fieldValues=new Serializable[len];
+		this.fieldTypes=new Byte[len]; 
+		for (int i=0;i<other.fieldNames.length;i++) {
+			this.fieldNames[i]=other.fieldNames[i];
+			this.fieldValues[i]=other.fieldValues[i];
+			this.fieldTypes[i]=other.fieldTypes[i];
+		}
+		for (int i=0;i<outputStructure.length;i++) {
+			this.fieldNames[other.fieldNames.length+i]=outputStructure[i].getName();
+			this.fieldValues[other.fieldNames.length+i]=data[i];
+			this.fieldTypes[other.fieldNames.length+i]=outputStructure[i].getDataTypeID();			
+		}
+		this.timeStamp=other.timeStamp;
+		this.internalPrimayKey = other.internalPrimayKey;
+		this.volume = null;
+	}
+	
+	public StreamElement (StreamElement other, final String [ ] dataFieldNames , final Byte [ ] dataFieldTypes , final Serializable [ ] data) {
+		int len = other.fieldNames.length + dataFieldNames.length;
+		this.fieldNames=new String[len];
+		this.fieldValues=new Serializable[len];
+		this.fieldTypes=new Byte[len]; 
+		for (int i=0;i<other.fieldNames.length;i++) {
+			this.fieldNames[i]=other.fieldNames[i];
+			this.fieldValues[i]=other.fieldValues[i];
+			this.fieldTypes[i]=other.fieldTypes[i];
+		}
+		for (int i=0;i<dataFieldNames.length;i++) {
+			this.fieldNames[other.fieldNames.length+i]=dataFieldNames[i];
+			this.fieldValues[other.fieldNames.length+i]=data[i];
+			this.fieldTypes[other.fieldNames.length+i]=dataFieldTypes[i];			
+		}
+		this.timeStamp=other.timeStamp;
+		this.internalPrimayKey = other.internalPrimayKey;
+		this.volume = null;
+	}
+	
+
+
 	
 	/**
 	 * Verify if the data corresponds to the fieldType

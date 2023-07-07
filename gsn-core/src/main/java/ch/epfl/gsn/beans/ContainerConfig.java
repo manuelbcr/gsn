@@ -36,6 +36,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TimeZone;
 
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
@@ -56,7 +57,7 @@ public class ContainerConfig {
 	public static final String [ ]      JDBC_URLS_PREFIX                   = new String [ ] { "jdbc:h2:mem:" , "jdbc:h2:file:" , "jdbc:mysql:", "jdbc:jtds:sqlserver:" };
 
 	public static final String            NOT_PROVIDED                     = "Not Provided";
-	
+	public static final String            DEFAULT_TIME_ZONE                = "UTC";
 	public static final int               DEFAULT_MONITOR_PORT             = 22001;
 	public static final int               DEFAULT_ZMQ_PROXY_PORT           = 22022;
 	public static final int               DEFAULT_ZMQ_META_PORT            = 22023;
@@ -82,7 +83,7 @@ public class ContainerConfig {
 	private String                        databaseSystem;
 	private boolean                       isdatabaseSystemInitialzied      = false;
 	protected String                      timeFormat                       = "";
-
+	private String timeZone = DEFAULT_TIME_ZONE;
 	public ContainerConfig(){
 		
 	}
@@ -247,4 +248,9 @@ public class ContainerConfig {
 		return timeFormat;
 	}
 	
+
+
+	public TimeZone getTimeZone() {
+		return TimeZone.getTimeZone(timeZone);
+	}
 }
