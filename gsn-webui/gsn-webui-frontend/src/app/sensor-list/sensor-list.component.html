@@ -31,7 +31,7 @@
         <p><b>Description:</b> {{ sensor.properties.description }}</p>
 
         <p *ngIf="sensor.properties.geographical"><b>Location:</b> {{ sensor.properties.geographical }}</p>
-        <ul *ngIf="sensor.geometry.coordinates">
+        <ul *ngIf="sensor.geometry != null && sensor.geometry.coordinates">
           <li *ngIf="sensor.geometry.coordinates[0]"><b>Latitude:</b> {{ sensor.geometry.coordinates[0] }}</li>
           <li *ngIf="sensor.geometry.coordinates[1]"><b>Longitude:</b> {{ sensor.geometry.coordinates[1] }}</li>
           <li *ngIf="sensor.geometry.coordinates[2]"><b>Altitude:</b> {{ sensor.geometry.coordinates[2] }}</li>

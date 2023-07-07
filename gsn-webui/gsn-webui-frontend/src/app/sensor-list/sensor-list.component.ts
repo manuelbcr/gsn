@@ -114,20 +114,22 @@ export class SensorListComponent implements OnInit {
 
     // Loop through the sensors and add markers to the map
     this.sensors.forEach(sensor => {
-      const coordinates = sensor.geometry.coordinates;
-      const marker = new Feature({
-        geometry: new Point(fromLonLat(coordinates))
-      });
-
-      const markerStyle = new Style({
-        image: new Icon({
-          src: '../../assets/285659_marker_map_icon.svg', // Provide the path to your marker icon
-          anchor: [0.5, 1] // Set the anchor point of the icon (adjust if needed)
-        })
-      });
-
-      marker.setStyle(markerStyle);
-      markerSource.addFeature(marker);
+      if(sensor.geometry != null){
+        const coordinates = sensor.geometry.coordinates;
+        const marker = new Feature({
+          geometry: new Point(fromLonLat(coordinates))
+        });
+  
+        const markerStyle = new Style({
+          image: new Icon({
+            src: '../../assets/285659_marker_map_icon.svg', // Provide the path to your marker icon
+            anchor: [0.5, 1] // Set the anchor point of the icon (adjust if needed)
+          })
+        });
+  
+        marker.setStyle(markerStyle);
+        markerSource.addFeature(marker);
+      }
     });
   }
 
