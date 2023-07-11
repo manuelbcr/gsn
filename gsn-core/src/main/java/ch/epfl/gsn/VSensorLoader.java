@@ -451,6 +451,7 @@ public class VSensorLoader extends Thread {
 		for ( AddressBean addressBean : streamSource.getAddressing ( ) ) {
 			addressBean.setInputStreamName(inputStream.getInputStreamName());
 			addressBean.setVirtualSensorName(vsensorConfig.getName());
+			addressBean.setVirtualSensorConfig(vsensorConfig);
 			wrapper = createWrapper(addressBean);
 			try {
 				if (wrapper!=null && prepareStreamSource( streamSource,wrapper.getOutputFormat(),wrapper)) 
