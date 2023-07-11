@@ -655,4 +655,47 @@ public final class StreamElement implements Serializable {
 
 		return Json.toJson(feature).toString();
     }
+
+
+		public long getVolume() {
+		if (volume == null) {
+			volume = (long) 0;
+			for ( int i = 0 ; i < fieldNames.length ; i++ ) {
+				if ( fieldValues[ i ] == null ) continue;
+				switch ( fieldTypes[ i ] ) {
+				case DataTypes.TINYINT :
+					volume += 1;
+					break;
+				case DataTypes.SMALLINT :
+					volume += 2;
+					break;
+				case DataTypes.BIGINT :
+					volume += 8;
+					break;
+				case DataTypes.CHAR :
+					volume += 2;
+					break;
+				case DataTypes.VARCHAR :
+					volume += ((String)fieldValues[ i ]).getBytes().length;
+					break;
+				case DataTypes.INTEGER :
+					volume += 4;
+					break;
+				case DataTypes.DOUBLE:
+					if (fieldValues[ i ] instanceof Float)
+						volume += 4;
+					else if(fieldValues[ i ] instanceof Double)
+						volume += 8;
+					break;
+				case DataTypes.BINARY :
+					if ( fieldValues[ i ] instanceof byte [ ])
+						volume += ((byte[])fieldValues[ i ]).length;
+					else if (fieldValues[ i ] instanceof String)
+						volume += ((String)fieldValues[ i ]).getBytes().length;
+					break;
+				}
+			}
+		}
+		return volume;
+	}
 }

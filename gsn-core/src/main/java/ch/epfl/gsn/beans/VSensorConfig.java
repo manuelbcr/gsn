@@ -60,6 +60,8 @@ public class VSensorConfig implements Serializable {
 
 	public static final int                        DEFAULT_POOL_SIZE                         = 10;
 
+	public static final boolean                    DEFAULT_STATISTICS                        = false;
+
 	private String                                 name;
 
 	private int                                    priority                                  = DEFAULT_PRIORITY;
@@ -105,6 +107,8 @@ public class VSensorConfig implements Serializable {
 	private String sensorMap = "false";
 
 	private String access_protected = "false";
+	private Boolean stats = null;
+	private String statistics = Boolean.toString(DEFAULT_STATISTICS);
 
     /**
 	 * @return Returns the addressing.
@@ -442,7 +446,18 @@ public class VSensorConfig implements Serializable {
     }
 
 
-
+	/**
+	 * @return if statistics should be produced
+	 */
+	public boolean isProducingStatistics() {
+		if (stats == null) {
+			if (statistics==null)
+				stats = DEFAULT_STATISTICS;
+			else
+				stats = Boolean.parseBoolean(statistics.trim());
+		}
+		return stats;
+	}
 
 	/**
 	 * @return the webinput
