@@ -11,10 +11,9 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
-
 public class DeploymentStatistics {
 	
-	private final static transient Logger logger = LoggerFactory.getLogger(DeploymentStatistics.class);
+	protected final transient Logger logger = LoggerFactory.getLogger( DeploymentStatistics.class );
 	
 	private Map<String,CoreStationStatistics> coreStationToCoreStationStatsList = Collections.synchronizedMap(new Hashtable<String,CoreStationStatistics>());
 	private BackLogStatsWrapper blstatswrapper = null;

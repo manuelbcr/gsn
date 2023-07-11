@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 
 public class CoreStationStatistics {
 	
-	private final static transient Logger logger = LoggerFactory.getLogger(CoreStationStatistics.class);
+	private final transient Logger logger = LoggerFactory.getLogger( CoreStationStatistics.class );
 	
 	private String coreStationAddress = null;
 	private Boolean isConnected = null;

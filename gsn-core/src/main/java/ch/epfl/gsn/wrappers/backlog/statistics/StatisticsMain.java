@@ -10,10 +10,9 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
-
 public class StatisticsMain {
 	
-	private final static transient Logger logger = LoggerFactory.getLogger(StatisticsMain.class);
+	protected final transient Logger logger = LoggerFactory.getLogger( StatisticsMain.class );
 	
 	private static Map<String,DeploymentStatistics> deploymentToDeploymentStatsList = Collections.synchronizedMap(new Hashtable<String,DeploymentStatistics>());
 	
