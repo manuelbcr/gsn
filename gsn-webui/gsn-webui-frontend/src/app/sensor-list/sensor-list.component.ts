@@ -52,6 +52,7 @@ export class SensorListComponent implements OnInit {
     this.loadSensors();
   }
 
+ firstSensorIndex: number =-1;
   loadSensors() {
     this.sensorService.getSensors().subscribe(
       (data: any) => {
@@ -60,9 +61,16 @@ export class SensorListComponent implements OnInit {
         console.log(this.sensors);
         // Set the center of the map to the first sensor's coordinates
         if (this.sensors.length > 0) {
-          const firstSensor = this.sensors[0];
-          this.lat = firstSensor.geometry.coordinates[0];
-          this.lng = firstSensor.geometry.coordinates[1];
+          for (let index = 0; index < this.sensors.length; index++) {
+            
+            if(this.sensors[index].geometry !=null){
+              const firstSensor = this.sensors[index];
+              this.firstSensorIndex = index;
+              this.lat = firstSensor.geometry.coordinates[0];
+              this.lng = firstSensor.geometry.coordinates[1];
+              break; // Exit the loop after the assignment
+            }  
+          }
           this.initMap(); // Initialize the map
         }
         this.favoritesService.list().subscribe(
@@ -107,10 +115,17 @@ export class SensorListComponent implements OnInit {
     this.map.addLayer(markerLayer);
 
     // Set the center of the map to the first sensor's coordinates
-    const firstSensor = this.sensors[0];
-    const firstSensorCoordinates = firstSensor.geometry.coordinates;
-    const centerCoordinates = fromLonLat([firstSensorCoordinates[0], firstSensorCoordinates[1]]);
-    this.map.getView().setCenter(centerCoordinates);
+    if(this.firstSensorIndex != -1){
+      const firstSensor = this.sensors[this.firstSensorIndex];
+      const firstSensorCoordinates = firstSensor.geometry.coordinates;
+      const centerCoordinates = fromLonLat([firstSensorCoordinates[0], firstSensorCoordinates[1]]);
+      this.map.getView().setCenter(centerCoordinates);
+    } else {
+      const centerCoordinates = fromLonLat([11.345725, 47.263461]);
+      this.map.getView().setCenter(centerCoordinates);
+      
+    }
+    
 
     // Loop through the sensors and add markers to the map
     this.sensors.forEach(sensor => {
