@@ -44,6 +44,7 @@ libraryDependencies ++= Seq(
   "junit" % "junit" % "4.11" %  "test",
   "ch.epfl.gsn" % "gsn-tools" % "2.0.1",
   "org.easymock" % "easymockclassextension" % "3.2" % "test",
+  "commons-fileupload" % "commons-fileupload" % "1.3.3",
   "org.httpunit" % "httpunit" % "1.7.2" % "test" exclude("xerces","xercesImpl") exclude("xerces","xmlParserAPIs") exclude("javax.servlet","servlet-api")
 )
 
