@@ -422,3 +422,73 @@ GSN = {
 
 install sudo npm install -g @angular/cli
 ```
+
+
+### GSN configuration server
+#### switchable java bellsoft:
+to be able to switch between java version with the command
+```
+switch_java 8
+```
+#### Add BellSoft official GPG key and setup the repository
+
+```
+wget -q -O - https://download.bell-sw.com/pki/GPG-KEY-bellsoft | sudo apt-key add -
+```
+
+```
+echo "deb [arch=amd64] https://apt.bell-sw.com/ stable main" | sudo tee /etc/apt/sources.list.d/bellsoft.list
+```
+
+```
+sudo apt-get update
+sudo apt-get install bellsoft-java8
+```
+
+open ~/.bashrc:
+
+```
+nano ~/.bashrc
+```
+and insert: (replace /path/to/java8/bin/java with according path)
+```
+function switch_java() {
+    if [ "$1" = "8" ]; then
+        sudo update-alternatives --set java /path/to/java8/bin/java
+    elif [ "$1" = "17" ]; then
+        sudo update-alternatives --set java /path/to/java17/bin/java
+    else
+        echo "Invalid Java version. Usage: switch_java 8|17"
+    fi
+}
+```
+
+reload
+
+```
+source ~/.bashrc
+```
+
+
+### Add release packages to server:
+depakage using:
+```
+sudo dpkg -i /path/to/deb/file
+```
+
+start the core or service using: 
+```
+sudo systemctl start gsn-core.service
+sudo systemctl start gsn-services.service
+```
+
+don't forget to add the according virtual sensors in (if no folder exists,create a new folder virtual-sensors):
+```
+/usr/share/gsn-core/virtual-sensors
+```
+
+### Database configuration:
+config file for database can be found at:
+```
+/usr/share/gsn-core/conf/gsn.xml
+```
