@@ -90,7 +90,7 @@ public class PushDelivery implements DeliverySystem {
 			
 			int statusCode = response.getStatusLine().getStatusCode();
 			response.getEntity().getContent().close(); // releasing the connection to the http client's pool
-			if (statusCode != RestStreamHanlder.SUCCESS_200) {
+			if (statusCode != RestStreamHandler.SUCCESS_200) { //fix typo
 				return false;
 			}
 			return true;
