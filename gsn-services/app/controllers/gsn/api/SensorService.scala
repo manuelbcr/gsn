@@ -179,16 +179,30 @@ object SensorService extends Controller with GsnService {
       val timeFormat:Option[String]=queryparam("timeFormat")
       val aggFunction=queryparam("agg")
       val aggPeriod=queryparam("aggPeriod")
-      
-      val format=param("format",OutputFormat,defaultFormat)           
+      val isoFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
+      val format=param("format",OutputFormat,defaultFormat)        
       val filters=new ArrayBuffer[String]
       val fields:Array[String]=
         if (!fieldStr.isDefined) Array() 
         else fieldStr.get.split(",")
-      if (fromStr.isDefined)          
-        filters+= "timed>"+dateFormatter.parseDateTime(fromStr.get).getMillis
-      if (toStr.isDefined)          
-        filters+= "timed<"+dateFormatter.parseDateTime(toStr.get).getMillis
+
+      if (fromStr.isDefined) {
+        val fromMillis = if (fromStr.get.contains("+")) {
+          isoFormatter.parseDateTime(fromStr.get).getMillis
+        } else {
+          dateFormatter.parseDateTime(fromStr.get).getMillis
+        }
+        filters += s"timed > $fromMillis"
+      }
+
+      if (toStr.isDefined) {
+        val toMillis = if (toStr.get.contains("+")) {
+          isoFormatter.parseDateTime(toStr.get).getMillis
+        } else {
+          dateFormatter.parseDateTime(toStr.get).getMillis
+        }
+        filters += s"timed < $toMillis"
+      }
       val conds=XprConditions.parseConditions(filterStr.toArray).recover{                 
         case e=>throw new IllegalArgumentException("illegal conditions in filter: "+e.getMessage())
       }.get.map(_.toString)
