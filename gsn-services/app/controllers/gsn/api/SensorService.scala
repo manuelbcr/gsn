@@ -185,6 +185,9 @@ object SensorService extends Controller with GsnService {
       val fields:Array[String]=
         if (!fieldStr.isDefined) Array() 
         else fieldStr.get.split(",")
+      val filterArray: Array[String] = 
+        if (!filterStr.isDefined) Array() 
+        else filterStr.get.split(",")
 
       if (fromStr.isDefined) {
         val fromMillis = if (fromStr.get.contains("+")) {
@@ -203,11 +206,10 @@ object SensorService extends Controller with GsnService {
         }
         filters += s"timed < $toMillis"
       }
-      val conds=XprConditions.parseConditions(filterStr.toArray).recover{                 
+      val conds=XprConditions.parseConditions(filterArray).recover{                 
         case e=>throw new IllegalArgumentException("illegal conditions in filter: "+e.getMessage())
       }.get.map(_.toString)
       val agg=aggFunction.map{f=>Aggregation(f,aggPeriod.get)}
-      
       val p=Promise[Seq[SensorData]]               
       val q=Akka.system.actorOf(Props(new QueryActor(p)))
       Logger.debug("request the query actor")
