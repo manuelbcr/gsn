@@ -68,8 +68,6 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 		String _lport = addressBean.getPredicateValue("local_port");
 		laddress = addressBean.getPredicateValue("local_address");
 		vsensor = addressBean.getPredicateValue ( "vsensor" ).toLowerCase();
-		String startTime = addressBean.getPredicateValue ( "start-time" );
-
 		if ( address == null || address.trim().length() == 0 ) 
 			throw new RuntimeException( "The >address< parameter is missing from the ZeroMQ wrapper." );
 		if ( laddress == null || laddress.trim().length() == 0 ) 
@@ -105,13 +103,7 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 		requester.setSendTimeOut(1000);
 		requester.setLinger(0);
 		requester.connect(remoteContactPoint_META);
-
-		String requestString = vsensor + "?tcp://" + laddress + ":" + lport;
-		if ( startTime != null && startTime.trim().length() != 0 ){
-			requestString = requestString + "?" + startTime;
-		} 
-
-		if (requester.send(requestString)){
+		if (requester.send(vsensor + "?tcp://" + laddress + ":" + lport)){
 		    byte[] rec = requester.recv();
 		    if (rec != null){
 		        structure =  kryo.readObjectOrNull(new Input(new ByteArrayInputStream(rec)),DataField[].class);  
