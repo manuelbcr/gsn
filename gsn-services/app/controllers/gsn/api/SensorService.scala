@@ -177,6 +177,8 @@ object SensorService extends Controller with GsnService {
       val toStr:Option[String]=queryparam("to")
       val period:Option[String]=queryparam("period")
       val timeFormat:Option[String]=queryparam("timeFormat")
+      val orderBy:Option[String]= queryparam("orderBy")
+      val timeline: Option[String] = queryparam("timeline")
       val aggFunction=queryparam("agg")
       val aggPeriod=queryparam("aggPeriod")
       val isoFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
@@ -195,7 +197,11 @@ object SensorService extends Controller with GsnService {
         } else {
           dateFormatter.parseDateTime(fromStr.get).getMillis
         }
-        filters += s"timed > $fromMillis"
+        if(timeline.isDefined){
+          filters += timeline.getOrElse("timed")+" > " + fromMillis
+        } else {
+          filters += s"timed > $fromMillis"
+        }
       }
 
       if (toStr.isDefined) {
@@ -204,7 +210,11 @@ object SensorService extends Controller with GsnService {
         } else {
           dateFormatter.parseDateTime(toStr.get).getMillis
         }
-        filters += s"timed < $toMillis"
+        if(timeline.isDefined){
+          filters += timeline.getOrElse("timed")+" < " + toMillis
+         } else {
+          filters += s"timed < $toMillis"
+         }
       }
       val conds=XprConditions.parseConditions(filterArray).recover{                 
         case e=>throw new IllegalArgumentException("illegal conditions in filter: "+e.getMessage())
@@ -213,7 +223,7 @@ object SensorService extends Controller with GsnService {
       val p=Promise[Seq[SensorData]]               
       val q=Akka.system.actorOf(Props(new QueryActor(p)))
       Logger.debug("request the query actor")
-      q ! GetSensorData(vsname,fields,conds++filters,size,timeFormat,period,agg)
+      q ! GetSensorData(vsname,fields,conds++filters,size,timeFormat,period,agg,orderBy,timeline)
       //val to=play.api.libs.concurrent.Promise.timeout(throw new Exception("bad things"), 15.second)
       p.future.map{data=>        
         Logger.debug("before formatting")
