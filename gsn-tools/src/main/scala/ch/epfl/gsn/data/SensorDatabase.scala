@@ -154,12 +154,13 @@ object SensorDatabase {
 
   
   def query(sensorConf:SensorInfo, fields:Seq[String],
-			conditions:Seq[String], size:Option[Int],timeFormat:Option[String]):SensorData= {
+			conditions:Seq[String], size:Option[Int],timeFormat:Option[String],orderBy:Option[String],timeline:Option[String]):SensorData= {
     val sensor=sensorConf.sensor
     implicit val tf=timeFormat
         
     val selFields=selectedFields(sensor,fields)
-
+    val order = orderBy.getOrElse("")
+    val selectedTimeline = timeline.getOrElse("timed")
     val data=(0 until selFields.size).map{f=>new ArrayBuffer[Any]}
     val time = new ArrayBuffer[Any]
     
@@ -168,9 +169,16 @@ object SensorDatabase {
 	query.append(" from ").append(sensor.name.toLowerCase )
 	if (conditions != null && conditions.length>0) 
 	  query.append(" where "+conditions.mkString(" and "))
-    if (size.isDefined) 
-	  query.append(" order by timed desc").append(" limit 0," + size.get);	
-
+    if (orderBy.isDefined){
+      query.append(" order by " +order+ " desc")
+      if (size.isDefined) 
+	      query.append(" limit 0," + size.get);	
+    } else if(size.isDefined){
+      if(timeline.isDefined)
+        query.append(" order by " +selectedTimeline+ " desc").append(" limit 0," + size.get);
+      else
+        query.append(" order by timed desc").append(" limit 0," + size.get);
+    }
     try{
 	  vsDB(sensorConf.ds).withSession {implicit session=>
         val stmt=session.conn.createStatement
