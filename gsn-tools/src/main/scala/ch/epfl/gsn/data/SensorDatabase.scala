@@ -200,10 +200,8 @@ object SensorDatabase {
             query.append(" order by " +selectedTimeline+ " desc");
           } 
       } else if(order.isDefined){
-        log.error("Query: "+query)
         query.append(" order by timed ").append(sortOrder);
       }
-      log.error("Query: "+query)
     try{
 	  vsDB(sensorConf.ds).withSession {implicit session=>
         val stmt=session.conn.createStatement
