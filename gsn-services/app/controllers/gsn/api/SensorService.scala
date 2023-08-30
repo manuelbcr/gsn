@@ -178,7 +178,9 @@ object SensorService extends Controller with GsnService {
       val period:Option[String]=queryparam("period")
       val timeFormat:Option[String]=queryparam("timeFormat")
       val orderBy:Option[String]= queryparam("orderBy")
+      val order: Option[String]=queryparam("order")
       val timeline: Option[String] = queryparam("timeline")
+      
       val aggFunction=queryparam("agg")
       val aggPeriod=queryparam("aggPeriod")
       val isoFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
@@ -223,7 +225,7 @@ object SensorService extends Controller with GsnService {
       val p=Promise[Seq[SensorData]]               
       val q=Akka.system.actorOf(Props(new QueryActor(p)))
       Logger.debug("request the query actor")
-      q ! GetSensorData(vsname,fields,conds++filters,size,timeFormat,period,agg,orderBy,timeline)
+      q ! GetSensorData(vsname,fields,conds++filters,size,timeFormat,period,agg,orderBy,order,timeline)
       //val to=play.api.libs.concurrent.Promise.timeout(throw new Exception("bad things"), 15.second)
       p.future.map{data=>        
         Logger.debug("before formatting")
@@ -401,3 +403,4 @@ object SensorService extends Controller with GsnService {
   
   
 }
+
