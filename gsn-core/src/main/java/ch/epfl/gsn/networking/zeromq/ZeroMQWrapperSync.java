@@ -19,6 +19,11 @@ import ch.epfl.gsn.beans.StreamElement;
 import ch.epfl.gsn.delivery.StreamElement4Rest;
 import ch.epfl.gsn.wrappers.AbstractWrapper;
 
+import ch.epfl.gsn.beans.VSensorConfig;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class ZeroMQWrapperSync extends AbstractWrapper {
 	
 	private transient Logger logger = LoggerFactory.getLogger( this.getClass() );
@@ -107,9 +112,45 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 		requester.connect(remoteContactPoint_META);
 
 		String requestString = vsensor + "?tcp://" + laddress + ":" + lport;
-		if ( startTime != null && startTime.trim().length() != 0 ){
-			requestString = requestString + "?" + startTime;
-		} 
+
+		long startTimeLong = 0;
+
+		if (startTime != null && startTime.trim().length() != 0 ){
+			startTimeLong = Long.parseLong(startTime);
+
+			VSensorConfig vsConfig = addressBean.getVirtualSensorConfig();
+			Connection conn = null;
+			ResultSet rs = null;
+			try {
+				conn = Main.getStorage(vsConfig).getConnection();
+
+				// check if table already exists
+				rs = conn.getMetaData().getTables(null, null, addressBean.getVirtualSensorName().toUpperCase(), new String[] {"TABLE"});
+				
+				if (rs.next()) {
+					StringBuilder query = new StringBuilder();
+					query.append("select max(timed) from ").append(addressBean.getVirtualSensorName());
+					Main.getStorage(vsConfig).close(rs);
+					rs = Main.getStorage(vsConfig).executeQueryWithResultSet(query, conn);
+					if (rs.next()) {
+						long max_time = rs.getLong(1);
+						if(startTimeLong < max_time){
+							startTimeLong = max_time;
+							logger.info("newest local timed: " + max_time + " is newer than requested start time: " + startTime + " -> using timed as start time");
+							requestString = requestString + "?" + startTimeLong;
+						}
+					}
+				}else{
+					logger.info("Table '" + addressBean.getVirtualSensorName() + "' doesn't exist => collecting data from " + startTime);
+				}
+			} catch (SQLException e) {
+				logger.error(e.getMessage(), e);
+				throw new RuntimeException(e);
+			} finally {
+				Main.getStorage(vsConfig).close(rs);
+				Main.getStorage(vsConfig).close(conn);
+			}
+		}
 
 		if (requester.send(requestString)){
 		    byte[] rec = requester.recv();
