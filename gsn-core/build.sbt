@@ -49,6 +49,7 @@ libraryDependencies ++= Seq(
   "com.jfinal" % "cos" % "2022.2",
   "org.eclipse.jetty" % "jetty-continuation" % "9.4.43.v20210629",
   "org.eclipse.jetty" % "jetty-io" % "9.4.43.v20210629",
+  "org.jibx" % "jibx-run" % "1.3.1",
   "org.httpunit" % "httpunit" % "1.7.2" % "test" exclude("xerces","xercesImpl") exclude("xerces","xmlParserAPIs") exclude("javax.servlet","servlet-api")
 )
 
@@ -111,3 +112,4 @@ EclipseKeys.projectFlavor := EclipseProjectFlavor.Java
 mainClass in Revolver.reStart := Some("ch.epfl.gsn.Main")
 
 Revolver.reStartArgs := Seq("../conf", "../virtual-sensors")
+
