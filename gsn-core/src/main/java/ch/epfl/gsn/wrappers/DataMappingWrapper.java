@@ -474,7 +474,7 @@ public class DataMappingWrapper extends AbstractWrapper {
 						try {
 							synchronized (converterList) {
 								if (!converterList.containsKey(convResult[1])) {
-									String className = "gsn.vsensor.permasense." + convResult[1].substring(0,1).toUpperCase() + convResult[1].substring(1);
+									String className = "ch.epfl.gsn.vsensor.permasense." + convResult[1].substring(0,1).toUpperCase() + convResult[1].substring(1);
 									logger.info("Instantiating converter '" + className);
 									Class<?> classTemplate = Class.forName(className);
 									converterList.put(convResult[1], (Converter)classTemplate.getConstructor().newInstance());
