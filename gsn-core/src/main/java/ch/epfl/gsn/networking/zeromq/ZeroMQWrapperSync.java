@@ -125,7 +125,7 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 				conn = Main.getStorage(vsConfig).getConnection();
 
 				// check if table already exists
-				rs = conn.getMetaData().getTables(null, null, addressBean.getVirtualSensorName().toUpperCase(), new String[] {"TABLE"});
+				rs = conn.getMetaData().getTables(null, null, addressBean.getVirtualSensorName(), new String[] {"TABLE"});
 				
 				if (rs.next()) {
 					StringBuilder query = new StringBuilder();
@@ -138,9 +138,12 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 							startTimeLong = max_time;
 							logger.info("newest local GSN_TIMESTAMP: " + max_time + " is newer than requested start time: " + startTime + " -> using GSN_TIMESTAMP as start time");
 							requestString = requestString + "?" + startTimeLong;
+						}else{
+							logger.info("newest local GSN_TIMESTAMP: " + max_time + " is older than requested start time: " + startTime + " -> using start time");
+							requestString = requestString + "?" + startTime;
 						}
-					} else {
-						logger.info("Table ROW of  '" + addressBean.getVirtualSensorName() + "' doesn't exist => collecting data from " + startTime);
+					}else{
+						logger.info("column GSN_TIMESTAMP does not exits -> using start time " + startTime);
 						requestString = requestString + "?" + startTime;
 					}
 				}else{
@@ -202,4 +205,3 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 	   }
 
 }
-
