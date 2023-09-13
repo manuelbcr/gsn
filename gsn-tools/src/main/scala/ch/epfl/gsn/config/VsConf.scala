@@ -27,7 +27,7 @@ package ch.epfl.gsn.config
 
 import xml._
 
-case class VsConf(name:String,accessProtected:Boolean,priority:Int,timeZone:String,
+case class VsConf(name:String,accessProtected:Boolean,priority:Int,initPriority:Boolean,timeZone:String,
     description:String,poolSize:Option[Int],address:Map[String,String],storage:Option[StorageConf],
     storageSize:Option[String],processing:ProcessingConf,streams:Seq[StreamConf]) {
   
@@ -42,10 +42,12 @@ object VsConf extends Conf{
   val defaultProtected=vs.getBoolean("protected")
   val defaultOutputRate=vs.getInt("outputRate")
   val defaultUniqueTimestamps=vs.getBoolean("uniqueTimestamps")
+  val defaultInitPriority= vs.getBoolean("initPriority")
   def create(xml:Elem)=VsConf(
 		  (xml \@ "name").replaceAll(" ", ""),
 		  attBool(xml,"protected",defaultProtected),
 		  attInt(xml,"priority",defaultPriority),
+      attBool(xml,"initPriority",defaultInitPriority),
 		  att(xml,"time-zone",null),
 		  (xml \ "description").text,
 		  (xml \ "life-cycle").headOption.map(lc=>attInt(lc,"pool-size",defaultPoolSize)),
