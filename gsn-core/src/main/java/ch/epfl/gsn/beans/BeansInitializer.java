@@ -139,6 +139,7 @@ public class BeansInitializer {
 	  if (vs.processing().rate().isDefined())
 	    v.setOutputStreamRate(((Integer)vs.processing().rate().get()));
 	  v.setPriority(vs.priority());
+	  v.setInitPriority(vs.initPriority());
 	  KeyValueImp [] addr=new KeyValueImp[vs.address().size()];
       Iterable<String> keys=JavaConversions.asJavaIterable(vs.address().keys());
       int i=0;
