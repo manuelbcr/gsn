@@ -35,6 +35,7 @@ import play.libs.Json;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.TreeMap;
+import java.util.Arrays;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.LoggerFactory;
@@ -365,7 +366,8 @@ public final class StreamElement implements Serializable {
 		generateIndex();
 		Integer index = indexedFieldNames.get( fieldName );
 		if (index == null) {
-			logger.warn("There is a request for type of field "+fieldName+" for StreamElement: "+this.toString()+". As the requested field doesn't exist, GSN returns Null to the callee.");
+			if(logger.isDebugEnabled())
+				logger.warn("There is a request for type of field "+fieldName+" for StreamElement: "+this.toString()+". As the requested field doesn't exist, GSN returns Null to the callee.");
 			return null;
 		}
 		return this.fieldTypes[ index ];
@@ -378,6 +380,94 @@ public final class StreamElement implements Serializable {
 	public void setInternalPrimayKey ( long internalPrimayKey ) {
 		this.internalPrimayKey = internalPrimayKey;
 	}
+
+
+	/**
+	 * This method compares this StreamElement with an other one,
+	 * ignoring the specified field names and ignoring the TIMED value.
+	 * Two StreamElements are seen to be the same, if all elements
+	 * (except the ones to be ignored) are of equal type and content.
+	 * 
+	 * @param se: an other StreamElement.
+	 * @param fieldNamesToBeIgnored: all field names to be ignored
+	 * @return true, if both StreamElements are the same, otherwise false.
+	 */
+	public boolean equalsIgnoreTimedAndFields(StreamElement se, String[] fieldNamesToBeIgnored) {
+		if (se == null)
+			return false;
+		if (this.getFieldNames().length != se.getFieldNames().length)
+			return false;
+		
+		Serializable[] fieldValues = se.getData();
+		String[] fieldNames = se.getFieldNames();
+		Byte[] fieldTypes = se.getFieldTypes();
+		
+		for (int i=0; i<this.getFieldNames().length; i++) {
+			if (this.fieldTypes[i].compareTo(fieldTypes[i]) != 0)
+				return false;
+			if (this.fieldNames[i].compareToIgnoreCase(fieldNames[i]) != 0)
+				return false;
+			
+			boolean cont = false;
+			if (fieldNamesToBeIgnored != null) {
+				for (int j=0; j<fieldNamesToBeIgnored.length; j++) {
+					if (this.fieldNames[i].compareToIgnoreCase(fieldNamesToBeIgnored[j]) == 0) {
+						cont = true;
+						break;
+					}
+				}
+			}
+			if (cont)
+				continue;
+			
+			if (this.fieldValues[i] == null && fieldValues[i] != null)
+				return false;
+			if (this.fieldValues[i] != null && fieldValues[i] == null)
+				return false;
+
+			if (!(this.fieldValues[i] == null && fieldValues[i] == null)) {
+				switch ( fieldTypes[ i ] ) {
+					case DataTypes.DOUBLE :
+						if (((Double)this.fieldValues[i]).compareTo((Double)fieldValues[i]) != 0)
+							return false;
+						break;
+					case DataTypes.BIGINT :
+						if (((Long)this.fieldValues[i]).compareTo((Long)fieldValues[i]) != 0)
+							return false;
+						break;
+					case DataTypes.TINYINT :
+						if (((Byte)this.fieldValues[i]).compareTo((Byte)fieldValues[i]) != 0)
+							return false;
+						break;
+					case DataTypes.SMALLINT :
+						if (((Short)this.fieldValues[i]).compareTo((Short)fieldValues[i]) != 0)
+							return false;
+						break;
+					case DataTypes.INTEGER :
+						if (((Integer)this.fieldValues[i]).compareTo((Integer)fieldValues[i]) != 0)
+							return false;
+						break;
+					case DataTypes.CHAR :
+					case DataTypes.VARCHAR :
+						if (((String)this.fieldValues[i]).compareTo((String)fieldValues[i]) != 0)
+							return false;
+						break;
+					case DataTypes.BINARY :
+						if (!Arrays.equals((byte[])this.fieldValues[i], (byte[])fieldValues[i]))
+							return false;
+						break;
+					default :
+						logger.error( "Type can't be converted : TypeID : " + fieldTypes[ i ] );
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+
+
+
+
 
 	/**
 	 * @return
