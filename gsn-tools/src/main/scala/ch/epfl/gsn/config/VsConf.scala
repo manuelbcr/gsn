@@ -76,13 +76,15 @@ object ProcessingConf extends Conf{
   )
 }
 
-case class FieldConf(name:String,dataType:String,description:String,unit:Option[String])
+case class FieldConf(name:String,dataType:String,description:String,unit:Option[String],index:Option[String])
 object FieldConf {
   def create(xml:Node)=FieldConf(
       xml \@ "name",
       xml \@ "type",
       xml.text,
-      xml.attribute("unit").map(_.toString))        
+      xml.attribute("unit").map(_.toString),
+      xml.attribute("index").map(_.toString)
+      )        
 }
    
 case class WebInputConf(password:String,commands:Seq[WebInputCommand])
