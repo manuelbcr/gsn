@@ -55,6 +55,9 @@ public class BeansInitializer {
 	  f.setName(fc.name().toLowerCase());
 	  f.setType(fc.dataType());
 	  f.setDescription(fc.description());
+	  if(fc.index().isDefined())
+		f.setIndex(fc.index().get());
+	  else f.setIndex("false");
 	  if (fc.unit().isDefined())
 	    f.setUnit(fc.unit().get());
 	  else f.setUnit(null);
