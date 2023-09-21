@@ -129,21 +129,21 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 				
 				if (rs.next()) {
 					StringBuilder query = new StringBuilder();
-					query.append("select max(GSN_TIMESTAMP) from ").append(addressBean.getVirtualSensorName());
+					query.append("select max(timed) from ").append(addressBean.getVirtualSensorName());
 					Main.getStorage(vsConfig).close(rs);
 					rs = Main.getStorage(vsConfig).executeQueryWithResultSet(query, conn);
 					if (rs.next()) {
 						long max_time = rs.getLong(1);
 						if(startTimeLong < max_time){
 							startTimeLong = max_time;
-							logger.info("newest local GSN_TIMESTAMP: " + max_time + " is newer than requested start time: " + startTime + " -> using GSN_TIMESTAMP as start time");
+							logger.info("newest local timed: " + max_time + " is newer than requested start time: " + startTime + " -> using timed as start time");
 							requestString = requestString + "?" + startTimeLong;
 						}else{
-							logger.info("newest local GSN_TIMESTAMP: " + max_time + " is older than requested start time: " + startTime + " -> using start time");
+							logger.info("newest local timed: " + max_time + " is older than requested start time: " + startTime + " -> using start time");
 							requestString = requestString + "?" + startTime;
 						}
 					}else{
-						logger.info("column GSN_TIMESTAMP does not exits -> using start time " + startTime);
+						logger.info("column timed does not exits -> using start time " + startTime);
 						requestString = requestString + "?" + startTime;
 					}
 				}else{
