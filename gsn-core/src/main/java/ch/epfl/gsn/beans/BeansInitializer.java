@@ -55,6 +55,9 @@ public class BeansInitializer {
 	  f.setName(fc.name().toLowerCase());
 	  f.setType(fc.dataType());
 	  f.setDescription(fc.description());
+	  if(fc.index().isDefined())
+		f.setIndex(fc.index().get());
+	  else f.setIndex("false");
 	  if (fc.unit().isDefined())
 	    f.setUnit(fc.unit().get());
 	  else f.setUnit(null);
@@ -139,6 +142,7 @@ public class BeansInitializer {
 	  if (vs.processing().rate().isDefined())
 	    v.setOutputStreamRate(((Integer)vs.processing().rate().get()));
 	  v.setPriority(vs.priority());
+	  v.setInitPriority(vs.initPriority());
 	  KeyValueImp [] addr=new KeyValueImp[vs.address().size()];
       Iterable<String> keys=JavaConversions.asJavaIterable(vs.address().keys());
       int i=0;

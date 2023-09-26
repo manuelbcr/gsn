@@ -1,7 +1,7 @@
 
 lazy val commonSettings = Seq(
   organization := "ch.epfl.gsn",
-  version := "2.0.2_SNAPSHOT",
+  version := "2.0.2",
   scalaVersion := "2.11.2",
   javacOptions in (Compile, compile) ++= Seq("-source", "1.7", "-target", "1.7"),
   resolvers ++= Seq(
@@ -94,3 +94,4 @@ lazy val startAll = taskKey[Unit]("Start all the GSN modules")
 //  (re-start in core).value
 //  (run in services).value
 //}
+

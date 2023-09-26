@@ -66,6 +66,8 @@ public class VSensorConfig implements Serializable {
 
 	private int                                    priority                                  = DEFAULT_PRIORITY;
 
+	private boolean								   initPriority	                             = false;
+
 	private String                                 mainClass;
 
 	private String                                 description;
@@ -207,6 +209,13 @@ public class VSensorConfig implements Serializable {
 		return this.priority;
 	}
 
+	/**
+	 * @return Returns the initPriority.
+	 */
+	public boolean hasInitPriority( ) {
+		return this.initPriority;
+	}
+
 	public Long getLastModified ( ) {
 		return this.lastModified;
 	}
@@ -273,6 +282,13 @@ public class VSensorConfig implements Serializable {
 	 */
 	public void setPriority ( final int priority ) {
 		this.priority = priority;
+	}
+
+	/**
+	 * @param initPriority set if the file has an initPriority
+	 */
+	public void setInitPriority ( final boolean initPriority ) {
+		this.initPriority = initPriority;
 	}
 
 	public String [ ] getAddressingKeys ( ) {

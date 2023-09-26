@@ -61,6 +61,7 @@ public class ContainerConfig {
 	public static final int               DEFAULT_MONITOR_PORT             = 22001;
 	public static final int               DEFAULT_ZMQ_PROXY_PORT           = 22022;
 	public static final int               DEFAULT_ZMQ_META_PORT            = 22023;
+	public static final int               DEFAULT_SSL_PORT                 = 8443;
 	public static final boolean           DEFAULT_ZMQ_ENABLED               = false;
     
 	public static final String            FIELD_NAME_monitorPortNo         = "monitorPort";
@@ -84,6 +85,12 @@ public class ContainerConfig {
 	private boolean                       isdatabaseSystemInitialzied      = false;
 	protected String                      timeFormat                       = "";
 	private String timeZone = DEFAULT_TIME_ZONE;
+	
+	private String sslKeyStorePassword;
+	private int                           sslPort                           = -1;
+	protected int                         containerPort                     = DEFAULT_MONITOR_PORT;
+	private static final String   		  DEFAULT_SSL_KEYSTORE_PWD			= "changeit";
+	private AccessControlConfig accessControl;
 	public ContainerConfig(){
 		
 	}
@@ -253,4 +260,20 @@ public class ContainerConfig {
 	public TimeZone getTimeZone() {
 		return TimeZone.getTimeZone(timeZone);
 	}
+
+	public String getSSLKeyStorePassword(){
+		return sslKeyStorePassword == null ? DEFAULT_SSL_KEYSTORE_PWD : sslKeyStorePassword;
+	}
+	public int getSSLPort(){
+		return sslPort;
+	}
+	public int getContainerPort ( ) {
+		return this.containerPort;
+	}
+	
+	public AccessControlConfig getAcConfig() {
+    	if (accessControl == null)
+    		accessControl = new AccessControlConfig();
+        return accessControl;
+    }
 }
