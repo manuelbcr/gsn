@@ -30,7 +30,7 @@ publishTo &lt;&lt;= version { v: String =&gt;
   publishArtifact in (Test) := false,
   publishArtifact in (Compile, packageBin) := true,
   publishArtifact in (Compile, packageSrc) := true,
-  publishArtifact in (Compile, packageDoc) := true,
+  publishArtifact in (Compile, packageDoc) := false,
   pomIncludeRepository := { x => false },
   pomExtra := (
   <url>http://gsn.epfl.ch</url>

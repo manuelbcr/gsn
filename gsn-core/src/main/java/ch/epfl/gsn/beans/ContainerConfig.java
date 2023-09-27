@@ -91,11 +91,15 @@ public class ContainerConfig {
 	protected int                         containerPort                     = DEFAULT_MONITOR_PORT;
 	private static final String   		  DEFAULT_SSL_KEYSTORE_PWD			= "changeit";
 	private AccessControlConfig accessControl;
+
+	private int 						  maxDBConnections;
+	private int 						  maxSlidingDBConnections;
+
 	public ContainerConfig(){
 		
 	}
 	
-	public ContainerConfig(int port, String timeFormat, boolean zmqEnabled,int zmqProxyPort,int zmqMetaPort,StorageConfig storage,SlidingConfig slide){
+	public ContainerConfig(int port, String timeFormat, boolean zmqEnabled,int zmqProxyPort,int zmqMetaPort,StorageConfig storage,SlidingConfig slide, int maxDBConnections,int maxSlidingDBConnections){
 		this.monitorPort=port;
 		this.timeFormat=timeFormat;
 		this.zmqEnabled=zmqEnabled;
@@ -103,7 +107,8 @@ public class ContainerConfig {
 		this.zmqMetaPort=zmqMetaPort;
 		this.storage=storage;
 		this.sliding=slide;				
-				
+		this.maxDBConnections = maxDBConnections;
+		this.maxSlidingDBConnections = maxSlidingDBConnections;		
 				
 	}
 
@@ -132,6 +137,15 @@ public class ContainerConfig {
 		this.monitorPort = newValue;
 	}
 	
+	public void setMaxDBConnections( int maxDBConnections ) {
+		this.maxDBConnections = maxDBConnections;
+	}
+	
+	public void setMaxSlidingDBConnections( int maxSlidingDBConnections ) {
+		this.maxSlidingDBConnections = maxSlidingDBConnections;
+	}
+
+	
 	/**
 	 * @return true if the zmq data distribution is enabled.
 	 */
@@ -158,6 +172,20 @@ public class ContainerConfig {
 	 */
 	public int getStoragePoolSize ( ) {
 		return this.storagePoolSize;
+	}
+
+	/**
+	 * @return Returns the maxDBConnections.
+	 */
+	public int getMaxDBConnections ( ) {
+		return this.maxDBConnections;
+	}
+	
+	/**
+	 * @return Returns the maxSlidingDBConnections.
+	 */
+	 public int getMaxSlidingDBConnections ( ) {
+		return this.maxSlidingDBConnections;
 	}
 
 	public static ContainerConfig getConfigurationFromFile (String containerConfigurationFileName) throws FileNotFoundException {
