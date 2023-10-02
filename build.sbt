@@ -2,8 +2,8 @@
 lazy val commonSettings = Seq(
   organization := "ch.epfl.gsn",
   version := "2.0.2",
-  scalaVersion := "2.11.2",
-  javacOptions in (Compile, compile) ++= Seq("-source", "1.7", "-target", "1.7"),
+  scalaVersion := "2.12.4",
+  javacOptions in (Compile, compile) ++= Seq("-source", "11", "-target", "11"),
   resolvers ++= Seq(
     DefaultMavenRepository,
     "Typesafe Repository" at "https://repo.maven.apache.org/maven2/",
@@ -26,7 +26,7 @@ publishTo &lt;&lt;= version { v: String =&gt;
 
   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-sonatype"),
   publishMavenStyle := true,
-  publishArtifact in (Compile) := false,
+  publishArtifact in (Compile) := true,
   publishArtifact in (Test) := false,
   publishArtifact in (Compile, packageBin) := true,
   publishArtifact in (Compile, packageSrc) := true,
@@ -62,7 +62,7 @@ publishTo &lt;&lt;= version { v: String =&gt;
 usePgpKeyHex("DC900B5F")
 
 lazy val root = (project in file(".")).
-  aggregate(core, tools, extra, services)
+  aggregate(core, tools)
 
 
 lazy val core = (project in file("gsn-core")).
@@ -70,14 +70,14 @@ lazy val core = (project in file("gsn-core")).
   settings(commonSettings: _*).
   enablePlugins(JavaServerAppPackaging, DebianPlugin)
 
-lazy val extra = (project in file("gsn-extra")).
-  dependsOn(core).
-  settings(commonSettings: _*)
+//lazy val extra = (project in file("gsn-extra")).
+//  dependsOn(core).
+//  settings(commonSettings: _*)
 
-lazy val services = (project in file("gsn-services")).
-  dependsOn(tools).
-  settings(commonSettings: _*).
-  enablePlugins(PlayScala, DebianPlugin)
+//lazy val services = (project in file("gsn-services")).
+//  dependsOn(tools,core).
+//  settings(commonSettings: _*).
+//  enablePlugins(PlayScala, DebianPlugin)
 
 lazy val tools = (project in file("gsn-tools")).
   settings(commonSettings: _*)

@@ -82,6 +82,10 @@ import ch.epfl.gsn.utils.ValidityTools;
 import ch.epfl.gsn.vsensor.SQLValidatorIntegration;
 import ch.epfl.gsn.wrappers.WrappersUtil;
 
+//import java.sql.Connection;
+//import java.sql.DriverManager;
+//import java.sql.SQLException;
+
 
 
 public final class Main {
@@ -311,6 +315,22 @@ public final class Main {
 		ContainerConfig conf=BeansInitializer.container(gsn);
 		Class.forName(conf.getStorage().getJdbcDriver());
 		conf.setContainerConfigurationFileName (  gsnXMLpath );
+		//return conf;
+		 // Create a JDBC connection using the URL approach
+		//String jdbcUrl = conf.getStorage().getJdbcURL(); // Get the JDBC URL from your configuration
+		//String username = conf.getStorage().getJdbcUsername(); // Get the username
+		//String password = conf.getStorage().getJdbcPassword(); // Get the password
+		
+		//try{
+			//Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+			// Perform any necessary operations with the connection
+			// ...
+		//} catch (SQLException e) {
+		//	logger.error("Error creating database connection: " + e.getMessage());
+			// Handle the exception as needed
+		//}
+		
+		//conf.setContainerConfigurationFileName(gsnXMLpath);
 		return conf;
 	}
 

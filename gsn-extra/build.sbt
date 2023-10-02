@@ -4,7 +4,7 @@ name := "gsn-extra"
 
 libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.2.1",
-  "org.scala-lang.modules" % "scala-xml_2.11" % "1.0.2",
+  "org.scala-lang.modules" %% "scala-xml" % "1.0.5",
   "com.h2database" % "h2" % "1.4.181",
   "mysql" % "mysql-connector-java" % "5.1.29",
   "org.postgresql" % "postgresql" % "9.3-1102-jdbc41",
@@ -49,16 +49,16 @@ libraryDependencies ++= Seq(
   "com.esotericsoftware.kryo" % "kryo" % "2.23.0",
   "org.zeromq" % "jeromq" % "0.3.0",
   "junit" % "junit" % "4.11" %  "test",
-  "ch.epfl.gsn" % "gsn-core" % "2.0.1",
+  //"ch.epfl.gsn" % "gsn-core" % "2.0.1",
   "org.easymock" % "easymockclassextension" % "3.2" % "test",
   "org.httpunit" % "httpunit" % "1.7.2" % "test" exclude("xerces","xercesImpl") exclude("xerces","xmlParserAPIs") exclude("javax.servlet","servlet-api")
 )
 
-unmanagedJars in Compile <++= baseDirectory map { base =>
-    val libs = base / "lib"
-    val option = libs / "optional"
-    val dirs = (option / "legacy") +++ (option / "tinyos") +++ (option / "numerical")   
-    (dirs ** "*.jar").classpath
+unmanagedJars in Compile ++= {
+  val libs = (baseDirectory in ThisBuild).value / "lib"
+  val option = libs / "optional"
+  val dirs = (option / "legacy") +++ (option / "tinyos") +++ (option / "numerical")
+  (dirs ** "*.jar").classpath
 }
 
 scalacOptions += "-deprecation"

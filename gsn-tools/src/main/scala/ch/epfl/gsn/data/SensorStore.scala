@@ -39,6 +39,7 @@ import reactivemongo.bson.BSON
 import reactivemongo.api.MongoConnection
 import org.joda.time.Period
 
+
 object dsReg{
   val dsss=new collection.mutable.HashMap[String,StorageConf]
   
@@ -48,7 +49,8 @@ class SensorStore(ds:DataStore) extends Actor{
   val log = Logging(context.system, this)
   val confWatch=context.actorOf(Props[ConfWatcher], "ConfWatcher")
     
-  val driver = new MongoDriver(context.system)
+  //val driver = new MongoDriver(context.system)
+  val driver = new MongoDriver()
   val connection:MongoConnection = null//driver.connection(List("localhost"))
   
   val sensors=new collection.mutable.HashMap[String,Sensor]

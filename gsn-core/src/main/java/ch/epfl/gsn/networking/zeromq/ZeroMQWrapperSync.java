@@ -116,12 +116,8 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 		long startTimeLong = 0;
 
 		if (startTime != null && startTime.trim().length() != 0 ){
-			if(startTime.equals("continue")){
-				startTimeLong = 0;
-			} else {
-				startTimeLong = Long.parseLong(startTime);
-			}
-			
+			startTimeLong = Long.parseLong(startTime);
+
 			VSensorConfig vsConfig = addressBean.getVirtualSensorConfig();
 			Connection conn = null;
 			ResultSet rs = null;
@@ -138,9 +134,7 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 					rs = Main.getStorage(vsConfig).executeQueryWithResultSet(query, conn);
 					if (rs.next()) {
 						long max_time = rs.getLong(1);
-						if(startTime.equals("continue")){
-							requestString = requestString + "?" + max_time; 
-						} else if(startTimeLong < max_time){
+						if(startTimeLong < max_time){
 							startTimeLong = max_time;
 							logger.info("newest local timed: " + max_time + " is newer than requested start time: " + startTime + " -> using timed as start time");
 							requestString = requestString + "?" + startTimeLong;
@@ -150,21 +144,11 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 						}
 					}else{
 						logger.info("column timed does not exits -> using start time " + startTime);
-						if(startTime.equals("continue")){
-							requestString = requestString;
-						} else {
-							requestString = requestString + "?" + startTime;
-						}
-						
+						requestString = requestString + "?" + startTime;
 					}
 				}else{
 					logger.info("Table '" + addressBean.getVirtualSensorName() + "' doesn't exist => collecting data from " + startTime);
-					if(startTime.equals("continue")){
-						requestString = requestString;
-					} else {
-						requestString = requestString + "?" + startTime;
-					}
-					
+					requestString = requestString + "?" + startTime;
 				}
 			} catch (SQLException e) {
 				logger.error(e.getMessage(), e);
@@ -221,4 +205,3 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 	   }
 
 }
-
