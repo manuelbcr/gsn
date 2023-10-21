@@ -25,7 +25,7 @@
 */
 package controllers.gsn.api
 
-import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
 import scala.concurrent.Promise
@@ -35,15 +35,14 @@ import akka.actor._
 import akka.pattern.ask
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import org.zeromq.ZMQ
+//import org.zeromq.ZMQ
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.{Output => kOutput}
 
 import play.Logger
 import play.api.mvc._
 import play.api.Play.current
-import play.api.libs.concurrent.Akka
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+//import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.JsValue
 import play.api.libs.json.{Json => PlayJson}
 import play.api.http.ContentTypes
@@ -51,7 +50,6 @@ import play.api.http.ContentTypes
 import scalaoauth2.provider.AuthInfoRequest
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatterBuilder
-import controllers.gsn.Global
 import ch.epfl.gsn.config.ConfWatcher
 import ch.epfl.gsn.data._
 import ch.epfl.gsn.data.format._
@@ -60,19 +58,30 @@ import ch.epfl.gsn.config.GetSensorConf
 import ch.epfl.gsn.config.VsConf
 import ch.epfl.gsn.beans.StreamElement
 import play.api.Play.current
-import play.api.libs.concurrent.Akka
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+//import play.api.libs.concurrent.Akka
+//import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.mvc._
 import play.Logger
 import scala.util.Success
-import controllers.gsn.GSNDataHandler
-import controllers.gsn.APIPermissionAction
-import models.gsn.auth.User
+import models.gsn.User
 import scalaoauth2.provider.AuthInfo
 import java.io.ByteArrayOutputStream
+import play.api.mvc.InjectedController
+import javax.inject.Inject
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
+import play.api.mvc.DefaultActionBuilder
+import play.api.mvc.PlayBodyParsers
+import play.api.mvc.{Action, AnyContent, Request, Result}
+import play.api.mvc.Results._
+import service.gsn.UserProvider
+import akka.pattern.ask
+import akka.util.Timeout
+import com.feth.play.module.pa.PlayAuthenticate
+import controllers.gsn.GSNDataHandler
+import controllers.gsn.APIPermissionAction
 
-
-object SensorService extends Controller with GsnService {   
+class SensorService @Inject()(actorSystem: ActorSystem, ec: ExecutionContext,playAuth: PlayAuthenticate) extends InjectedController with GsnService {   
   val defaultMetaProps=conf.getStringList("gsn.api.defaultMetadataProps")
   
   val kryo = new Kryo()
@@ -89,33 +98,38 @@ object SensorService extends Controller with GsnService {
   */    
 
   def sensors = headings(Action.async {implicit request=>
-    Try{    
-      val format=param("format",OutputFormat,defaultFormat)    
-      val latestVals=param("latestValues",_.toBoolean,false)
-      val timeFormat=queryparam("timeFormat")
+    Try {
+      val format = param("format", OutputFormat, defaultFormat)
+      val latestVals = param("latestValues", _.toBoolean, false)
+      val timeFormat = queryparam("timeFormat")
+      
       val p=Promise[Seq[SensorData]]
-           
-      val st=Akka.system.actorSelection("/user/gsnSensorStore")
-      val q=Akka.system.actorOf(Props(new QueryActor(p)))
+      val st = actorSystem.actorSelection("/user/gsnSensorStore")
+      val neme= actorSystem.name
+      Logger.error(s"actorsystem $neme")
+      val q = actorSystem.actorOf(Props(new QueryActor(p)))
+      implicit val timeout: Timeout = Timeout(5.seconds)
       q ! GetAllSensors(latestVals,timeFormat)
-            
-      p.future.map{data =>
-        val out=format match{          
-          case Json=>JsonSerializer.ser(data,Seq(),latestVals)
-          case Csv=>CsvSerializer.ser(data, defaultMetaProps, latestVals)
-          case Xml=>XmlSerializer.ser(data, defaultMetaProps, latestVals)
-          case Shapefile=>ShapefileSerializer.ser(data,defaultMetaProps,latestVals)
+      val defaultMetaPropsScala: Seq[String] = defaultMetaProps.asScala
+      Logger.error(s"Before mapping: p.isCompleted=${p.isCompleted}, p.future.isCompleted=${p.future.isCompleted}")
+      p.future.map { data =>
+        val out = format match {
+          case Json => JsonSerializer.ser(data, Seq(), latestVals)
+          case Csv => CsvSerializer.ser(data, defaultMetaPropsScala, latestVals)
+          case Xml => XmlSerializer.ser(data, defaultMetaPropsScala, latestVals)
+          case Shapefile => ShapefileSerializer.ser(data, defaultMetaPropsScala, latestVals)
+          case _ => JsonSerializer.ser(data, Seq(), latestVals)
         }
-        result(out,format)
-      } 
-    }.recover{
-      case t=>
-        t.printStackTrace  
-        Future(BadRequest(t.getMessage))    
-    }.get  
+        result(out, format)
+      }
+    }.recover {
+      case t =>
+        t.printStackTrace
+        Future(BadRequest(t.getMessage))
+    }.get
   })
-   
-  def userInfo() = headings((APIPermissionAction(false) compose Action).async {implicit request =>
+  
+  def userInfo() = headings((APIPermissionAction(playAuth,false) compose Action).async {implicit request =>
 
      request match{
          case AuthInfoRequest(auth:AuthInfo[User],req) => Future(
@@ -124,15 +138,15 @@ object SensorService extends Controller with GsnService {
          case _ => Future(Forbidden("Page only accessible with a valid oauth token."))
      }
   })
-  
-  def uploadSensorData(sensorid:String) = headings((APIPermissionAction(true, sensorid) compose Action).async {implicit request =>
+  /*
+  def uploadSensorData(sensorid:String) = headings((APIPermissionAction(playAuth,true, sensorid) compose Action).async {implicit request =>
     Try{
       val vsname = sensorid.toLowerCase
       val data = request.body.asJson.get.toString
       val se = StreamElement.fromJSON(data)
       
       implicit val timeout = Timeout(1 seconds)
-      val q=Akka.system.actorSelection("/user/gsnSensorStore/ConfWatcher")
+      val q=actorSystem.actorSelection("/user/gsnSensorStore/ConfWatcher")
       val p = q ? GetSensorConf(sensorid)
       p.map{c => c match{
         case conf:VsConf => {
@@ -165,104 +179,91 @@ object SensorService extends Controller with GsnService {
       case t=>Future(BadRequest("{\"status\": \"error\", \"message\" : \""+t.getMessage+"\"}"))
     }.get
   })
+*/
+ 
+def sensorData(sensorid:String) = headings((APIPermissionAction(playAuth,false, sensorid) compose Action).async {implicit request =>
+  Try{
+    val vsname = sensorid.toLowerCase
+    val size: Option[Int] = queryparam("size").map(_.toInt)
+    val fieldStr: Option[String] = queryparam("fields")
+    val filterStr: Option[String] = queryparam("filter")
+    val fromStr: Option[String] = queryparam("from")
+    val toStr: Option[String] = queryparam("to")
+    val period: Option[String] = queryparam("period")
+    val timeFormat: Option[String] = queryparam("timeFormat")
+    val orderBy: Option[String] = queryparam("orderBy")
+    val order: Option[String] = queryparam("order")
+    val timeline: Option[String] = queryparam("timeline")
+    val aggFunction = queryparam("agg")
+    val aggPeriod = queryparam("aggPeriod")
+    val isoFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
+    val format = param("format", OutputFormat, defaultFormat)
+    val filters = new ArrayBuffer[String]
+    val fields: Array[String] =
+      if (!fieldStr.isDefined) Array()
+      else fieldStr.get.split(",")
+    val filterArray: Array[String] =
+      if (!filterStr.isDefined) Array()
+      else filterStr.get.split(",")
+    Logger.error("insensordata")
+    if (fromStr.isDefined) {
+      val fromMillis = if (fromStr.get.contains("+")) {
+        isoFormatter.parseDateTime(fromStr.get).getMillis
+      } else {
+        dateFormatter.parseDateTime(fromStr.get).getMillis
+      }
+      if (timeline.isDefined) {
+        filters += timeline.getOrElse("timed") + " > " + fromMillis
+      } else {
+        filters += s"timed > $fromMillis"
+      }
+    }
 
-  
-  def sensorData(sensorid:String) = headings((APIPermissionAction(false, sensorid) compose Action).async {implicit request =>
-    Try{
-      val vsname=sensorid.toLowerCase
-      val size:Option[Int]=queryparam("size").map(_.toInt)
-      val fieldStr:Option[String]=queryparam("fields")
-      val filterStr:Option[String]=queryparam("filter")
-      val fromStr:Option[String]=queryparam("from")
-      val toStr:Option[String]=queryparam("to")
-      val period:Option[String]=queryparam("period")
-      val timeFormat:Option[String]=queryparam("timeFormat")
-      val orderBy:Option[String]= queryparam("orderBy")
-      val order: Option[String]=queryparam("order")
-      val timeline: Option[String] = queryparam("timeline")
-      
-      val aggFunction=queryparam("agg")
-      val aggPeriod=queryparam("aggPeriod")
-      val isoFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
-      val format=param("format",OutputFormat,defaultFormat)        
-      val filters=new ArrayBuffer[String]
-      val fields:Array[String]=
-        if (!fieldStr.isDefined) Array() 
-        else fieldStr.get.split(",")
-      val filterArray: Array[String] = 
-        if (!filterStr.isDefined) Array() 
-        else filterStr.get.split(",")
+    if (toStr.isDefined) {
+      val toMillis = if (toStr.get.contains("+")) {
+        isoFormatter.parseDateTime(toStr.get).getMillis
+      } else {
+        dateFormatter.parseDateTime(toStr.get).getMillis
+      }
+      if (timeline.isDefined) {
+        filters += timeline.getOrElse("timed") + " < " + toMillis
+      } else {
+        filters += s"timed < $toMillis"
+      }
+    }
 
-      if (fromStr.isDefined) {
-        val fromMillis = if (fromStr.get.contains("+")) {
-          isoFormatter.parseDateTime(fromStr.get).getMillis
-        } else {
-          dateFormatter.parseDateTime(fromStr.get).getMillis
-        }
-        if(timeline.isDefined){
-          filters += timeline.getOrElse("timed")+" > " + fromMillis
-        } else {
-          filters += s"timed > $fromMillis"
-        }
-      }
+    val conds = XprConditions.parseConditions(filterArray).recover {
+      case e => throw new IllegalArgumentException("illegal conditions in filter: " + e.getMessage())
+    }.get.map(_.toString)
 
-      if (toStr.isDefined) {
-        val toMillis = if (toStr.get.contains("+")) {
-          isoFormatter.parseDateTime(toStr.get).getMillis
-        } else {
-          dateFormatter.parseDateTime(toStr.get).getMillis
-        }
-        if(timeline.isDefined){
-          filters += timeline.getOrElse("timed")+" < " + toMillis
-         } else {
-          filters += s"timed < $toMillis"
-         }
+    val agg = aggFunction.map(f => Aggregation(f, aggPeriod.get))
+    val p = Promise[Seq[SensorData]]
+    val q = actorSystem.actorOf(Props(new QueryActor(p)))
+    Logger.error("insensordata")
+    q ! GetSensorData(vsname, fields, conds ++ filters, size, timeFormat, period, agg, orderBy, order, timeline)
+
+    p.future.map { data =>
+      format match {
+        case controllers.gsn.api.Json =>
+          val pp = JsonSerializer.ser(data.head, Seq(), false)
+          Logger.debug("serialized json")
+                
+          Logger.debug("strings")
+          Ok(pp)
+        case Csv => Ok(CsvSerializer.ser(data.head, Seq(), false))
+        case _ => BadRequest("Unsupported format")
       }
-      val conds=XprConditions.parseConditions(filterArray).recover{                 
-        case e=>throw new IllegalArgumentException("illegal conditions in filter: "+e.getMessage())
-      }.get.map(_.toString)
-      val agg=aggFunction.map{f=>Aggregation(f,aggPeriod.get)}
-      val p=Promise[Seq[SensorData]]               
-      val q=Akka.system.actorOf(Props(new QueryActor(p)))
-      Logger.debug("request the query actor")
-      q ! GetSensorData(vsname,fields,conds++filters,size,timeFormat,period,agg,orderBy,order,timeline)
-      //val to=play.api.libs.concurrent.Promise.timeout(throw new Exception("bad things"), 15.second)
-      p.future.map{data=>        
-        Logger.debug("before formatting")
-                 
-        format match{
-            case controllers.gsn.api.Json=>
-              val pp=JsonSerializer.ser(data.head,Seq(),false)
-              Logger.debug("serialized json")
-              
-              Logger.debug("strings")
-              //val en=Enumerator.enumerate(top.get)
-              Ok(pp)
-            case Csv=>Ok(CsvSerializer.ser(data.head,Seq(),false))
-          }
-          
-      }.recover{
-        case t=> BadRequest(t.getMessage)
-      }
-      /*
-      val copo =Future.firstCompletedOf(Seq(p.future,to)).map{          
-        data=> 
-          format match{
-            case Json=>Ok(JsonSerializer.ser(data.head,Seq(),false))
-            case Csv=>Ok(CsvSerializer.ser(data.head,Seq(),false))
-          }
-      }.recoverWith{case e=>
-        
-        Logger.error(e.getMessage+e.getStackTrace().mkString("\n"))
-        Future(BadRequest(e.getMessage))
-      }
-      copo*/
-    }.recover{
+    }.recover {
+      case t => BadRequest("Error: " + t.getMessage)
+    }
+
+
+  }.recover{
       case t=>Future(BadRequest("Error: "+t.getMessage))
-    }.get
-  })
+  }.get
+})
 
-  
+   
   def sensorField(sensorid:String,fieldid:String) = 
     Action.async {implicit request=>
     Try{
@@ -274,7 +275,7 @@ object SensorService extends Controller with GsnService {
       val filters=new ArrayBuffer[String]
  
       val p=Promise[Seq[SensorData]]               
-      val q=Akka.system.actorOf(Props(new QueryActor(p)))
+      val q=actorSystem.actorOf(Props(new QueryActor(p)))
       
       q ! GetSensorData(sensorid,Seq(fieldid),Seq(),Some(1),None)
       p.future.map{data=>        
@@ -304,7 +305,7 @@ object SensorService extends Controller with GsnService {
       val timeFormat:Option[String]=queryparam("timeFormat")
       val format=param("format",OutputFormat,defaultFormat)            
       val p=Promise[Seq[SensorData]]               
-      val q=Akka.system.actorOf(Props(new QueryActor(p)))      
+      val q=actorSystem.actorOf(Props(new QueryActor(p)))      
       q ! GetSensor(sensorid,latestVals,timeFormat)
       //val to=play.api.libs.concurrent.Promise.timeout(throw new Exception("bad things"), 15.second)
       
@@ -313,6 +314,7 @@ object SensorService extends Controller with GsnService {
             case Json=>Ok(JsonSerializer.ser(data.head,Seq(),false))
             case Csv=>Ok(CsvSerializer.ser(data.head,Seq(),false))
             case Xml=>Ok(XmlSerializer.ser(data.head, Seq(), latestVals))
+            case _ => Ok(JsonSerializer.ser(data.head,Seq(),false))
         }          
       }.recover{
         case t=> BadRequest(t.getMessage)        
@@ -353,7 +355,7 @@ object SensorService extends Controller with GsnService {
       
       val dataset=vsnames.map{sensorid=>
         val p=Promise[Seq[SensorData]]               
-        val q=Akka.system.actorOf(Props(new QueryActor(p)))
+        val q=actorSystem.actorOf(Props(new QueryActor(p)))
       
         q ! GetSensorData(sensorid,fields,conds++filters,size,timeFormat)
         p.future.map{data=>           
@@ -368,6 +370,7 @@ object SensorService extends Controller with GsnService {
             case Json=>Ok(JsonSerializer.ser(dats,Seq(),false))
             case Csv=>Ok(CsvSerializer.serZip(dats,Seq(),false)).as("application/zip")
             case Xml=>Ok(XmlSerializer.ser(dats, Seq(), false))
+            case _ => Ok(JsonSerializer.ser(dats,Seq(),false))
         }          
       }.recover{
         case t=> BadRequest(t.getMessage)              
@@ -377,11 +380,13 @@ object SensorService extends Controller with GsnService {
     }.get
   }
 
-  def download= (APIPermissionAction(false) compose Action).async {implicit request=>
+  def download= (APIPermissionAction(playAuth,false) compose Action).async {implicit request=>
     //request.body.
     Future(Ok(""))
     
   }
+
+
   
   def result(s:Object,out:OutputFormat)={
     val headers=new ArrayBuffer[(String,String)]
@@ -400,7 +405,7 @@ object SensorService extends Controller with GsnService {
       case b:Array[Byte]=>Ok(b).withHeaders(headers:_*)
     }
   }
-  
+
   
 }
 

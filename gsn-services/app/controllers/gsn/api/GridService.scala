@@ -36,8 +36,11 @@ import akka.actor.Props
 import play.Logger
 import ch.epfl.gsn.data._
 import ch.epfl.gsn.data.format._
+import play.api.mvc.InjectedController
+import javax.inject.Inject
+import akka.actor._
 
-object GridService  extends Controller with GsnService {   
+class GridService @Inject()(actorSystem: ActorSystem) extends InjectedController with GsnService {   
   def gridData(sensorid:String) =grid(sensorid,EsriAscii)
   def gridTimeseries(sensorid:String)=grid(sensorid,Json,true)
 
@@ -68,8 +71,9 @@ object GridService  extends Controller with GsnService {
         filters+= "timed<"+dateFormatter.parseDateTime(toStr.get).getMillis
                               
       val p=Promise[Seq[SensorData]]               
-      val q=Akka.system.actorOf(Props(new QueryActor(p)))
+      val q=actorSystem.actorOf(Props(new QueryActor(p)))
       Logger.debug("request the query actor")
+      Logger.debug(s"values $vsname,$filters,$size,$timeFormat,$box,$agg,$asTimeSeries")
       q ! GetGridData(vsname,filters,size,timeFormat,box,agg,asTimeSeries)
       p.future.map{data=>        
         Logger.debug("before formatting")

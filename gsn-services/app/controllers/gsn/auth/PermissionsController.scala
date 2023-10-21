@@ -27,14 +27,15 @@ package controllers.gsn.auth
 import scala.concurrent.{Future, Promise}
 import akka.actor._
 
-import scala.concurrent.ExecutionContext.Implicits.global
+
 import play.api.mvc._
-import models.gsn.auth.{DataSource, Group, GroupDataSourceRead, GroupDataSourceWrite, SecurityRole, User, UserDataSourceRead, UserDataSourceWrite}
+import models.gsn.{DataSource, Group, GroupDataSourceRead, GroupDataSourceWrite, SecurityRole, User, UserDataSourceRead, UserDataSourceWrite}
 import views.html._
-import be.objectify.deadbolt.scala.DeadboltActions
 import security.gsn.GSNScalaDeadboltHandler
-import controllers.gsn.Global
 import javax.inject.Inject
+import com.google.inject.Singleton
+import be.objectify.deadbolt.scala.models.PatternType
+import be.objectify.deadbolt.scala.{DeadboltActions, anyOf, allOf, allOfGroup}
 
 import scala.collection.JavaConverters._
 import play.core.j.JavaHelpers
@@ -43,39 +44,61 @@ import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import ch.epfl.gsn.data._
 import providers.gsn.GSNUsernamePasswordAuthProvider
+import service.gsn.UserProvider
+import controllers.gsn.auth.Application
+import com.feth.play.module.pa.PlayAuthenticate
+import play.api.mvc.Results._
+import scala.concurrent.{ExecutionContext, Future}
       
-object PermissionsController extends Controller with DeadboltActions {
-  
-    def vs(page:Int) = Restrict(Array(LocalAuthController.ADMIN_ROLE),new GSNScalaDeadboltHandler) { Action.async { implicit request =>
-        val count = DataSource.find.findRowCount()
-        val p=Promise[Seq[SensorData]]     
-        val st=Akka.system.actorSelection("/user/gsnSensorStore")
-        val q=Akka.system.actorOf(Props(new QueryActor(p)))
-        q ! GetAllSensors(false,None)
-        p.future.map{data =>  
-            Context.current.set(JavaHelpers.createJavaContext(request))
-            data.map(s => Option(DataSource.findByValue(s.sensor.name)).getOrElse({
+import javax.inject._
+import play.api.mvc._
+
+import io.ebean.Ebean
+import org.slf4j.LoggerFactory
+
+
+@Singleton
+class PermissionsController @Inject()(actorSystem: ActorSystem, userProvider: UserProvider, deadbolt: DeadboltActions, playAuth: PlayAuthenticate)(implicit ec: ExecutionContext) {
+  private val log = LoggerFactory.getLogger(classOf[PermissionsController])
+    def vs(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { request =>
+      val count = DataSource.find.query().findCount() // Define 'count' here
+
+
+        val p = Promise[Seq[SensorData]]
+        val st = actorSystem.actorSelection("/user/gsnSensorStore")
+        val q = actorSystem.actorOf(Props(new QueryActor(p)))
+        q ! GetAllSensors(false, None)
+        log.error("after")
+
+        p.future.map { data =>
+            Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+            data.map(s => Option(DataSource.findByValue(s.sensor.name)).getOrElse {
+              log.error("iun")
               val d = new DataSource()
               d.value = s.sensor.name
               d.is_public = false
               d.save()
               d
             })
-            )
-  		      Ok(access.vslist.render(DataSource.find.setFirstRow((page - 1) * Global.pageLength).setMaxRows(Global.pageLength).findList().asScala, Group.find.findList().asScala, User.find.findList().asScala, count, page, Global.pageLength))
-		   }
-    }}
-  
-  def addgroup(page:Int) = Restrict(Array(LocalAuthController.ADMIN_ROLE),new GSNScalaDeadboltHandler) { Action { implicit request => {
+          Ok(views.html.access.vslist(DataSource.find.query().setFirstRow((page - 1) * 10).setMaxRows(10).findList().asScala, Group.find.query().findList().asScala, User.find.query().findList().asScala, count, page, 10, userProvider))
+          }(ec)
+
+    }
+
+
+
+
+
+      
+    def addgroup(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request => Future {
       //hack to work with java-style templates
-     Context.current.set(JavaHelpers.createJavaContext(request))
-     val count = Group.find.findRowCount()
+     Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+     val count = Group.find.query().findCount()
      var ret:Result = null
      Forms.groupForm.bindFromRequest.fold(
       formWithErrors => {
-        BadRequest(access.grouplist.render(Group.find.setFirstRow((page - 1) * Global.pageLength).setMaxRows(Global.pageLength).findList().asScala, User.find.findList().asScala,formWithErrors, count, page, Global.pageLength))
-      },
-      data => {
+        BadRequest(access.grouplist.render(userProvider,Group.find.query().setFirstRow((page - 1) * 10).setMaxRows(10).findList().asScala, User.find.query().findList().asScala,formWithErrors, count, page, 10))
+      },data => {
         data.action match {
               case "add" => {
                                 val newGroup = new Group()
@@ -97,139 +120,155 @@ object PermissionsController extends Controller with DeadboltActions {
                                 val g = Group.find.byId(data.id)
                                 if (g == null) ret = NotFound
                                 else {
-                                  g.users.clear               
-                                  g.saveManyToManyAssociations("users")
+                                  g.users.clear 
+                                  Ebean.update(g)              
+                                  //g.saveManyToManyAssociations("users")
                                   g.delete
                                 }
                             }
-               }
+          }
         
-        if (ret != null)  ret else Ok(access.grouplist.render(Group.find.setFirstRow((page - 1) * Global.pageLength).setMaxRows(Global.pageLength).findList().asScala,User.find.findList().asScala, Forms.groupForm, count, page, Global.pageLength))
+        if (ret != null)  ret else Ok(access.grouplist.render(userProvider,Group.find.query().setFirstRow((page - 1) * 10).setMaxRows(10).findList().asScala,User.find.query().findList().asScala, Forms.groupForm, count, page, 10))
+      })
       }
-    )
-      
-		  
-        }
-      }
-  }
+    }
+ 
+     
   
-  def addtogroup(page:Int) = Restrict(Array(LocalAuthController.ADMIN_ROLE),new GSNScalaDeadboltHandler) { Action { implicit request => {
+  
+def addtogroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request =>{
       //hack to work with java-style templates
-        Context.current.set(JavaHelpers.createJavaContext(request))
-        val count = Group.find.findRowCount()
+        Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+        val count = Group.find.query().findCount()
         val g = request.queryString.get("group_id").map { x => Group.find.byId(x.head.toLong) }
         val u = request.queryString.get("user_id").map { x => User.find.byId(x.head.toLong) }
 
-        u.fold(BadRequest("Unknown user"))(user => {
-            g.fold(BadRequest("Unknown group"))(group => {
+        u.fold(Future.successful(BadRequest("Unknown user")))( user => {
+            g.fold(Future.successful(BadRequest("Unknown group")))( group => {
                 group.users.add(user)
-                group.saveManyToManyAssociations("users")
-                Ok("OK")
+                group.update()
+                Future.successful(Ok("OK"))
             })
         })   
         }
-      }
-  }
+    }
   
-  def removefromgroup(page:Int) = Restrict(Array(LocalAuthController.ADMIN_ROLE),new GSNScalaDeadboltHandler) { Action { implicit request => {
+
+
+def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request =>{
       //hack to work with java-style templates
-     Context.current.set(JavaHelpers.createJavaContext(request))
-     val count = Group.find.findRowCount()
+     Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+     val count = Group.find.query().findCount()
         val g = request.queryString.get("group_id").map { x => Group.find.byId(x.head.toLong) }
         val u = request.queryString.get("user_id").map { x => User.find.byId(x.head.toLong) }
 
-        u.fold(BadRequest("Unknown user"))(user => {
-            g.fold(BadRequest("Unknown group"))(group => {
+        u.fold(Future.successful(BadRequest("Unknown user")))( user => {
+            g.fold(Future.successful(BadRequest("Unknown group")))( group => {
                 group.users.remove(user)
-                group.saveManyToManyAssociations("users")
-                Ok("OK")
+                group.update()
+                Future.successful(Ok("OK"))
             })
         })   
         }
-      }
-  }
+    }
   
-  def groups(page:Int) = Restrict(Array(LocalAuthController.ADMIN_ROLE),new GSNScalaDeadboltHandler) { Action.async { implicit request => Future {
-        //hack to work with java-style templates
-        Context.current.set(JavaHelpers.createJavaContext(request))
-        val count = Group.find.findRowCount()
-  		  Ok(access.grouplist.render(Group.find.setFirstRow((page - 1) * Global.pageLength).setMaxRows(Global.pageLength).findList().asScala,User.find.findList().asScala, Forms.groupForm, count, page, Global.pageLength))
-		  }
-      }
-  }
 
-  def users(page:Int) = Restrict(Array(LocalAuthController.ADMIN_ROLE),new GSNScalaDeadboltHandler) { Action.async { implicit request => Future {
-        //hack to work with java-style templates
-        Context.current.set(JavaHelpers.createJavaContext(request))
-        val count = User.find.findRowCount()
-  		  Ok(access.userlist.render(User.find.setFirstRow((page - 1) * Global.pageLength).setMaxRows(Global.pageLength).findList().asScala, SecurityRole.find.findList().asScala, count, page, Global.pageLength))
-		  }
-      }
-  }
 
-  def deleteuser(page:Int) = Restrict(Array(LocalAuthController.ADMIN_ROLE),new GSNScalaDeadboltHandler) { Action { implicit request => {
+  def groups(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request => Future {
+        //hack to work with java-style templates
+        Context.current.set(JavaHelpers.createJavaContext(request, JavaHelpers.createContextComponents()))
+        val count = Group.find.query().findCount()
+  		  
+        Ok(access.grouplist.render(
+          userProvider,
+          Group.find.query().setFirstRow((page - 1) * 10).setMaxRows(10).findList().asScala,
+          User.find.query().findList().asScala,
+          Forms.groupForm,
+          count,
+          page,
+          10
+        ))
+		}
+  }
+  def users(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request => Future {
+        //hack to work with java-style templates
+        Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+        val count = User.find.query().findCount()
+  		  Ok(access.userlist.render(User.find.query().setFirstRow((page - 1) * 10).setMaxRows(10).findList().asScala, SecurityRole.find.query().findList().asScala, count, page, 10,userProvider))
+		  }
+    }
+  
+
+  def deleteuser(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request =>  {
     //hack to work with java-style templates
-    Context.current.set(JavaHelpers.createJavaContext(request))
-    val count = User.find.findRowCount()
+    Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+    val count = User.find.query().findCount()
     val u = request.queryString.get("user_id").map { x => User.find.byId(x.head.toLong) }
 
-    u.fold(BadRequest("Unknown user"))(user => {
+    u.fold(Future.successful(BadRequest("Unknown user")))(user => {
       //cleanup all references
       user.groups.clear
-      user.saveManyToManyAssociations("groups")
+      //user.saveManyToManyAssociations("groups")
       user.permissions.clear
-      user.saveManyToManyAssociations("permissions")
+      //user.saveManyToManyAssociations("permissions")
       user.roles.clear
-      user.saveManyToManyAssociations("roles")
+      //user.saveManyToManyAssociations("roles")
       user.trusted_clients.clear()
-      user.saveManyToManyAssociations("trusted_clients")
+      //user.saveManyToManyAssociations("trusted_clients")
+      Ebean.update(user)
       user.delete
-      Ok("OK")
+      Future.successful(Ok("OK"))
     })
-  }}}
+  }}
   
-  def addrole(page:Int) = Restrict(Array(LocalAuthController.ADMIN_ROLE),new GSNScalaDeadboltHandler) { Action { implicit request => {
+  def addrole(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request => {
       //hack to work with java-style templates
-     Context.current.set(JavaHelpers.createJavaContext(request))
-        val count = User.find.findRowCount()
+     Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+        val count = User.find.query().findCount()
         val r = request.queryString.get("role_id").map { x => SecurityRole.find.byId(x.head.toLong) }
         val u = request.queryString.get("user_id").map { x => User.find.byId(x.head.toLong) }
 
-        u.fold(BadRequest("Unknown user"))(user => {
-            r.fold(BadRequest("Unknown role"))(role => {
+        u.fold(Future.successful(BadRequest("Unknown user")))(user => {
+            r.fold(Future.successful(BadRequest("Unknown role")))(role => {
                 user.roles.add(role)
-                user.saveManyToManyAssociations("roles")
-                Ok("OK")
+                Ebean.update(user)
+                //user.saveManyToManyAssociations("roles")
+                Future.successful(Ok("OK"))
             })
         })
      }
   }
-  }
-  
-  def removerole(page:Int) = Restrict(Array(LocalAuthController.ADMIN_ROLE),new GSNScalaDeadboltHandler) { Action { implicit request => {
+
+
+   def removerole(page:Int) =deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request => {
       //hack to work with java-style templates
-     Context.current.set(JavaHelpers.createJavaContext(request))
-     val count = User.find.findRowCount()
+     Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+     val count = User.find.query().findCount()
         val r = request.queryString.get("role_id").map { x => SecurityRole.find.byId(x.head.toLong) }
         val u = request.queryString.get("user_id").map { x => User.find.byId(x.head.toLong) }
 
-        u.fold(BadRequest("Unknown user"))(user => {
-            r.fold(BadRequest("Unknown role"))(role => {
+        u.fold(Future.successful(BadRequest("Unknown user")))(user => {
+            r.fold(Future.successful(BadRequest("Unknown role")))(role => {
                 user.roles.remove(role)
-                user.saveManyToManyAssociations("roles")
-                Ok("OK")
+                Ebean.update(user)
+                Future.successful(Ok("OK"))
             })
         })   
         }
-      }
   }
   
-  def addtovs(page:Int) = Restrict(Array(LocalAuthController.ADMIN_ROLE),new GSNScalaDeadboltHandler) { Action { implicit request => {
+
+
+  
+
+  
+  
+  def addtovs(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request => {
       //hack to work with java-style templates
-      Context.current.set(JavaHelpers.createJavaContext(request))
-      val count = DataSource.find.findRowCount()
+      Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+      val count = DataSource.find.query().findCount()
       val v = request.queryString.get("vs_id").map { x => DataSource.find.byId(x.head.toLong) }
-      v.fold(BadRequest("Unknown Virtual Sensor"))(vs => {
+      v.fold(Future.successful(BadRequest("Unknown Virtual Sensor")))(vs => {
           request.queryString.get("id").map {x => x.head match {
               case s if s.startsWith("ur") => {
                   val uds = new UserDataSourceRead()
@@ -260,18 +299,18 @@ object PermissionsController extends Controller with DeadboltActions {
                   vs.save()
               }
           }}
-          Ok("OK")
+          Future.successful(Ok("OK"))
         })   
         }
       }
-  }
   
-  def removefromvs(page:Int) = Restrict(Array(LocalAuthController.ADMIN_ROLE),new GSNScalaDeadboltHandler) { Action { implicit request => {
+  
+    def removefromvs(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request => {
       //hack to work with java-style templates
-      Context.current.set(JavaHelpers.createJavaContext(request))
-      val count = DataSource.find.findRowCount()
+      Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+      val count = DataSource.find.query().findCount()
       val v = request.queryString.get("vs_id").map { x => DataSource.find.byId(x.head.toLong) }
-      v.fold(BadRequest("Unknown Virtual Sensor"))(vs => {
+      v.fold(Future.successful(BadRequest("Unknown Virtual Sensor")))(vs => {
           request.queryString.get("id").map {x => x.head match {
              case s if s.startsWith("ur") => {
                   val uds = UserDataSourceRead.findByBoth(User.find.byId(s.substring(2).toLong), vs)
@@ -294,11 +333,14 @@ object PermissionsController extends Controller with DeadboltActions {
                   vs.save()
               }
           }}
-          Ok("OK")
+          Future.successful(Ok("OK"))
         })   
-        }
-      }
-  }
-
+      }}
+  
+      
 }
+
+
+
+
 

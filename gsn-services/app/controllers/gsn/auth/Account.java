@@ -1,51 +1,27 @@
-/**
-* Global Sensor Networks (GSN) Source Code
-* Copyright (c) 2006-2016, Ecole Polytechnique Federale de Lausanne (EPFL)
-* 
-* This file is part of GSN.
-* 
-* GSN is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-* 
-* GSN is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-* 
-* You should have received a copy of the GNU General Public License
-* along with GSN.  If not, see <http://www.gnu.org/licenses/>.
-* 
-* File: app/controllers/gsn/auth/Account.java
-*
-* @author Julien Eberle
-*
-*/
 package controllers.gsn.auth;
 
-import models.gsn.auth.User;
-import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.Group;
+import be.objectify.deadbolt.java.actions.Restrict;
 import be.objectify.deadbolt.java.actions.SubjectPresent;
-
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.user.AuthUser;
-
+import models.gsn.User;
 import play.data.Form;
+import play.data.FormFactory;
 import play.data.format.Formats.NonEmpty;
 import play.data.validation.Constraints.MinLength;
 import play.data.validation.Constraints.Required;
-import play.i18n.Messages;
+import play.i18n.MessagesApi;
 import play.mvc.Controller;
 import play.mvc.Result;
 import providers.gsn.GSNUsernamePasswordAuthProvider;
 import providers.gsn.GSNUsernamePasswordAuthUser;
+import service.gsn.UserProvider;
 import views.html.account.*;
 
-import controllers.gsn.auth.routes;
+import javax.inject.Inject;
 
-import static play.data.Form.form;
+import controllers.gsn.auth.routes;
 
 public class Account extends Controller {
 
@@ -92,13 +68,12 @@ public class Account extends Controller {
 
 		public String validate() {
 			if (password == null || !password.equals(repeatPassword)) {
-				return Messages
-						.get("playauthenticate.change_password.error.passwords_not_same");
+				return "playauthenticate.change_password.error.passwords_not_same";
 			}
 			return null;
 		}
 	}
-	
+
 	public static class EditProfile {
 		@Required
 		public String firstname;
@@ -129,179 +104,200 @@ public class Account extends Controller {
 		}
 	}
 
-	private static final Form<Accept> ACCEPT_FORM = form(Accept.class);
-	private static final Form<Account.PasswordChange> PASSWORD_CHANGE_FORM = form(Account.PasswordChange.class);
-	private static final Form<Account.EditProfile> EDIT_PROFILE_FORM = form(Account.EditProfile.class);
+	private final Form<Accept> ACCEPT_FORM;
+	private final Form<Account.PasswordChange> PASSWORD_CHANGE_FORM;
+	private final Form<Account.EditProfile> EDIT_PROFILE_FORM;
 
-	@SubjectPresent
-	public static Result link() {
-		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		return ok(link.render());
+	private final PlayAuthenticate auth;
+	private final UserProvider userProvider;
+	private final GSNUsernamePasswordAuthProvider gsnUsrPaswProvider;
+
+	private final MessagesApi msg;
+
+	@Inject
+	public Account(final PlayAuthenticate auth, final UserProvider userProvider,
+				   final GSNUsernamePasswordAuthProvider gsnUsrPaswProvider,
+				   final FormFactory formFactory, final MessagesApi msg) {
+		this.auth = auth;
+		this.userProvider = userProvider;
+		this.gsnUsrPaswProvider = gsnUsrPaswProvider;
+
+		this.ACCEPT_FORM = formFactory.form(Accept.class);
+		this.PASSWORD_CHANGE_FORM = formFactory.form(Account.PasswordChange.class);
+		this.EDIT_PROFILE_FORM = formFactory.form(Account.EditProfile.class);
+		this.msg = msg;
 	}
 
-	@Restrict(@Group(LocalAuthController.USER_ROLE))
-	public static Result verifyEmail() {
+	@SubjectPresent
+	public Result link() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final User user = LocalAuthController.getLocalUser(session());
+		return ok(link.render(this.userProvider, this.auth));
+	}
+
+	@Restrict(@Group(Application.USER_ROLE))
+	public Result verifyEmail() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final User user = this.userProvider.getUser(session());
 		if (user.emailValidated) {
 			// E-Mail has been validated already
-			flash(LocalAuthController.FLASH_MESSAGE_KEY,
-					Messages.get("playauthenticate.verify_email.error.already_validated"));
+			flash(Application.FLASH_MESSAGE_KEY,
+					this.msg.preferred(request()).at("playauthenticate.verify_email.error.already_validated"));
 		} else if (user.email != null && !user.email.trim().isEmpty()) {
-			flash(LocalAuthController.FLASH_MESSAGE_KEY, Messages.get(
+			flash(Application.FLASH_MESSAGE_KEY, this.msg.preferred(request()).at(
 					"playauthenticate.verify_email.message.instructions_sent",
 					user.email));
-			GSNUsernamePasswordAuthProvider.getProvider()
-					.sendVerifyEmailMailingAfterSignup(user, ctx());
+			this.gsnUsrPaswProvider.sendVerifyEmailMailingAfterSignup(user, ctx());
 		} else {
-			flash(LocalAuthController.FLASH_MESSAGE_KEY, Messages.get(
+			flash(Application.FLASH_MESSAGE_KEY, this.msg.preferred(request()).at(
 					"playauthenticate.verify_email.error.set_email_first",
 					user.email));
 		}
-		return redirect(routes.LocalAuthController.profile());
+		return redirect(routes.Application.profile());
 	}
 
-	@Restrict(@Group(LocalAuthController.USER_ROLE))
-	public static Result changePassword() {
+	@Restrict(@Group(Application.USER_ROLE))
+	public Result editProfile() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final User u = LocalAuthController.getLocalUser(session());
+		final User u = this.userProvider.getUser(session());
 
 		if (!u.emailValidated) {
-			return ok(unverified.render());
+			return ok(unverified.render(this.userProvider));
 		} else {
-			return ok(password_change.render(PASSWORD_CHANGE_FORM));
+			return ok(edit_profile.render(this.userProvider, EDIT_PROFILE_FORM.fill(new EditProfile(u.firstName, u.lastName))));
 		}
 	}
 
-	@Restrict(@Group(LocalAuthController.USER_ROLE))
-	public static Result doChangePassword() {
-		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final Form<Account.PasswordChange> filledForm = PASSWORD_CHANGE_FORM
-				.bindFromRequest();
-		if (filledForm.hasErrors()) {
-			// User did not select whether to link or not link
-			return badRequest(password_change.render(filledForm));
-		} else {
-			final User user = LocalAuthController.getLocalUser(session());
-			final String newPassword = filledForm.get().password;
-			user.changePassword(new GSNUsernamePasswordAuthUser(newPassword),
-					true);
-			flash(LocalAuthController.FLASH_MESSAGE_KEY,
-					Messages.get("playauthenticate.change_password.success"));
-			return redirect(routes.LocalAuthController.profile());
-		}
-	}
-	
-	@Restrict(@Group(LocalAuthController.USER_ROLE))
-	public static Result editProfile() {
-		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final User u = LocalAuthController.getLocalUser(session());
-
-		if (!u.emailValidated) {
-			return ok(unverified.render());
-		} else {
-			return ok(edit_profile.render(EDIT_PROFILE_FORM.fill(new EditProfile(u.firstName, u.lastName))));
-		}
-	}
-
-	@Restrict(@Group(LocalAuthController.USER_ROLE))
-	public static Result doEditProfile() {
+	@Restrict(@Group(Application.USER_ROLE))
+	public Result doEditProfile() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		final Form<Account.EditProfile> filledForm = EDIT_PROFILE_FORM
 				.bindFromRequest();
 		if (filledForm.hasErrors()) {
 			// User did not select whether to link or not link
-			return badRequest(edit_profile.render(filledForm));
+			return badRequest(edit_profile.render(this.userProvider, filledForm));
 		} else {
-			final User user = LocalAuthController.getLocalUser(session());
+			final User user = this.userProvider.getUser(session());
 			user.firstName = filledForm.get().firstname;
 			user.lastName = filledForm.get().lastname;
 			user.update();
-			flash(LocalAuthController.FLASH_MESSAGE_KEY,
-					Messages.get("playauthenticate.edit_profile.success"));
-			return redirect(routes.LocalAuthController.profile());
+			flash(Application.FLASH_MESSAGE_KEY,
+					this.msg.preferred(request()).at("playauthenticate.edit_profile.success"));
+			return redirect(routes.Application.profile());
+		}
+	}
+
+	@Restrict(@Group(Application.USER_ROLE))
+	public Result changePassword() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final User u = this.userProvider.getUser(session());
+
+		if (!u.emailValidated) {
+			return ok(unverified.render(this.userProvider));
+		} else {
+			return ok(password_change.render(this.userProvider, PASSWORD_CHANGE_FORM));
+		}
+	}
+
+	@Restrict(@Group(Application.USER_ROLE))
+	public Result doChangePassword() {
+		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
+		final Form<Account.PasswordChange> filledForm = PASSWORD_CHANGE_FORM
+				.bindFromRequest();
+		if (filledForm.hasErrors()) {
+			// User did not select whether to link or not link
+			return badRequest(password_change.render(this.userProvider, filledForm));
+		} else {
+			final User user = this.userProvider.getUser(session());
+			final String newPassword = filledForm.get().password;
+			user.changePassword(new GSNUsernamePasswordAuthUser(newPassword),
+					true);
+			flash(Application.FLASH_MESSAGE_KEY,
+					this.msg.preferred(request()).at("playauthenticate.change_password.success"));
+			return redirect(routes.Application.profile());
 		}
 	}
 
 	@SubjectPresent
-	public static Result askLink() {
+	public Result askLink() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final AuthUser u = PlayAuthenticate.getLinkUser(session());
+		final AuthUser u = this.auth.getLinkUser(session());
 		if (u == null) {
 			// account to link could not be found, silently redirect to login
-			return redirect(routes.LocalAuthController.index());
+			return redirect(routes.Application.index());
 		}
-		return ok(ask_link.render(ACCEPT_FORM, u));
+		return ok(ask_link.render(this.userProvider, ACCEPT_FORM, u));
 	}
 
 	@SubjectPresent
-	public static Result doLink() {
+	public Result doLink() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
-		final AuthUser u = PlayAuthenticate.getLinkUser(session());
+		final AuthUser u = this.auth.getLinkUser(session());
 		if (u == null) {
 			// account to link could not be found, silently redirect to login
-			return redirect(routes.LocalAuthController.index());
+			return redirect(routes.Application.index());
 		}
 
 		final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
 		if (filledForm.hasErrors()) {
 			// User did not select whether to link or not link
-			return badRequest(ask_link.render(filledForm, u));
+			return badRequest(ask_link.render(this.userProvider, filledForm, u));
 		} else {
 			// User made a choice :)
 			final boolean link = filledForm.get().accept;
 			if (link) {
-				flash(LocalAuthController.FLASH_MESSAGE_KEY,
-						Messages.get("playauthenticate.accounts.link.success"));
+				flash(Application.FLASH_MESSAGE_KEY,
+						this.msg.preferred(request()).at("playauthenticate.accounts.link.success"));
 			}
-			return PlayAuthenticate.link(ctx(), link);
+			return this.auth.link(ctx(), link);
 		}
 	}
 
 	@SubjectPresent
-	public static Result askMerge() {
+	public Result askMerge() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		// this is the currently logged in user
-		final AuthUser aUser = PlayAuthenticate.getUser(session());
+		final AuthUser aUser = this.auth.getUser(session());
 
 		// this is the user that was selected for a login
-		final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
+		final AuthUser bUser = this.auth.getMergeUser(session());
 		if (bUser == null) {
 			// user to merge with could not be found, silently redirect to login
-			return redirect(routes.LocalAuthController.index());
+			return redirect(routes.Application.index());
 		}
 
 		// You could also get the local user object here via
 		// User.findByAuthUserIdentity(newUser)
-		return ok(ask_merge.render(ACCEPT_FORM, aUser, bUser));
+		return ok(ask_merge.render(this.userProvider, ACCEPT_FORM, aUser, bUser));
 	}
 
 	@SubjectPresent
-	public static Result doMerge() {
+	public Result doMerge() {
 		com.feth.play.module.pa.controllers.Authenticate.noCache(response());
 		// this is the currently logged in user
-		final AuthUser aUser = PlayAuthenticate.getUser(session());
+		final AuthUser aUser = this.auth.getUser(session());
 
 		// this is the user that was selected for a login
-		final AuthUser bUser = PlayAuthenticate.getMergeUser(session());
+		final AuthUser bUser = this.auth.getMergeUser(session());
 		if (bUser == null) {
 			// user to merge with could not be found, silently redirect to login
-			return redirect(routes.LocalAuthController.index());
+			return redirect(routes.Application.index());
 		}
 
 		final Form<Accept> filledForm = ACCEPT_FORM.bindFromRequest();
 		if (filledForm.hasErrors()) {
 			// User did not select whether to merge or not merge
-			return badRequest(ask_merge.render(filledForm, aUser, bUser));
+			return badRequest(ask_merge.render(this.userProvider, filledForm, aUser, bUser));
 		} else {
 			// User made a choice :)
 			final boolean merge = filledForm.get().accept;
 			if (merge) {
-				flash(LocalAuthController.FLASH_MESSAGE_KEY,
-						Messages.get("playauthenticate.accounts.merge.success"));
+				flash(Application.FLASH_MESSAGE_KEY,
+						this.msg.preferred(request()).at("playauthenticate.accounts.merge.success"));
 			}
-			return PlayAuthenticate.merge(ctx(), merge);
+			return this.auth.merge(ctx(), merge);
 		}
 	}
+
+
 
 }
