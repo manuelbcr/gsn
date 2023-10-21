@@ -1,6 +1,6 @@
 import NativePackagerHelper._
 
-//import com.typesafe.sbt.packager.archetypes.ServerLoader
+import com.typesafe.sbt.packager.archetypes.systemloader.ServerLoader
 
 import com.typesafe.sbt.packager.archetypes.TemplateWriter
 
@@ -72,11 +72,7 @@ debianPackageDependencies in Debian += "java11-runtime"
 
 debianPackageRecommends in Debian ++= Seq("postgresql", "munin-node", "gsn-services")
 
-//serverLoading in Debian := ServerLoader.Systemd
-
-enablePlugins(DebianPlugin)
-
-enablePlugins(SystemdPlugin)
+serverLoading in Debian := Some(ServerLoader.Systemd)
 
 daemonUser in Linux := "gsn"
 
