@@ -24,25 +24,27 @@
 */
 package security.gsn
 
-import be.objectify.deadbolt.scala.{DynamicResourceHandler, DeadboltHandler}
+import be.objectify.deadbolt.scala.{DynamicResourceHandler,AuthenticatedRequest, DeadboltHandler}
 import play.api.mvc.{Request, Result, Results, Session}
 import play.api.mvc.Controller
-import be.objectify.deadbolt.core.models.Subject
-import models.gsn.auth.User
+import be.objectify.deadbolt.scala.models.Subject
+import models.gsn.User
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import play.mvc.Http
-import collection.JavaConversions._
+//import collection.JavaConversions._
 import com.feth.play.module.pa.PlayAuthenticate
 import com.feth.play.module.pa.user.AuthUserIdentity
 import play.core.j.JavaHelpers
 
-class GSNScalaDeadboltHandler(dynamicResourceHandler: Option[DynamicResourceHandler] = None) extends DeadboltHandler {
+import scala.collection.JavaConverters._
+
+class GSNScalaDeadboltHandler(auth: PlayAuthenticate,dynamicResourceHandler: Option[DynamicResourceHandler] = None) extends DeadboltHandler {
 
   def beforeAuthCheck[A](request: Request[A]) = {
-   if (PlayAuthenticate.isLoggedIn(new Http.Session(request.session.data))) {
+   if (auth.isLoggedIn(new Http.Session(request.session.data.asJava))) {
 			// user is logged in
-			None
+			Future(None)
 		} else {
 			// user is not logged in
 
@@ -50,29 +52,42 @@ class GSNScalaDeadboltHandler(dynamicResourceHandler: Option[DynamicResourceHand
 			// was requested before sending him to the login page
 			// if you don't call this, the user will get redirected to the page
 			// defined by your resolver
-		  val context = JavaHelpers.createJavaContext(request)
-			val originalUrl = PlayAuthenticate.storeOriginalUrl(context)
+		  val context = JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents())
+			val originalUrl = auth.storeOriginalUrl(context)
 			context.flash().put("error", "You need to log in first, to view '" + originalUrl + "'")
-      Option(Future(play.mvc.Results.redirect(PlayAuthenticate.getResolver().login()).toScala().withSession(new Session(context.session().toMap))))
+      Future(Option(play.mvc.Results.redirect(auth.getResolver().login()).asScala().withSession(Session(context.session().asScala.toMap))))
 
 		} 
   }
 
 
-  override def getDynamicResourceHandler[A](request: Request[A]): Option[DynamicResourceHandler] = {
-    None
-  }
-
-  override def getSubject[A](request: Request[A]): Option[Subject] = {
-    val context = JavaHelpers.createJavaContext(request)
-    Option(User.findByAuthUserIdentity(PlayAuthenticate.getUser(context)))
-  }
-
-  def onAuthFailure[A](request: Request[A]): Future[Result] = {
-    Future {Results.Forbidden("Forbidden")}
-    // if the user has a cookie with a valid user and the local user has
-		// been deactivated/deleted in between, it is possible that this gets
-		// shown. You might want to consider to sign the user out in this case.
-
-  }
+case class UserSubject(user: models.gsn.User) extends Subject {
+  override val identifier: String = user.id.toString
+  override val roles: List[be.objectify.deadbolt.scala.models.Role] = user.roles.asScala.map { role =>
+    new be.objectify.deadbolt.scala.models.Role {
+      override val name: String = role.roleName
+    }
+  }.toList
+  override val permissions: List[be.objectify.deadbolt.scala.models.Permission] = 
+    user.permissions.asScala.map { permission =>
+      new be.objectify.deadbolt.scala.models.Permission {
+        override val value: String = permission.value
+      }
+    }.toList
 }
+  override def getDynamicResourceHandler[A](request: Request[A]): Future[Option[DynamicResourceHandler]] = Future.successful(None)
+
+  override def getSubject[A](request: AuthenticatedRequest[A]): Future[Option[Subject]] = {
+    val context = JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents())
+    val user = User.findByAuthUserIdentity(auth.getUser(context))
+    
+    Future.successful(Option(UserSubject(user)))
+  }
+
+  override def onAuthFailure[A](request: AuthenticatedRequest[A]): Future[Result] = Future(Results.Unauthorized)
+
+
+
+}
+
+
