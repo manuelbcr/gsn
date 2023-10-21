@@ -17,57 +17,70 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
-* File: app/models/gsn/auth/Group.java
+* File: app/models/gsn/auth/DataSource.java
 *
 * @author Julien Eberle
 *
 */
-package models.gsn.auth;
+package models.gsn;
 
 import java.util.List;
+
+import io.ebean.Finder;
+import io.ebean.Model;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
+import be.objectify.deadbolt.java.models.Permission;
 
+/**
+ * Initial version based on work by Steve Chaloner (steve@objectify.be) for
+ * Deadbolt2
+ */
 @Entity
-@Table(name = Group.tableName)
-public class Group extends AppModel{
+public class DataSource extends Model implements Permission {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	public static final String tableName = "groups";
 
 	@Id
 	public Long id;
-
-	public String name;
-	public String description;
+    
+	public String value;
+	
+	public boolean is_public;
 	
 	@OneToMany(cascade = CascadeType.ALL)
-	public List<GroupDataSourceRead> dataSourceRead;
+	public List<UserDataSourceRead> userRead;
 	
 	@OneToMany(cascade = CascadeType.ALL)
-	public List<GroupDataSourceWrite> dataSourceWrite;
+	public List<UserDataSourceWrite> userWrite;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	public List<GroupDataSourceRead> groupRead;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	public List<GroupDataSourceWrite> groupWrite;
 	
-	@ManyToMany(mappedBy = "groups")
-	public List<User> users;
+	public static final Finder<Long, DataSource> find = new Finder<>(DataSource.class);
 
-	//for some unknown reason the AppModel.Finder doesn't work ????
-	public static play.db.ebean.Model.Finder<Long, Group> find = new play.db.ebean.Model.Finder<Long, Group>(
-			Long.class, Group.class);
-
-	public String getName() {
-		return name;
+	public static DataSource findByValue(String value) {
+		return find.query().where().eq("value", value).findOne();
 	}
 
-	public static Group findByName(String name) {
-		return find.where().eq("name", name).findUnique();
+	public String getValue() {
+		return value;
+	}
+	
+	public boolean getIs_public(){
+		return is_public;
+	}
+	
+	public void setIs_public(boolean p){
+		is_public=p;
 	}
 }

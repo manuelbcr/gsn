@@ -1,42 +1,17 @@
-/**
-* Global Sensor Networks (GSN) Source Code
-* Copyright (c) 2006-2016, Ecole Polytechnique Federale de Lausanne (EPFL)
-* 
-* This file is part of GSN.
-* 
-* GSN is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-* 
-* GSN is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-* 
-* You should have received a copy of the GNU General Public License
-* along with GSN.  If not, see <http://www.gnu.org/licenses/>.
-* 
-* File: app/models/gsn/auth/TokenAction.java
-*
-* @author Julien Eberle
-*
-*/
-package models.gsn.auth;
+package models.gsn;
 
-import java.util.Date;
+import io.ebean.Ebean;
+import io.ebean.Finder;
+import io.ebean.Model;
+import io.ebean.QueryIterator;
+import io.ebean.annotation.EnumValue;
+import play.data.format.Formats;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-
-import play.data.format.Formats;
-import play.db.ebean.Model;
-
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.QueryIterator;
-import com.avaje.ebean.annotation.EnumValue;
+import java.util.Date;
 
 @Entity
 public class TokenAction extends Model {
@@ -78,17 +53,18 @@ public class TokenAction extends Model {
 	@Formats.DateTime(pattern = "yyyy-MM-dd HH:mm:ss")
 	public Date expires;
 
-	public static final Finder<Long, TokenAction> find = new Finder<Long, TokenAction>(
-			Long.class, TokenAction.class);
+	public static final Finder<Long, TokenAction> find = new Finder<>(TokenAction.class);
 
 	public static TokenAction findByToken(final String token, final Type type) {
-		return find.where().eq("token", token).eq("type", type).findUnique();
+		return find.query().where().eq("token", token).eq("type", type).findOne();
 	}
 
 	public static void deleteByUser(final User u, final Type type) {
-		QueryIterator<TokenAction> iterator = find.where()
+		QueryIterator<TokenAction> iterator = find.query().where()
 				.eq("targetUser.id", u.id).eq("type", type).findIterate();
-		Ebean.delete(iterator);
+		while(iterator.hasNext()) {
+			Ebean.delete(iterator.next());
+		}
 		iterator.close();
 	}
 

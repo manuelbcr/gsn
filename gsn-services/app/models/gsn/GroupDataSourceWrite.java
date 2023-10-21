@@ -17,12 +17,12 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
-* File: app/models/gsn/auth/GroupDataSourceRead.java
+* File: app/models/gsn/auth/GroupDataSourceWrite.java
 *
 * @author Julien Eberle
 *
 */
-package models.gsn.auth;
+package models.gsn;
 
 import java.util.List;
 
@@ -31,16 +31,21 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.persistence.JoinColumn;
+
+
+import io.ebean.Finder;
+import io.ebean.Model;
 
 /**
  * Initial version based on work by Steve Chaloner (steve@objectify.be) for
  * Deadbolt2
  */
 @Entity
-@Table(name="group_data_source_read",  uniqueConstraints={
-		   @UniqueConstraint(columnNames={"group", "data_source"})
+@Table(name="group_data_source_write",  uniqueConstraints={
+		   @UniqueConstraint(columnNames={"group_id", "data_source_id"})
 		})
-public class GroupDataSourceRead extends AppModel {
+public class GroupDataSourceWrite extends Model {
 	/**
 	 * 
 	 */
@@ -50,24 +55,25 @@ public class GroupDataSourceRead extends AppModel {
 	public Long id;
     
 	@ManyToOne
+	@JoinColumn(name = "group_id")
 	public Group group;
 	
 	@ManyToOne
+	@JoinColumn(name = "data_source_id")
 	public DataSource data_source;
 	
-	public static play.db.ebean.Model.Finder<Long, GroupDataSourceRead> find = new play.db.ebean.Model.Finder<Long, GroupDataSourceRead>(
-			Long.class, GroupDataSourceRead.class);
+	public static final Finder<Long, GroupDataSourceWrite> find = new Finder<>(GroupDataSourceWrite.class);
 
-	public static List<GroupDataSourceRead> findByUser(Group value) {
-		return find.where().eq("group", value).findList();
+	public static List<GroupDataSourceWrite> findByUser(Group value) {
+		return find.query().where().eq("group", value).findList();
 	}
 	
-	public static List<GroupDataSourceRead> findByDataSource(DataSource value) {
-		return find.where().eq("data_source", value).findList();
+	public static List<GroupDataSourceWrite> findByDataSource(DataSource value) {
+		return find.query().where().eq("data_source", value).findList();
 	}
 	
-	public static GroupDataSourceRead findByBoth(Group g, DataSource d) {
-		return find.where().eq("group", g).eq("data_source", d).findUnique();
+	public static GroupDataSourceWrite findByBoth(Group g, DataSource d) {
+		return find.query().where().eq("group", g).eq("data_source", d).findOne();
 	}
 
 }

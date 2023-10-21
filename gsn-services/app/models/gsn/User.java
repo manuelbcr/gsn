@@ -1,46 +1,25 @@
-/**
-* Global Sensor Networks (GSN) Source Code
-* Copyright (c) 2006-2016, Ecole Polytechnique Federale de Lausanne (EPFL)
-* 
-* This file is part of GSN.
-* 
-* GSN is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-* 
-* GSN is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-* 
-* You should have received a copy of the GNU General Public License
-* along with GSN.  If not, see <http://www.gnu.org/licenses/>.
-* 
-* File: app/models/gsn/auth/User.java
-*
-* @author Julien Eberle
-*
-*/
-package models.gsn.auth;
+package models.gsn;
 
-import be.objectify.deadbolt.core.models.Permission;
-import be.objectify.deadbolt.core.models.Role;
-import be.objectify.deadbolt.core.models.Subject;
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.ExpressionList;
+import be.objectify.deadbolt.java.models.Permission;
+import be.objectify.deadbolt.java.models.Role;
+import be.objectify.deadbolt.java.models.Subject;
+import io.ebean.Ebean;
+import io.ebean.ExpressionList;
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
 import com.feth.play.module.pa.user.AuthUser;
 import com.feth.play.module.pa.user.AuthUserIdentity;
 import com.feth.play.module.pa.user.EmailIdentity;
 import com.feth.play.module.pa.user.NameIdentity;
 import com.feth.play.module.pa.user.FirstLastNameIdentity;
-import models.gsn.auth.TokenAction.Type;
+import io.ebean.Finder;
+import models.gsn.TokenAction.Type;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
 
+
 import javax.persistence.*;
 import java.util.*;
+
 
 /**
  * Initial version based on work by Steve Chaloner (steve@objectify.be) for
@@ -60,13 +39,13 @@ public class User extends AppModel implements Subject {
 	@Constraints.Email
 	// if you make this unique, keep in mind that users *must* merge/link their
 	// accounts then on signup with additional providers
-	@Column(unique = true)
+	// @Column(unique = true)
 	public String email;
 
 	public String name;
-	
+
 	public String firstName;
-	
+
 	public String lastName;
 
 	@Formats.DateTime(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -84,25 +63,20 @@ public class User extends AppModel implements Subject {
 
 	@ManyToMany
 	public List<UserPermission> permissions;
-	
+
 	@OneToMany(cascade = CascadeType.ALL)
 	public List<UserDataSourceRead> dataSourceRead;
 	
 	@OneToMany(cascade = CascadeType.ALL)
 	public List<UserDataSourceWrite> dataSourceWrite;
-	
+
 	@ManyToMany
 	public List<Group> groups;
-	
+
 	@ManyToMany(mappedBy = "trusted_users")
 	public List<Client> trusted_clients;
 
-	public static play.db.ebean.Model.Finder<Long, User> find = new play.db.ebean.Model.Finder<Long, User>(
-			Long.class, User.class);
-
-    public static User findById(Long value) {
-		return find.where().eq("id", value).findUnique();
-	}
+	public static final Finder<Long, User> find = new Finder<>(User.class);
 
 	@Override
 	public String getIdentifier()
@@ -119,16 +93,14 @@ public class User extends AppModel implements Subject {
 	public List<? extends Permission> getPermissions() {
 		return this.permissions;
 	}
-	
+
+    public static User findById(Long value) {
+		return find.query().where().eq("id", value).findOne();
+	}
+
 	public boolean hasAccessTo(DataSource ds, Boolean toWrite){
 		if(toWrite && null != UserDataSourceWrite.findByBoth(this, ds)) return true;
 		else if (!toWrite && null != UserDataSourceRead.findByBoth(this, ds)) return true;
-		else {
-		    for (Group g : groups){
-			    if(toWrite && null != GroupDataSourceWrite.findByBoth(g, ds)) return true;
-			    else if (!toWrite && null != GroupDataSourceRead.findByBoth(g, ds)) return true;
-		    }
-		}
 		return false;
 	}
 
@@ -140,12 +112,12 @@ public class User extends AppModel implements Subject {
 		} else {
 			exp = getAuthUserFind(identity);
 		}
-		return exp.findRowCount() > 0;
+		return exp.query().findCount() > 0;
 	}
 
 	private static ExpressionList<User> getAuthUserFind(
 			final AuthUserIdentity identity) {
-		return find.where().eq("active", true)
+		return find.query().where().eq("active", true)
 				.eq("linkedAccounts.providerUserId", identity.getId())
 				.eq("linkedAccounts.providerKey", identity.getProvider());
 	}
@@ -157,13 +129,13 @@ public class User extends AppModel implements Subject {
 		if (identity instanceof UsernamePasswordAuthUser) {
 			return findByUsernamePasswordIdentity((UsernamePasswordAuthUser) identity);
 		} else {
-			return getAuthUserFind(identity).findUnique();
+			return getAuthUserFind(identity).findOne();
 		}
 	}
 
 	public static User findByUsernamePasswordIdentity(
 			final UsernamePasswordAuthUser identity) {
-		return getUsernamePasswordAuthUserFind(identity).findUnique();
+		return getUsernamePasswordAuthUserFind(identity).findOne();
 	}
 
 	private static ExpressionList<User> getUsernamePasswordAuthUserFind(
@@ -180,24 +152,13 @@ public class User extends AppModel implements Subject {
 
 		// deactivate the merged user that got added to this one
 		otherUser.active = false;
-		Ebean.save(Arrays.asList(new User[] { otherUser, this }));
+		Arrays.asList(new User[] { otherUser, this }).forEach(u -> Ebean.save(u));
 	}
 
 	public static User create(final AuthUser authUser) {
-		final User user;
-		if (authUser instanceof EmailIdentity) {
-			User u = User.findByEmail(((EmailIdentity) authUser).getEmail());
-			if (u != null) {
-				user = u;
-			}else{
-				user = new User();
-			}
-		}else{
-			user = new User();
-		}
-		
+		final User user = new User();
 		user.roles = Collections.singletonList(SecurityRole
-				.findByRoleName(controllers.gsn.auth.LocalAuthController.USER_ROLE));
+				.findByRoleName(controllers.gsn.auth.Application.USER_ROLE));
 		// user.permissions = new ArrayList<UserPermission>();
 		// user.permissions.add(UserPermission.findByValue("printers.edit"));
 		user.active = true;
@@ -268,11 +229,11 @@ public class User extends AppModel implements Subject {
 	}
 
 	public static User findByEmail(final String email) {
-		return getEmailUserFind(email).findUnique();
+		return getEmailUserFind(email).findOne();
 	}
 
 	private static ExpressionList<User> getEmailUserFind(final String email) {
-		return find.where().eq("active", true).eq("email", email);
+		return find.query().where().eq("active", true).eq("email", email);
 	}
 
 	public LinkedAccount getAccountByProvider(final String providerKey) {
@@ -308,4 +269,5 @@ public class User extends AppModel implements Subject {
 		this.changePassword(authUser, create);
 		TokenAction.deleteByUser(this, Type.PASSWORD_RESET);
 	}
+
 }

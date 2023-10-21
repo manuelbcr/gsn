@@ -17,22 +17,25 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
-* File: app/models/gsn/auth/LinkedAccount.java
+* File: app/models/gsn/auth/OAuthCode.java
 *
 * @author Julien Eberle
 *
 */
-package models.gsn.auth;
+package models.gsn;
+
+import java.util.UUID;
+
+import io.ebean.Finder;
+import io.ebean.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
-import com.feth.play.module.pa.user.AuthUser;
 
 @Entity
-public class LinkedAccount extends AppModel {
-
+public class OAuthCode extends Model{
 	/**
 	 * 
 	 */
@@ -44,33 +47,30 @@ public class LinkedAccount extends AppModel {
 	@ManyToOne
 	public User user;
 
-	public String providerUserId;
-	public String providerKey;
+	@ManyToOne
+	public Client client;
+	
+	public String code;
+	public Long creation;
+	
+	public static final Finder<Long, OAuthCode> find = new Finder<>(OAuthCode.class);
 
-	public static final Finder<Long, LinkedAccount> find = new Finder<Long, LinkedAccount>(
-			Long.class, LinkedAccount.class);
-
-	public static LinkedAccount findByProviderKey(final User user, String key) {
-		return find.where().eq("user", user).eq("providerKey", key)
-				.findUnique();
-	}
-
-	public static LinkedAccount create(final AuthUser authUser) {
-		final LinkedAccount ret = new LinkedAccount();
-		ret.update(authUser);
-		return ret;
+	public static OAuthCode findByCode(String value) {
+		return find.query().where().eq("code", value).findOne();
 	}
 	
-	public void update(final AuthUser authUser) {
-		this.providerKey = authUser.getProvider();
-		this.providerUserId = authUser.getId();
+	
+	public static OAuthCode generate(User user, Client client){
+		OAuthCode t = new OAuthCode();
+		t.user = user;
+		t.client = client;
+		t.code =  UUID.randomUUID().toString();
+		t.creation = System.currentTimeMillis();
+		t.save();
+		return t;
 	}
-
-	public static LinkedAccount create(final LinkedAccount acc) {
-		final LinkedAccount ret = new LinkedAccount();
-		ret.providerKey = acc.providerKey;
-		ret.providerUserId = acc.providerUserId;
-
-		return ret;
+	
+	public Client getClient(){
+		return client;
 	}
 }

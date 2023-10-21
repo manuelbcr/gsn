@@ -17,68 +17,57 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
-* File: app/models/gsn/auth/DataSource.java
+* File: app/models/gsn/auth/Group.java
 *
 * @author Julien Eberle
 *
 */
-package models.gsn.auth;
+package models.gsn;
 
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
-import be.objectify.deadbolt.core.models.Permission;
+import io.ebean.Finder;
+import io.ebean.Model;
 
-/**
- * Initial version based on work by Steve Chaloner (steve@objectify.be) for
- * Deadbolt2
- */
 @Entity
-public class DataSource extends AppModel implements Permission {
+@Table(name = Group.tableName)
+public class Group extends Model{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	public static final String tableName = "groups";
 
 	@Id
 	public Long id;
-    
-	public String value;
-	
-	public boolean is_public;
-	
-	@OneToMany(cascade = CascadeType.ALL)
-	public List<UserDataSourceRead> userRead;
-	
-	@OneToMany(cascade = CascadeType.ALL)
-	public List<GroupDataSourceRead> groupRead;
-	
-	@OneToMany(cascade = CascadeType.ALL)
-	public List<UserDataSourceWrite> userWrite;
-	
-	@OneToMany(cascade = CascadeType.ALL)
-	public List<GroupDataSourceWrite> groupWrite;
-	
-	public static play.db.ebean.Model.Finder<Long, DataSource> find = new play.db.ebean.Model.Finder<Long, DataSource>(
-			Long.class, DataSource.class);
 
-	public String getValue() {
-		return value;
-	}
+	public String name;
+	public String description;
 	
-	public boolean getIs_public(){
-		return is_public;
-	}
+	@OneToMany(cascade = CascadeType.ALL)
+	public List<GroupDataSourceRead> dataSourceRead;
 	
-	public void setIs_public(boolean p){
-		is_public=p;
+	@OneToMany(cascade = CascadeType.ALL)
+	public List<GroupDataSourceWrite> dataSourceWrite;
+	
+	@ManyToMany(mappedBy = "groups")
+	public List<User> users;
+
+	public static final Finder<Long, Group> find = new Finder<>(Group.class);
+
+	public static Group findByName(String name) {
+		return find.query().where().eq("name", name).findOne();
 	}
 
-	public static DataSource findByValue(String value) {
-		return find.where().eq("value", value).findUnique();
+	public String getName() {
+		return name;
 	}
 }
