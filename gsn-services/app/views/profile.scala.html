@@ -1,8 +1,9 @@
-@(localUser: models.gsn.auth.User = null)
+@import service.gsn.UserProvider
+@(playAuth: com.feth.play.module.pa.PlayAuthenticate, userProvider: UserProvider, localUser: models.gsn.User = null)
 
 @import com.feth.play.module.pa.views.html._
 
-@main(Messages("playauthenticate.profile.title"),"profile") {
+@main(userProvider, Messages("playauthenticate.profile.title"),"profile") {
 
     <h1>@Messages("playauthenticate.profile.title")</h1>
     <p>
@@ -35,10 +36,10 @@
     }
 
     <br/>
-    @currentAuth() { auth =>
+    @currentAuth(playAuth) { auth =>
         @Messages("playauthenticate.profile.logged") @_providerIcon(auth.getProvider())<br/>
         @if(auth.expires() != -1){
-            @Messages("playauthenticate.profile.session", auth.getId(), controllers.gsn.auth.LocalAuthController.formatTimestamp(auth.expires()))
+            @Messages("playauthenticate.profile.session", auth.getId(), controllers.gsn.auth.Application.formatTimestamp(auth.expires()))
         } else {
             @Messages("playauthenticate.profile.session_endless", auth.getId())
         }
@@ -46,7 +47,7 @@
     <br/>
     <ul>
     	<li><a href="@controllers.gsn.auth.routes.Account.changePassword">@Messages("playauthenticate.profile.password_change")</a></li>
-    	<li><a href="@controllers.gsn.auth.routes.Account.editProfile">@Messages("playauthenticate.profile.edit")</a></li>
+        <li><a href="@controllers.gsn.auth.routes.Account.editProfile">@Messages("playauthenticate.profile.edit")</a></li>
     </ul>
     </p>
 }

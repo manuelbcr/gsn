@@ -1,8 +1,9 @@
-@(client: String, secret: String, redirect: String, user: models.gsn.auth.User, name: String)
+@import service.gsn.UserProvider 
+@(client: String, secret: String, redirect: String, user: models.gsn.User, name: String,userProvider: UserProvider)
 
 @import helper._
 
-@main(Messages("gsn.oauth2.auth.title"),"auth") {
+@main(userProvider,Messages("gsn.oauth2.auth.title"),"auth") {
 <div id="groups" class="row">
 <div class="col-md-12">
 <h1>@Messages("gsn.oauth2.auth.title")</h1>

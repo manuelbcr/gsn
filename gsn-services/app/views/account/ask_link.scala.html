@@ -1,14 +1,14 @@
-@(acceptForm: play.data.Form[controllers.gsn.auth.Account.Accept], newAccount: com.feth.play.module.pa.user.AuthUser)
+@import service.gsn.UserProvider
+@(userProvider: UserProvider, acceptForm: Form[controllers.gsn.auth.Account.Accept], newAccount: com.feth.play.module.pa.user.AuthUser)
 
 @import helper._
-@import play.core.j.PlayMagicForJava._
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapBasic.f) }
 
 @label = {
 	@_providerIcon(newAccount.getProvider()) @Messages("playauthenticate.link.account.question",newAccount)
 }
 
-@main(Messages("playauthenticate.link.account.title")) {
+@main(userProvider, Messages("playauthenticate.link.account.title")) {
 
 	<h1>@Messages("playauthenticate.link.account.title")</h1>
 	<p>
@@ -16,7 +16,7 @@
 
             @if(acceptForm.hasGlobalErrors) {
 		        <p class="alert alert-danger">
-		          @acceptForm.globalError.message
+		          @acceptForm.getGlobalError.get.message
 		     	</p>
             }
 

@@ -1,10 +1,10 @@
 @(verificationUrl: String, token: String, name: String, email: String)Howdy @name,
 
 
-You recently signed up on a Global Sensor Network server instance.
+You recently signed up for PlayAuthenticate.
 
 To activate your account, follow this link now:
 @verificationUrl
 
 Cheers,
-The GSN Team
+The PlayAuthenticate Team
