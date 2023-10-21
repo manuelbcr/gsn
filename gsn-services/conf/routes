@@ -41,9 +41,10 @@ POST    /accounts/merge                     controllers.gsn.auth.Account.doMerge
 GET     /assets/*file                              controllers.Assets.versioned(path="/public", file: Asset)
 
 GET  /api/user                                     controllers.gsn.api.SensorService.userInfo
-GET  /api/sensors                                   controllers.gsn.api.SensorService.sensors
+GET  /api/sensors                                  controllers.gsn.api.SensorService.sensors
 GET  /api/sensors/:sensorid                        controllers.gsn.api.SensorService.sensorMetadata(sensorid:String)
-GET  /api/sensors/:sensorid/data                    controllers.gsn.api.SensorService.sensorData(sensorid:String)
+GET  /api/sensors/:sensorid/data                   controllers.gsn.api.SensorService.sensorData(sensorid:String)
+POST /api/sensors/:sensorid/data                   controllers.gsn.api.SensorService.uploadSensorData(sensorid:String)
 GET  /api/sensors/:sensorid/field/:fieldid         controllers.gsn.api.SensorService.sensorField(sensorid:String,fieldid:String)
 GET  /api/sensors/:sensorid/field/:fieldid/process controllers.gsn.api.DataProcessService.processData(sensorid:String,fieldid:String)
 GET  /api/sensors/search                           controllers.gsn.api.SensorService.sensorSearch
@@ -78,6 +79,7 @@ GET     /oauth2/auth              controllers.gsn.OAuth2Controller.auth
 POST    /oauth2/auth              controllers.gsn.OAuth2Controller.doAuth
 GET     /oauth2/client            controllers.gsn.OAuth2Controller.listClients
 POST    /oauth2/client            controllers.gsn.OAuth2Controller.editClient   
+
 
 
 

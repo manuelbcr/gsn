@@ -35,7 +35,7 @@ import akka.actor._
 import akka.pattern.ask
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-//import org.zeromq.ZMQ
+import org.zeromq.ZMQ
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.{Output => kOutput}
 
@@ -138,7 +138,7 @@ class SensorService @Inject()(actorSystem: ActorSystem, ec: ExecutionContext,pla
          case _ => Future(Forbidden("Page only accessible with a valid oauth token."))
      }
   })
-  /*
+  
   def uploadSensorData(sensorid:String) = headings((APIPermissionAction(playAuth,true, sensorid) compose Action).async {implicit request =>
     Try{
       val vsname = sensorid.toLowerCase
@@ -153,7 +153,8 @@ class SensorService @Inject()(actorSystem: ActorSystem, ec: ExecutionContext,pla
             val wconfig = conf.streams.flatMap( s => s.sources.flatMap( so => so.wrappers ) ).filter( w => w.wrapper.equals("zeromq-push")).head
             val address = wconfig.params.get("local_address").getOrElse("localhost")
             val port = wconfig.params.get("local_port").orNull
-    		    val forwarder = Global.context.socket(ZMQ.REQ)
+            val context  = ZMQ.context(1)
+    		    val forwarder = context.socket(ZMQ.REQ)
     		    forwarder.connect("tcp://"+address+":"+port)
     		    forwarder.setReceiveTimeOut(3000)
     	      val result = se.map(s => {
@@ -179,7 +180,7 @@ class SensorService @Inject()(actorSystem: ActorSystem, ec: ExecutionContext,pla
       case t=>Future(BadRequest("{\"status\": \"error\", \"message\" : \""+t.getMessage+"\"}"))
     }.get
   })
-*/
+
  
 def sensorData(sensorid:String) = headings((APIPermissionAction(playAuth,false, sensorid) compose Action).async {implicit request =>
   Try{
@@ -408,4 +409,5 @@ def sensorData(sensorid:String) = headings((APIPermissionAction(playAuth,false, 
 
   
 }
+
 
