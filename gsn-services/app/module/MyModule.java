@@ -47,7 +47,7 @@ public class MyModule extends AbstractModule {
 		//bind(UntappdAuthProvider.class).asEagerSingleton();
 		//bind(PocketAuthProvider.class).asEagerSingleton();
 		//bind(GithubAuthProvider.class).asEagerSingleton();
-		bind(GSNStupidBasicAuthProvider.class).asEagerSingleton();
+		//bind(GSNStupidBasicAuthProvider.class).asEagerSingleton();
 		//bind(SpnegoAuthProvider.class).asEagerSingleton();
 		//bind(EventBriteAuthProvider.class).asEagerSingleton();
 	}
