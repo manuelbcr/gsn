@@ -26,7 +26,7 @@ publishTo &lt;&lt;= version { v: String =&gt;
 
   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-sonatype"),
   publishMavenStyle := true,
-  publishArtifact in (Compile) := true,
+  publishArtifact in (Compile) := false,
   publishArtifact in (Test) := false,
   publishArtifact in (Compile, packageBin) := true,
   publishArtifact in (Compile, packageSrc) := true,
@@ -62,7 +62,7 @@ publishTo &lt;&lt;= version { v: String =&gt;
 usePgpKeyHex("DC900B5F")
 
 lazy val root = (project in file(".")).
-  aggregate(core, tools)
+  aggregate(core, tools,services)
 
 
 lazy val core = (project in file("gsn-core")).
@@ -74,10 +74,10 @@ lazy val core = (project in file("gsn-core")).
 //  dependsOn(core).
 //  settings(commonSettings: _*)
 
-//lazy val services = (project in file("gsn-services")).
-//  dependsOn(tools,core).
-//  settings(commonSettings: _*).
-//  enablePlugins(PlayScala, DebianPlugin)
+lazy val services = (project in file("gsn-services")).
+  dependsOn(tools).
+  settings(commonSettings: _*).
+  enablePlugins(PlayJava,PlayEbean, DebianPlugin)
 
 lazy val tools = (project in file("gsn-tools")).
   settings(commonSettings: _*)
