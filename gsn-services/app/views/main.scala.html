@@ -11,8 +11,8 @@
 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="Play Authenticate - an authentication module for the Play! Framework 2.0">
-        <meta name="author" content="The Play Authenticate Team">
+        <meta name="description" content="GSN Access Control">
+        <meta name="author" content="The GSN Team">
 
         <script type="text/javascript" src="@routes.Assets.versioned("lib/jquery/jquery.js")"></script>
         <script type="text/javascript" src="@routes.Assets.versioned("lib/bootstrap/js/bootstrap.js")"></script>
@@ -45,7 +45,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="@controllers.gsn.auth.routes.Application.index()">Play! Authenticate</a>
+                    <a class="navbar-brand" href="@controllers.gsn.auth.routes.Application.index()">Global Sensor Networks</a>
                 </div>
 
                     <!-- Collect the nav links, forms, and other content for toggling -->
@@ -106,6 +106,13 @@
                     @flash().get(controllers.gsn.auth.Application.FLASH_MESSAGE_KEY)
                 </div>
             }
+            @for( v <- play.mvc.Controller.flash.values){
+                <div class="alert alert-info" role="alert">
+                   <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">
+                       Close</span></button>
+                   @v
+               </div>
+               }
             @content
 
             <hr>

@@ -41,7 +41,6 @@ import ch.epfl.gsn.process.WeightedMovingAverage
 import ch.epfl.gsn.process.LinearInterpolation
 import javax.inject.Inject
 import akka.actor._
-import controllers.gsn.api.GsnService
 
 class DataProcessService @Inject()(actorSystem: ActorSystem) extends InjectedController with GsnService{
   
@@ -96,6 +95,7 @@ class DataProcessService @Inject()(actorSystem: ActorSystem) extends InjectedCon
             case Json=>Ok(JsonSerializer.ser(rd,Seq(),false))
             case Csv=>Ok(CsvSerializer.ser(rd,Seq(),false))
             case Xml=>Ok(XmlSerializer.ser(rd, Seq(), false))
+            case _ => Ok(JsonSerializer.ser(rd,Seq(),false))
         }                             
       }.recover{
         case t=> 

@@ -45,7 +45,6 @@ import play.api.Play.current
 import ch.epfl.gsn.data._
 import providers.gsn.GSNUsernamePasswordAuthProvider
 import service.gsn.UserProvider
-import controllers.gsn.auth.Application
 import com.feth.play.module.pa.PlayAuthenticate
 import play.api.mvc.Results._
 import scala.concurrent.{ExecutionContext, Future}

@@ -85,6 +85,9 @@ class GridService @Inject()(actorSystem: ActorSystem) extends InjectedController
             case Json=>
               val pp=JsonSerializer.ser(data.head,Seq(),false)
               Ok(pp)
+            case _ => 
+              val pp=JsonSerializer.ser(data.head,Seq(),false)
+              Ok(pp)
           }
           
       }.recover{

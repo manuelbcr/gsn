@@ -49,7 +49,7 @@ import javax.inject.Inject
 import service.gsn.UserProvider
 import be.objectify.deadbolt.scala.{DeadboltActions, anyOf, allOf, allOfGroup}
 
-class OAuth2Controller @Inject()(playAuth: PlayAuthenticate, deadbolt: DeadboltActions,userProvider: UserProvider) extends Controller with OAuth2Provider {
+class OAuth2Controller @Inject()(playAuth: PlayAuthenticate, deadbolt: DeadboltActions,userProvider: UserProvider) extends InjectedController with OAuth2Provider {
   
     def accessToken = Action.async { implicit request =>
         issueAccessToken[AnyContent,User](new GSNDataHandler())

@@ -29,7 +29,6 @@ import com.typesafe.config.ConfigFactory
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatterBuilder
 import collection.JavaConversions._
-import play.api.libs.json.Json
 
 
 trait GsnService {
