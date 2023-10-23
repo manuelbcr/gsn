@@ -22,6 +22,7 @@ form .error .help-inline {
 }
 
 .help-block {
+    margin: -10px 0 10px 0;
     font-size: 10px;
     color: #ccc !important;
 }

@@ -2,6 +2,14 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+
+POST    /oauth2/token             controllers.gsn.OAuth2Controller.accessToken
+GET     /oauth2/auth              controllers.gsn.OAuth2Controller.auth  
+POST    /oauth2/auth              controllers.gsn.OAuth2Controller.doAuth
+GET     /oauth2/client            controllers.gsn.OAuth2Controller.listClients
+POST    /oauth2/client            controllers.gsn.OAuth2Controller.editClient 
+
+
 # Home page
 GET     /                                   controllers.gsn.auth.Application.index
 GET     /restricted                         controllers.gsn.auth.Application.restricted
@@ -51,7 +59,7 @@ GET  /api/sensors/search                           controllers.gsn.api.SensorSer
 POST /api/sensors/download                         controllers.gsn.api.SensorService.download
 GET  /api/sensors/:sensorid/grid                   controllers.gsn.api.GridService.gridData(sensorid:String)
 GET  /api/sensors/:sensorid/grid/timeseries        controllers.gsn.api.GridService.gridTimeseries(sensorid:String)
-
+GET  /api/sensors/:sensorid/stream                 controllers.gsn.api.WebSocketForwarder.socket(sensorid:String)
 
 
 #Permissions
@@ -74,12 +82,7 @@ GET     /access/users/:page               controllers.gsn.auth.PermissionsContro
 
 
 
-POST    /oauth2/token             controllers.gsn.OAuth2Controller.accessToken
-GET     /oauth2/auth              controllers.gsn.OAuth2Controller.auth  
-POST    /oauth2/auth              controllers.gsn.OAuth2Controller.doAuth
-GET     /oauth2/client            controllers.gsn.OAuth2Controller.listClients
-POST    /oauth2/client            controllers.gsn.OAuth2Controller.editClient   
-
+  
 
 
 
