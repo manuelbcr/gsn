@@ -51,6 +51,8 @@ import be.objectify.deadbolt.scala.{DeadboltActions, anyOf, allOf, allOfGroup}
 
 class OAuth2Controller @Inject()(playAuth: PlayAuthenticate, deadbolt: DeadboltActions,userProvider: UserProvider) extends InjectedController with OAuth2Provider {
   
+    override val tokenEndpoint = new OAuth2Endpoint
+
     def accessToken = Action.async { implicit request =>
         issueAccessToken[AnyContent,User](new GSNDataHandler())
     }
