@@ -12,7 +12,6 @@ import play.api.Configuration;
 import play.api.Environment;
 import play.api.inject.Binding;
 import play.api.inject.Module;
-import providers.gsn.GSNStupidBasicAuthProvider;
 import providers.gsn.GSNUsernamePasswordAuthProvider;
 import scala.collection.Seq;
 import service.gsn.DataInitializer;
