@@ -67,6 +67,13 @@ class DataStore(val gsn:GsnConf) {
     }
   }
     
-    
+  def close(): Unit = {
+    val ds = C3P0Registry.pooledDataSourceByName(gsn.storageConf.url)
+    if (ds != null && ds.isInstanceOf[ComboPooledDataSource]) {
+      val cpds = ds.asInstanceOf[ComboPooledDataSource]
+      cpds.close()
+      println("Closed C3P0 data source: " + gsn.storageConf)
+    }
+  } 
   
 }

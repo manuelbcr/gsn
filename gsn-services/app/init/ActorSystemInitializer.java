@@ -39,7 +39,7 @@ public class ActorSystemInitializer {
         lifecycle.addStopHook(() -> {
 
             logger.info("Application terminated");
-
+            dataStore.close();
             actorSystem.terminate();
             return CompletableFuture.completedFuture(null);
         });
