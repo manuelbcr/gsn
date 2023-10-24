@@ -41,6 +41,10 @@ class GSNDataHandler extends DataHandler[User] {
               val password = passwordRequest.password
               val user = User.findByUsernamePasswordIdentity(new GSNUsernamePasswordAuthUser(username,password))
               Option(user)
+          case clientCredentialsRequest: ClientCredentialsRequest =>
+              val clientCredentials= maybeClientCredential.getOrElse(None)
+             
+              findClientUser(maybeClientCredential,Some(""))
           case _ =>
               // Handle other grant types or unknown requests here.
               None
@@ -60,12 +64,12 @@ class GSNDataHandler extends DataHandler[User] {
   }
 
   override def getStoredAccessToken(authInfo: AuthInfo[User]): Future[Option[AccessToken]] = Future {
-    Logger.error("3")
+    Logger.error("4")
     getAllTokens(authInfo).map(t => AccessToken(t.token, Option(t.refresh), Some("all"), Some((t.creation - System.currentTimeMillis + t.duration)/1000),new Date(t.creation))).headOption
   }
 
   override def refreshAccessToken(authInfo: AuthInfo[User], refreshToken: String): Future[AccessToken] = {
-    Logger.error("4")
+    Logger.error("5")
     // refreshToken already validated
     //clean tokens
     getAllTokens(authInfo).map { x => x.delete() }
@@ -74,32 +78,34 @@ class GSNDataHandler extends DataHandler[User] {
   }
   
   override def findAuthInfoByCode(code: String): Future[Option[AuthInfo[User]]] = Future {
-      Logger.error("4")
+      Logger.error("6")
       Option(OAuthCode.findByCode(code)).map(c => AuthInfo[User](c.user,Option(c.getClient.getClientId),Some("all"),Option(c.getClient.getRedirect)))
   }
 
   override def findAuthInfoByRefreshToken(refreshToken: String): Future[Option[AuthInfo[User]]] = Future {
-    Logger.error("4")
+    Logger.error("7")
     Option(OAuthToken.findByRefresh(refreshToken)).map(t => AuthInfo[User](t.user,Option(t.getClient.getClientId),Some("all"),Option(t.getClient.getRedirect)))
   }
 
-  def findClientUser(clientCredential: ClientCredential, scope: Option[String]): Future[Option[User]] = Future {
-    Logger.error("4")
-    Option(Client.findById(clientCredential.clientId)).flatMap(c => if (c.isLinked) Some(c.user) else None)
+  def findClientUser(maybeClientCredential: Option[ClientCredential], scope: Option[String]): Option[User] = {
+    Logger.error("8")
+    maybeClientCredential.map { clientCredential =>
+      Option(Client.findById(clientCredential.clientId)).flatMap(c => if (c.isLinked) Some(c.user) else None)
+    }.getOrElse(None)
   }
 
   override def deleteAuthCode(code: String): Future[Unit] = Future{
-    Logger.error("4")
+    Logger.error("9")
     Option(OAuthCode.findByCode(code)).map(x => {x.delete()})
   }
 
   override def findAccessToken(token: String): Future[Option[AccessToken]] = Future {
-    Logger.error("4")
+    Logger.error("10")
     Option(OAuthToken.findByToken(token)).map(t => AccessToken(t.token, Option(t.refresh), Some("all"), Some(t.duration/1000),new Date(t.creation)))
   }
 
   override def findAuthInfoByAccessToken(accessToken: AccessToken): Future[Option[AuthInfo[User]]] = Future {
-    Logger.error("4")
+    Logger.error("11")
     Option(OAuthToken.findByToken(accessToken.token)).map(t => AuthInfo[User](t.user,Option(t.getClient.getClientId),Some("all"),Option(t.getClient.getRedirect)))
   }
 
