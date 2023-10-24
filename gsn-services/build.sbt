@@ -17,8 +17,8 @@ libraryDependencies ++= Seq(
   // Comment the next line for local development of the Play Authentication core:
   // Use the latest release version when copying this code, e.g. "0.9.0"
   "com.feth"      %% "play-authenticate" % "0.9.0",
-  "org.postgresql"    %  "postgresql"        % "9.4-1206-jdbc42",
-  "com.h2database" % "h2" % "1.4.181",
+  "org.postgresql" % "postgresql" % "9.3-1102-jdbc41",
+  "com.h2database" % "h2" % "1.4.195",
   cacheApi,
   ehcache,
   "com.google.inject" % "guice" % "4.2.1",
