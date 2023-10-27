@@ -34,34 +34,33 @@ import models.gsn.User
 import models.gsn.DataSource
 import play.mvc.Http
 import collection.JavaConverters._
-import org.slf4j.LoggerFactory
+import play.Logger
 import javax.inject.Inject
 import com.feth.play.module.pa.PlayAuthenticate
 import play.api.mvc.Results.Forbidden
 
 class APIPermissionAction @Inject()(playAuth: PlayAuthenticate, toWrite: Boolean, vsnames: String*)(implicit ctx: ExecutionContext) extends ActionFunction[Request, ({type L[A] = Request[A]})#L] with OAuth2Provider {
 
-  private val log = LoggerFactory.getLogger(classOf[APIPermissionAction])
   override protected def executionContext: ExecutionContext = ctx
   override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
-    log.error("here invokeblock")
+    Logger.error("here invokeblock")
     val session = request.session
     val sessiondata= request.session.data
-    log.error(s"request $request")
-    log.error(s"request $session")
-    log.error(s"sessiondata $sessiondata")
+    Logger.error(s"request $request")
+    Logger.error(s"request $session")
+    Logger.error(s"sessiondata $sessiondata")
     if (playAuth.isLoggedIn(new Http.Session(request.session.data.asJava))) {
-      log.error("here invokeblock")
+      Logger.error("here invokeblock")
       val u = User.findByAuthUserIdentity(playAuth.getUser(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents())))
-      log.error(s"here invokeblock $u")
+      Logger.error(s"here invokeblock $u")
       if (hasAccess(u,toWrite,vsnames:_*)) block(request)
       else Future(Results.Forbidden("Logged in user has no access to these resources"))
     }else{
-      log.error("here invokeblock else")
+      Logger.error("here invokeblock else")
       //implicit request => authorize(new MyDataHandler()) { authInfo => val user = authInfo.user
       //Action.async { implicit request => authorize(new GSNDataHandler()) { authInfo =>
       authorize(new GSNDataHandler())({authInfo => {
-        log.error("here invokeblock else authorize")
+        Logger.error("here invokeblock else authorize")
         val u = User.findById(authInfo.user.id)
         if (hasAccess(u,toWrite,vsnames:_*)) block(AuthInfoRequest(AuthInfo[User](u, authInfo.clientId, authInfo.scope, authInfo.redirectUri), request))
         else Future(Results.Forbidden("Logged in user has no access to these resources"))

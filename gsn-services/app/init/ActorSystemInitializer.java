@@ -14,18 +14,17 @@ import ch.epfl.gsn.config.GsnConf;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import play.Logger;
 
 @Singleton
 public class ActorSystemInitializer {
 
-    private final Logger logger = LoggerFactory.getLogger(ActorSystemInitializer.class);
+
 
     @Inject
     public ActorSystemInitializer(ApplicationLifecycle lifecycle,ActorSystem actorSystem) {
 
-        logger.info("Application has started");
+        Logger.info("Application has started");
 
         Config config = ConfigFactory.load();
 		GsnConf gsnConf = GsnConf.load(config.getString("gsn.config"));
@@ -33,12 +32,11 @@ public class ActorSystemInitializer {
 
         actorSystem.actorOf(Props.create(SensorStore.class, dataStore), "gsnSensorStore");
 
-        logger.debug("Config content: {}", config.toString());
 
         // Shut down the actor system when the application exits
         lifecycle.addStopHook(() -> {
 
-            logger.info("Application terminated");
+            Logger.info("Application terminated");
             dataStore.close();
             actorSystem.terminate();
             return CompletableFuture.completedFuture(null);
