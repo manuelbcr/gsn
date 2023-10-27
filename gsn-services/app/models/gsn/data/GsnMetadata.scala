@@ -36,11 +36,11 @@ import java.io.File
 import play.api.libs.ws.WSRequest
 import play.api.libs.ws.WSClient
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
-class GsnMetadata @Inject()(wsClient: WSClient)(gsnServer:String) {
+class GsnMetadata @Inject()(wsClient: WSClient,gsnServer:String)(implicit ec: ExecutionContext) {
 
   import play.api.Play.current
-  implicit val context = Execution.Implicits.defaultContext
 
   def allSensors:Future[Map[String,Sensor]]={
     println("all over again")

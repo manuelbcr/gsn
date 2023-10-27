@@ -35,14 +35,14 @@ import play.api.libs.concurrent.Akka
 import akka.actor.Props
 import scala.concurrent.Future
 import scala.concurrent.Promise
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import scala.concurrent.ExecutionContext
 import ch.epfl.gsn.data.format._
 import ch.epfl.gsn.process.WeightedMovingAverage
 import ch.epfl.gsn.process.LinearInterpolation
 import javax.inject.Inject
 import akka.actor._
 
-class DataProcessService @Inject()(actorSystem: ActorSystem) extends InjectedController with GsnService{
+class DataProcessService @Inject()(actorSystem: ActorSystem)(implicit ec: ExecutionContext) extends InjectedController with GsnService{
   
   private def process(process:String,params:Array[String],data:SensorData)={
     process match {

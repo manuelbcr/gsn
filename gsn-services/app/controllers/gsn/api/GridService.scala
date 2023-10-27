@@ -27,7 +27,6 @@ package controllers.gsn.api
 import play.api.mvc._
 import play.api.Play.current
 import scala.concurrent.Future
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.util.Try
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Promise
@@ -39,8 +38,9 @@ import ch.epfl.gsn.data.format._
 import play.api.mvc.InjectedController
 import javax.inject.Inject
 import akka.actor._
+import scala.concurrent.ExecutionContext
 
-class GridService @Inject()(actorSystem: ActorSystem) extends InjectedController with GsnService {   
+class GridService @Inject()(actorSystem: ActorSystem)(implicit ec: ExecutionContext) extends InjectedController with GsnService {   
   def gridData(sensorid:String) =grid(sensorid,EsriAscii)
   def gridTimeseries(sensorid:String)=grid(sensorid,Json,true)
 
