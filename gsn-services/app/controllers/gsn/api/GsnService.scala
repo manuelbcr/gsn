@@ -28,7 +28,7 @@ import play.api.mvc._
 import com.typesafe.config.ConfigFactory
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatterBuilder
-import collection.JavaConversions._
+import collection.JavaConverters._
 
 
 trait GsnService {
@@ -38,7 +38,9 @@ trait GsnService {
   val defaultFormat=Json
 
   val dateFormatter={
-    val parsers=conf.getStringList("gsn.api.dateTimeFormats").map{d=>
+    val javaList: java.util.List[String] = conf.getStringList("gsn.api.dateTimeFormats")
+    val scalaList: Seq[String] = javaList.asScala
+    val parsers=scalaList.map{d=>
       DateTimeFormat.forPattern(d).getParser
     }.toArray
     new DateTimeFormatterBuilder().append(null,parsers).toFormatter

@@ -36,7 +36,7 @@ import scalaoauth2.provider.AuthInfoRequest
 import models.gsn.User
 import models.gsn.DataSource
 import controllers.gsn.GSNDataHandler
-import collection.JavaConversions._
+import collection.JavaConverters._
 import scalaoauth2.provider.{ProtectedResource, ProtectedResourceRequest}
 import org.zeromq.ZMQ
 import java.util.Date
@@ -55,7 +55,7 @@ class WebSocketForwarder @Inject()(playAuth: PlayAuthenticate)(implicit actorSys
 
   def socket(sensorid: String)= WebSocket.acceptOrResult[Message, Message] { requestHeader =>
     Logger.error(s"here $sensorid")
-    if (playAuth.isLoggedIn(new Http.Session(requestHeader.session.data))) {
+    if (playAuth.isLoggedIn(new Http.Session(requestHeader.session.data.asJava))) {
       val user = User.findByAuthUserIdentity(playAuth.getUser(JavaHelpers.createJavaContext(requestHeader, JavaHelpers.createContextComponents())))
       Logger.error(s"user $user")
       if (hasAccess(user, false, sensorid)) {
