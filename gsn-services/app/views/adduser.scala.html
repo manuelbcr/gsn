@@ -1,5 +1,5 @@
 @import service.gsn.UserProvider
-@(addForm: play.data.Form[_],userProvider:UserProvider)
+@(addForm: Form[_],userProvider:UserProvider)
 
 @import helper._
 @import play.core.j.PlayMagicForJava._
@@ -20,7 +20,7 @@
 
             @if(addForm.hasGlobalErrors) {
 		        <p class="alert alert-danger">
-		          @addForm.globalError.message
+		          @addForm.getGlobalError.get.message
 		     	</p>
             }
 
