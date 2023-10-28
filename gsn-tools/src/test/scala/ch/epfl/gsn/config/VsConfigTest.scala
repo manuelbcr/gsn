@@ -2,9 +2,11 @@ package ch.epfl.gsn.config
 
 import org.scalatest._
 
-import ch.epfl.gsn.config.VsConf;
+import ch.epfl.gsn.config.VsConf
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class VsConfigTest extends FunSpec with Matchers {
+class VsConfigTest extends AnyFunSpec with Matchers {
     
   describe("gps vs config"){
     //val vs=VsConf.load("src/test/resources/conf/vs/gps.xml")

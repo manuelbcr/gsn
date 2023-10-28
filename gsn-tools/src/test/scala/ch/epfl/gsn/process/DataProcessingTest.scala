@@ -1,16 +1,16 @@
 package ch.epfl.gsn.process
 
-import org.scalatest.Matchers
 
 import ch.epfl.gsn.process.ExponentialSmoothing;
 import ch.epfl.gsn.process.LinearInterpolation;
 import ch.epfl.gsn.process.SimpleMovingAverage;
 import ch.epfl.gsn.process.WeightedMovingAverage;
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import ch.epfl.gsn.data._
 
-class DataProcessingTest extends FunSpec with Matchers {
+class DataProcessingTest extends AnyFunSpec with Matchers {
     
   describe("time series"){
     val ts=Series(Output("f1","s1",null,null),Seq(1d,2d,3d,4d))

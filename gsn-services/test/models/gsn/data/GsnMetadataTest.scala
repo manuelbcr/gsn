@@ -1,13 +1,16 @@
 package models.gsn.data
 
 import com.typesafe.config.ConfigFactory
-import org.scalatestplus.play._
-import play.test.FakeApplication
+import org.scalatestplus.play.PlaySpec
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.test.Helpers._
 import scala.concurrent.Await
 import concurrent.duration._
 
-class GsnMetadataTest  extends PlaySpec with OneAppPerSuite  {
-   
+class GsnMetadataTest extends PlaySpec  {
+  
+  implicit lazy val app: Application = new GuiceApplicationBuilder().build() 
 /**
   "gsn metadata" must{
     lazy val conf=ConfigFactory.load

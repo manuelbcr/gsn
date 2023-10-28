@@ -1,14 +1,14 @@
 package ch.epfl.gsn.data
 
-import org.scalatest.FunSpec
-import org.scalatest.Matchers
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
 import ch.epfl.gsn.data.DoubleType;
 import ch.epfl.gsn.data.LongType;
 import ch.epfl.gsn.data.Sensor;
 import ch.epfl.gsn.data.format.NetCdfSerializer
 
-class NetcdfTest extends FunSpec with Matchers {
+class NetcdfTest extends AnyFunSpec with Matchers {
     
   describe("netcdf write"){
 

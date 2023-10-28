@@ -37,6 +37,7 @@ libraryDependencies ++= Seq(
   "com.esotericsoftware.kryo" % "kryo" % "2.23.0",
   "com.nulab-inc" %% "scala-oauth2-core" % "1.3.0",
   "com.nulab-inc" %% "play2-oauth2-provider" % "1.3.0",
+  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.3" % "test",
   "ch.epfl.gsn" % "gsn-core" % "2.0.1" exclude("org.apache.logging.log4j", "log4j-slf4j-impl") exclude("org.scala-lang.modules", "scala-xml_2.11")
 )
 
