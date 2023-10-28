@@ -23,8 +23,7 @@ import controllers.gsn.auth.routes;
 import play.mvc.Http.Session;
 import com.feth.play.module.pa.user.AuthUser;
 import play.i18n.MessagesApi;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
+import play.Logger;
 
 public class Application extends Controller {
 
@@ -40,8 +39,6 @@ public class Application extends Controller {
 	private final UserProvider userProvider;
 
 	private final MessagesApi msg;
-
-	private static transient Logger logger = LoggerFactory.getLogger(Application.class);
 
 
 	public static String formatTimestamp(final long t) {
@@ -119,7 +116,7 @@ public class Application extends Controller {
 
 
 	public Result adduser() {
-		logger.error("here");
+		Logger.error("here");
 		return ok(adduser.render(this.provider.getSignupForm(),this.userProvider));
 	}
 

@@ -53,12 +53,11 @@ import javax.inject._
 import play.api.mvc._
 
 import io.ebean.Ebean
-import org.slf4j.LoggerFactory
+import play.Logger
 
 
 @Singleton
 class PermissionsController @Inject()(actorSystem: ActorSystem, userProvider: UserProvider, deadbolt: DeadboltActions, playAuth: PlayAuthenticate)(implicit ec: ExecutionContext) {
-  private val log = LoggerFactory.getLogger(classOf[PermissionsController])
     def vs(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { request =>
       val count = DataSource.find.query().findCount() // Define 'count' here
 
@@ -67,12 +66,12 @@ class PermissionsController @Inject()(actorSystem: ActorSystem, userProvider: Us
         val st = actorSystem.actorSelection("/user/gsnSensorStore")
         val q = actorSystem.actorOf(Props(new QueryActor(p)))
         q ! GetAllSensors(false, None)
-        log.error("after")
+        Logger.error("after")
 
         p.future.map { data =>
             Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
             data.map(s => Option(DataSource.findByValue(s.sensor.name)).getOrElse {
-              log.error("iun")
+              Logger.error("iun")
               val d = new DataSource()
               d.value = s.sensor.name
               d.is_public = false
