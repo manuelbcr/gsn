@@ -98,6 +98,8 @@ class DataProcessService @Inject()(actorSystem: ActorSystem)(implicit ec: Execut
             case _ => Ok(JsonSerializer.ser(rd,Seq(),false))
         }                             
       }.recover{
+        case t: IllegalArgumentException =>
+          BadRequest(s"Error: ${t.getMessage}")
         case t=> 
           t.printStackTrace()
           BadRequest(t.getMessage)              
