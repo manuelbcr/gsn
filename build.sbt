@@ -76,6 +76,10 @@ lazy val core = (project in file("gsn-core")).
 
 lazy val services = (project in file("gsn-services")).
   dependsOn(tools).
+  settings(
+    coverageEnabled := true,
+    coverageExcludedPackages := "<empty>;views.*"
+  ).
   settings(commonSettings: _*).
   enablePlugins(PlayJava,PlayEbean, DebianPlugin)
 
