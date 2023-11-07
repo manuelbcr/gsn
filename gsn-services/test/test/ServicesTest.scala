@@ -338,6 +338,76 @@ class ServicesTest extends PlaySpec with BeforeAndAfter{
       */
   }
 
+    "Oauth2Controller" should {
+
+      "auth" should {
+        "return redirect to login for not logged in user" in {
+          val authcontroller = app.injector.instanceOf[OAuth2Controller]
+          val request = FakeRequest("GET", s"/oauth2/auth")
+            .withHeaders("Authorization" -> s"Bearer $access_token")
+          val result = authcontroller.auth()(request)
+
+          status(result) mustBe SEE_OTHER
+
+          val redirectLocation = header("Location", result)
+          redirectLocation mustBe Some("/login")
+        }
+
+
+        "return redirect bad request" in {
+          val authController = app.injector.instanceOf[OAuth2Controller]
+          val queryString = "?response_type=code&client_id=web-gui-public&client_secret=web-gui-secret"
+          val request = FakeRequest("GET", s"/oauth2/auth$queryString")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost", "csrfToken" -> "5580bc19ab329f7799adebaaa81f6d67e20aab51-1699253350443-9369ab2a30b2a7c7108bff31")
+          val futureResult = authController.auth()(request)
+          val result: Result = await(futureResult)
+          status(futureResult) mustBe BAD_REQUEST
+        }
+      }
+
+      "handle POST request to doAuth (SEE_OTHER)" in {
+        val authController = app.injector.instanceOf[OAuth2Controller]
+        val request = FakeRequest("GET", s"/oauth2/auth")
+            .withHeaders("Authorization" -> s"Bearer $access_token")
+
+        val futureResult = authController.doAuth()(request)
+        val result: Result = await(futureResult)
+        status(futureResult) mustBe SEE_OTHER
+        val redirectLocation = header("Location", futureResult)
+        redirectLocation mustBe Some("/login")
+        }
+
+      "handle POST request to doAuth (BAD_REQUEST)" in {
+        val authController = app.injector.instanceOf[OAuth2Controller]
+        val request = FakeRequest(POST, "/oauth2/auth")
+          .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost", "csrfToken" -> "5580bc19ab329f7799adebaaa81f6d67e20aab51-1699253350443-9369ab2a30b2a7c7108bff31")
+          .withFormUrlEncodedBody("client_id" -> "web-gui-public", "client_secret" -> "web-gui-secret")
+
+        val futureResult = authController.doAuth()(request)
+        val result: Result = await(futureResult)
+        println(result)
+        status(futureResult) mustBe BAD_REQUEST
+      }
+
+
+    /*
+      "list clients clientList request" in {
+        val authController = app.injector.instanceOf[OAuth2Controller]
+        val request = FakeRequest(GET, "/oauth2/client")
+                    .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost", "csrfToken" -> "5580bc19ab329f7799adebaaa81f6d67e20aab51-1699253350443-9369ab2a30b2a7c7108bff31")
+
+        val futureResult = authController.listClients()(request)
+        val result: Result = await(futureResult)
+
+        // Assert the status code, content type, and response body as needed
+        status(futureResult) mustBe OK
+        contentType(futureResult) mustBe Some("text/html")
+      }
+  */
+
+
+    }
+
 
 
 
