@@ -75,7 +75,7 @@ lazy val core = (project in file("gsn-core")).
 //  settings(commonSettings: _*)
 
 lazy val services = (project in file("gsn-services")).
-  dependsOn(tools).
+  dependsOn(tools, core).
   settings(
     coverageEnabled := true,
     coverageExcludedPackages := "<empty>;views.*"
