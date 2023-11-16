@@ -19,9 +19,13 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     
-    - name: compile
-      run: sbt compile
-      retries: 3
+    - name: Compile with Retry
+      uses: nick-fields/retry@v2
+      with:
+        timeout_seconds: 15
+        max_attempts: 3
+        retry_on: error
+        command: sbt compile
     
     - name: start core
       working-directory: core
