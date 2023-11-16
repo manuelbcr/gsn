@@ -108,9 +108,6 @@ class WebSocketForwarder @Inject()(playAuth: PlayAuthenticate)(implicit actorSys
     }
 
 
-  def hasAccess(user: User, toWrite: Boolean, vsnames: String*): Boolean =
-    vsnames.foldRight[Boolean](true)((vs, b) => b && hasAccess(user, toWrite, vs))
-
   def hasAccess(user: User, toWrite: Boolean, vsname: String): Boolean = {
     val ds = DataSource.findByValue(vsname)
     ds == null || (ds.getIs_public && !toWrite) || user.hasAccessTo(ds, toWrite)
