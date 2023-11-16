@@ -27,9 +27,9 @@ jobs:
         retry_on: error
         command: sbt compile
     
-    - name: start core
-      working-directory: core
-      run: sbt re-start
+    - name: Start Core in SBT
+      run: |
+        sbt "project core" re-start
         
     - name: Run tests
       run: sbt test
