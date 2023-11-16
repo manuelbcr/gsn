@@ -78,7 +78,7 @@ lazy val services = (project in file("gsn-services")).
   dependsOn(tools, core).
   settings(
     coverageEnabled := true,
-    coverageExcludedPackages := "<empty>;views.*"
+    coverageExcludedPackages := "<empty>;views.*;router.*;models.gsn.data"
   ).
   settings(commonSettings: _*).
   enablePlugins(PlayJava,PlayEbean, DebianPlugin)
