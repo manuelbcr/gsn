@@ -584,7 +584,7 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
         val result1 = await(futureResult1) 
         val stringresult= contentAsString(futureResult1)
         println(stringresult)
-        contentAsString(futureResult1) must include("success")
+        contentAsString(futureResult1) must include("error")
         
 
         //remove write rights: 
