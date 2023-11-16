@@ -21,6 +21,7 @@ jobs:
     
     - name: compile
       run: sbt compile
+      retries: 3
     
     - name: start core
       working-directory: core
