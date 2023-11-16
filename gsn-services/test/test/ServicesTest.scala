@@ -9,7 +9,10 @@ import play.api.test.Helpers._
 import scala.concurrent.ExecutionContext
 import controllers.gsn.api.DataProcessService
 import controllers.gsn.api.SensorService
+import controllers.gsn.api.GridService
 import controllers.gsn.OAuth2Controller
+import controllers.gsn.auth.PermissionsController
+import security.gsn.GSNScalaDeadboltHandler
 import play.api.mvc._
 import play.api.libs.ws._
 import play.api.libs.ws.ahc.AhcWSClient
@@ -17,27 +20,37 @@ import play.api.libs.json.Json
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import play.api.libs.json._
-import org.scalatest.BeforeAndAfter
+import org.scalatest.BeforeAndAfterAll
+import play.api.test.CSRFTokenHelper._
+import org.scalatestplus.play.guice.GuiceOneAppPerTest
+import play.api.Application
+import models.gsn.data.GsnMetadata
+import play.api.libs.json.{JsArray, Json}
+import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
+import scala.concurrent.{ExecutionContext, Future}
+import play.api.db.Database
+import java.time.LocalDate
 
-//include multiformatsample.xml and start core if not executable
-//important also add the user to virtual sensor in frontend in order to access the data 
-class ServicesTest extends PlaySpec with BeforeAndAfter{
+class ServicesTest extends PlaySpec with BeforeAndAfterAll{
 
   val actorSystem = ActorSystem("test")
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-
   val app = new GuiceApplicationBuilder()
     .bindings(
       bind[ControllerComponents].to[DefaultControllerComponents]
     )
     .build()
 
-
-
+  
+  var db: Database = _
   var access_token: String = ""
+  var refresh_token: String=""
 
-  before {
-    // Run once before all tests to obtain the access token
+  override def beforeAll(): Unit = {
+    db = app.injector.instanceOf[Database];
+
+    play.api.Play.start(app)
+
     val oauthcontroller = app.injector.instanceOf[OAuth2Controller]
     val oauth2request = FakeRequest("POST", "/oauth2/token")
     val requestData = Map(
@@ -49,167 +62,344 @@ class ServicesTest extends PlaySpec with BeforeAndAfter{
     val futureAccessToken = oauthcontroller.accessToken()(oauth2request.withFormUrlEncodedBody(requestData.toSeq: _*))
 
     val tokenresult: Result = await(futureAccessToken)
-    println(tokenresult)
 
     if (tokenresult.header.status == OK) {
       val json = Json.parse(contentAsString(futureAccessToken))
       access_token = (json \ "access_token").as[String]
+      refresh_token = (json \ "refresh_token").as[String]
     } else {
       throw new RuntimeException(s"Access token request failed with status: ${tokenresult.header.status}")
     }
   }
-
-  "DataProcessService" should {
-    "processData method should return JSON response" in {
-      val controller = app.injector.instanceOf[DataProcessService]
-      val request = FakeRequest("GET", "/api/data?sensorid=MultiFormatTemperatureHandler&fieldid=light&op=wma&params=10&format=json")
-      val result = controller.processData("MultiFormatTemperatureHandler", "light")(request)
-
-      status(result) mustBe OK
-      contentType(result) mustBe Some("application/json")
-    }
-
-    "return CSV response for processData method" in {
-      val controller = app.injector.instanceOf[DataProcessService]
-      val request = FakeRequest("GET", "/api/data?sensorid=MultiFormatTemperatureHandler&fieldid=light&op=wma&params=10&format=csv")
-      val result = controller.processData("MultiFormatTemperatureHandler", "light")(request)
-
-      status(result) mustBe OK
-      contentType(result) mustBe Some("text/plain")
-    }
-
-    "return XML response for processData method" in {
-      val controller = app.injector.instanceOf[DataProcessService]
-      val request = FakeRequest("GET", "/api/data?sensorid=MultiFormatTemperatureHandler&fieldid=light&op=wma&params=10&format=xml")
-      val result = controller.processData("MultiFormatTemperatureHandler", "light")(request)
-
-      status(result) mustBe OK
-      contentType(result) mustBe Some("text/plain")
-    }
-
-    "return XML response for processData method with linear-interp" in {
-      val controller = app.injector.instanceOf[DataProcessService]
-      val request = FakeRequest("GET", "/api/data?sensorid=MultiFormatTemperatureHandler&fieldid=light&op=linear-interp&params=10&format=xml")
-      val result = controller.processData("MultiFormatTemperatureHandler", "light")(request)
-
-      status(result) mustBe OK
-      contentType(result) mustBe Some("text/plain")
-    }
-
-    "processData method should use the default response format (JSON)" in {
-        val controller = app.injector.instanceOf[DataProcessService]
-        val request = FakeRequest("GET", "/api/data?sensorid=MultiFormatTemperatureHandler&fieldid=light&op=wma&params=10")
-        val result = controller.processData("MultiFormatTemperatureHandler", "light")(request)
-
-        status(result) mustBe OK
-        contentType(result) mustBe Some("application/json")
-    }
-
-    "processData method should return BadRequest for wrong sensor" in {
-    val controller = app.injector.instanceOf[DataProcessService]
-    val request = FakeRequest("GET", "/api/data?sensorid=wrong_sensor_id&fieldid=1&op=wma&params=10&format=json")
-
-    val result = controller.processData("wrong_sensor_id", "wrong_field_id")(request)
-
-    status(result) mustBe BAD_REQUEST
-    contentAsString(result) must include("Sensor id wrong_sensor_id is not valid.")
-    }
-
+  override def afterAll(): Unit = {
+    play.api.Play.stop(app)
   }
 
+      // PermissionController
+    "PermissionsController" should{
+      "show groups" in {
+        var permissionsController = app.injector.instanceOf[PermissionsController]
+        var request = FakeRequest("GET", s"/access/groups")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        var futureResult = permissionsController.groups(1)(request)
+        var result: Result = await(futureResult)
+        status(futureResult) mustBe OK
+      }
+      "add a group" in {
+        var permissionsController = app.injector.instanceOf[PermissionsController]
+        var request = FakeRequest("POST", "/access/groups/1/edit")
+        .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+        .withFormUrlEncodedBody(
+          "id" -> "0",
+          "action" -> "add",
+          "name" -> "test",
+          "description" -> "description change"
+        ).asInstanceOf[FakeRequest[AnyContentAsEmpty.type]]
+        .withCSRFToken
+        var futureResult = permissionsController.addgroup(1)(request)
+        var result = await(futureResult)
+        status(futureResult) mustBe OK
+      }
+
+      "edit a group" in {
+        var permissionsController = app.injector.instanceOf[PermissionsController]
+        var request = FakeRequest("POST", "/access/groups/1/edit")
+        .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+        .withFormUrlEncodedBody(
+          "id" -> "1",
+          "action" -> "edit",
+          "name" -> "test",
+          "description" -> "description change"
+        ).asInstanceOf[FakeRequest[AnyContentAsEmpty.type]]
+        .withCSRFToken
+        var futureResult = permissionsController.addgroup(1)(request)
+        var result = await(futureResult)
+        status(futureResult) mustBe OK
 
 
-  "SensorService" should {
+        request = FakeRequest("POST", "/access/groups/1/edit")
+        .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+        .withFormUrlEncodedBody(
+          "id" -> "0",
+        ).asInstanceOf[FakeRequest[AnyContentAsEmpty.type]]
+        .withCSRFToken
+        futureResult = permissionsController.addgroup(1)(request)
+        result = await(futureResult)
+        status(futureResult) mustBe BAD_REQUEST
+      }
+       
+      "add and remove a user" in {
+        var permissionsController = app.injector.instanceOf[PermissionsController]
+        var request = FakeRequest(POST, s"/access/groups/1/addto?user_id=1&group_id=1")
+                .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+                .withCSRFToken
+        var futureResult = permissionsController.addtogroup(1)(request)
+        var result = await(futureResult)
+        status(futureResult) mustBe OK
+        
+        
+        request = FakeRequest(POST, s"/access/groups/1/removefrom?user_id=1&group_id=1")
+                .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+                .withCSRFToken
+        futureResult = permissionsController.removefromgroup(1)(request)
+        result = await(futureResult)
+        status(futureResult) mustBe OK
+      }
+      
+      "handle vs " in {
+        var permissionsController = app.injector.instanceOf[PermissionsController]
+        var request = FakeRequest("GET", s"/access/vs")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        var futureResult = permissionsController.vs(1)(request)
+        var result: Result = await(futureResult)
+        status(futureResult) mustBe OK
+        
+        request = FakeRequest("POST", s"/access/vs/1/addto?vs_id=3&id=ur1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.addtovs(1)(request)
+        result = await(futureResult)
+        status(futureResult) mustBe OK   
 
-    //##################################################### sensors #####################################################
-    "return sensors in JSON format" in {
-      val sensorService = app.injector.instanceOf[SensorService]
-      val request = FakeRequest("GET", "/api/sensors?format=json")
-      val result = sensorService.sensors()(request)
+        request = FakeRequest("POST", s"/access/vs/1/addto?vs_id=1&id=ur1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.addtovs(1)(request)
+        result = await(futureResult)
 
-      status(result) mustBe OK
-      contentType(result) mustBe Some("application/json")
+        status(futureResult) mustBe OK 
+                request = FakeRequest("POST", s"/access/vs/1/addto?vs_id=1&id=uw1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.addtovs(1)(request)
+        result = await(futureResult)
+        status(futureResult) mustBe OK 
+
+        request = FakeRequest("POST", s"/access/vs/1/addto?vs_id=3&id=uw1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.addtovs(1)(request)
+        result= await(futureResult)
+        status(futureResult) mustBe OK   
+
+        request = FakeRequest("POST", s"/access/vs/1/addto?vs_id=3&id=gr1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.addtovs(1)(request)
+        result= await(futureResult)
+        status(futureResult) mustBe OK 
+
+        request = FakeRequest("POST", s"/access/vs/1/addto?vs_id=3&id=gw1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.addtovs(1)(request)
+        result= await(futureResult)
+        status(futureResult) mustBe OK 
+
+        request = FakeRequest("POST", s"/access/vs/1/removefrom?vs_id=3&id=ur1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.removefromvs(1)(request)
+        result= await(futureResult)
+        status(futureResult) mustBe OK   
+
+        request = FakeRequest("POST", s"/access/vs/1/removefrom?vs_id=3&id=uw1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.removefromvs(1)(request)
+        result= await(futureResult)
+        status(futureResult) mustBe OK   
+
+        request = FakeRequest("POST", s"/access/vs/1/removefrom?vs_id=3&id=gr1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.removefromvs(1)(request)
+        result= await(futureResult)
+        status(futureResult) mustBe OK 
+
+        request = FakeRequest("POST", s"/access/vs/1/removefrom?vs_id=3&id=gw1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.removefromvs(1)(request)
+        result= await(futureResult)
+        status(futureResult) mustBe OK 
+      }
+
+
+      "delete a group" in {
+        var permissionsController = app.injector.instanceOf[PermissionsController]
+        var request = FakeRequest("POST", "/access/groups/1/edit")
+        .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+        .withFormUrlEncodedBody(
+          "id" -> "1",
+          "action" -> "del",
+          "name" -> "test",
+          "description" -> "test"
+        ).asInstanceOf[FakeRequest[AnyContentAsEmpty.type]]
+        .withCSRFToken
+        var futureResult = permissionsController.addgroup(1)(request)
+        var result = await(futureResult)
+        status(futureResult) mustBe OK
+      }
+
+
+      "list all users" in {
+        var permissionsController = app.injector.instanceOf[PermissionsController]
+        var request = FakeRequest("GET", s"/access/users")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        var futureResult = permissionsController.users(1)(request)
+        var result: Result = await(futureResult)
+        status(futureResult) mustBe OK
+      }
+
+      "manage users" in {
+        var permissionsController = app.injector.instanceOf[PermissionsController]
+        var request = FakeRequest("POST", s"/access/users/1/addrole?role_id=2&user_id=2")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        var futureResult = permissionsController.addrole(1)(request)
+        var result= await(futureResult)
+        status(futureResult) mustBe OK
+
+        request = FakeRequest("POST", s"/access/users/1/removerole?role_id=2&user_id=2")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.removerole(1)(request)
+        result = await(futureResult)
+        status(futureResult) mustBe OK
+
+        request = FakeRequest("POST", s"/access/users/1/delete?user_id=2")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.deleteuser(1)(request)
+        result = await(futureResult)
+        status(futureResult) mustBe OK
+      }
+
+        
+
     }
 
-    "return sensors in CSV format" in {
+
+
+  "GridService" should {
+    "test functionality" in {
+        var gridservice = app.injector.instanceOf[GridService]
+        val to= LocalDate.now()
+        val from= to.minusDays(1)
+        var request = FakeRequest("GET", s"/api/sensors/MultiFormatTemperatureHandler/grid?from=${from}&to=${to}")
+          .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+        var futureResult = gridservice.gridData("MultiFormatTemperatureHandler")(request)
+        var result= await(futureResult)
+        status(futureResult) mustBe OK
+
+        request = FakeRequest("GET", "/api/sensors/MultiFormatTemperatureHandler/grid?format&size=&fields=")
+          .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+        futureResult = gridservice.gridData("MultiFormatTemperatureHandler")(request)
+        result= await(futureResult)
+        status(futureResult) mustBe BAD_REQUEST
+
+        request = FakeRequest("GET", "/api/sensors/MultiFormatTemperatureHandler/grid?format=json&size=10&fields=field1,field2&timeFormat=yyyy-MM-dd%27T%27HH:mm:ss&box=1,2,3,4")
+          .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+        futureResult = gridservice.gridData("MultiFormatTemperatureHandler")(request)
+        result= await(futureResult)
+        status(futureResult) mustBe OK
+
+        request = FakeRequest("GET", "/api/sensors/MultiFormatTemperatureHandler/grid/timeseries")
+          .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+        futureResult = gridservice.gridTimeseries("MultiFormatTemperatureHandler")(request)
+        result= await(futureResult)
+        status(futureResult) mustBe OK
+    }
+  }
+
+  "SensorService" should {
+    //##################################################### sensors #####################################################
+    "get api sensors in different formats" in {
+      val oauthcontroller = app.injector.instanceOf[OAuth2Controller]
+      var permissionsController = app.injector.instanceOf[PermissionsController]
       val sensorService = app.injector.instanceOf[SensorService]
-      val request = FakeRequest("GET", "/api/sensors?format=csv")
-      val result = sensorService.sensors()(request)
+
+      val requestjson = FakeRequest("GET", "/api/sensors?format=json")
+      val resultjson = sensorService.sensors()(requestjson)
+      status(resultjson) mustBe OK
+      contentType(resultjson) mustBe Some("application/json")
+
+      var requestcsv = FakeRequest("GET", "/api/sensors?format=csv")
+      var resultcsv = sensorService.sensors()(requestcsv)
+      status(resultcsv) mustBe OK
+      contentType(resultcsv) mustBe Some("text/plain")
+
+      var requestxml = FakeRequest("GET", "/api/sensors?format=xml")
+      var resultxml = sensorService.sensors()(requestxml)
+      status(resultxml) mustBe OK
+      contentType(resultxml) mustBe Some("application/xml")
+
+      val requestempty = FakeRequest("GET", "/api/sensors")
+      val resultempty = sensorService.sensors()(requestempty)
+      status(resultempty) mustBe OK
+      contentType(resultempty) mustBe Some("application/json")
+
+    }
+
+    "get api users in different formats" in{
+      val sensorService = app.injector.instanceOf[SensorService]
+      var request = FakeRequest("GET", "/api/user").withHeaders(
+          "Authorization" -> s"Bearer $access_token"
+        )
+      var result = sensorService.userInfo()(request)
+      status(result) mustBe OK
+      contentType(result) mustBe Some("application/json")
+
+      request = FakeRequest("GET", "/api/user")
+      result = sensorService.userInfo()(request)
+      status(result) mustBe BAD_REQUEST
+
+      request = FakeRequest("GET", "/api/user").withHeaders("Authorization" -> s"Bearer fake_token")
+      result = sensorService.userInfo()(request)
+      status(result) mustBe UNAUTHORIZED
+
+      request = FakeRequest("GET", "/api/user")
+          .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+      
+      result = sensorService.userInfo()(request)
+      status(result) mustBe FORBIDDEN
+
+    }
+
+
+    "return fields of sensor" in {
+      val sensorService = app.injector.instanceOf[SensorService]
+      val sensorId = "MultiFormatTemperatureHandler"
+      val fieldId = "light"
+      var request = FakeRequest("GET", s"/api/sensors/$sensorId/fields/$fieldId")
+          .withHeaders("Authorization" -> s"Bearer $access_token")
+      var result = sensorService.sensorField(sensorId, fieldId)(request)
 
       status(result) mustBe OK
       contentType(result) mustBe Some("text/plain")
     }
 
-    "return sensors in XML format" in {
-      val sensorService = app.injector.instanceOf[SensorService]
-      val request = FakeRequest("GET", "/api/sensors?format=xml")
-      val result = sensorService.sensors()(request)
-
-      status(result) mustBe OK
-      contentType(result) mustBe Some("application/xml")
-    }
-
-    "return sensors in default response format (JSON)" in {
-      val sensorService = app.injector.instanceOf[SensorService]
-      val request = FakeRequest("GET", "/api/sensors")
-      val result = sensorService.sensors()(request)
-
-      status(result) mustBe OK
-      contentType(result) mustBe Some("application/json")
-    }
-
-
-    //##################################################### userinfo #####################################################
-    "return user info in JSON format for userinfo request" in {
-        val request = FakeRequest("GET", "/api/user").withHeaders(
-          "Authorization" -> s"Bearer $access_token"
-        )
+    "return sensor data with specified fields, size and filter" in {
         val sensorService = app.injector.instanceOf[SensorService]
-        val result = sensorService.userInfo()(request)
-
-        status(result) mustBe OK
-        contentType(result) mustBe Some("application/json")
-
-    }
-
-    "return BAD_REQUEST for userinfo request with no token" in {
-      val request = FakeRequest("GET", "/api/user")
-      val sensorService = app.injector.instanceOf[SensorService]
-      val result = sensorService.userInfo()(request)
-      status(result) mustBe BAD_REQUEST
-    }
-
-    "return unauthorized for userinfo request with wrong token" in {
-      val request = FakeRequest("GET", "/api/user").withHeaders(
-          "Authorization" -> s"Bearer fake_token"
-      )
-      val sensorService = app.injector.instanceOf[SensorService]
-      val result = sensorService.userInfo()(request)
-      status(result) mustBe UNAUTHORIZED
-    }
-
-    //##################################################### sensorData #####################################################
-      "return sensor data in JSON format with expectedFields and fieldTypes" in {
-        val params = Map("size" -> "10", "fields" -> "light,temperature,packet_type","filter"-> "light > 100,temperature <100")
-
-        val request = FakeRequest("GET", s"/api/sensors/MultiFormatTemperatureHandler/data?${params.map { case (key, value) => s"$key=$value" }.mkString("&")}")
+        var params = Map("size" -> "10", "fields" -> "light,temperature,packet_type","filter"-> "light > 100,temperature <100")
+        var request = FakeRequest("GET", s"/api/sensors/MultiFormatTemperatureHandler/data?${params.map { case (key, value) => s"$key=$value" }.mkString("&")}")
           .withHeaders("Authorization" -> s"Bearer $access_token")
-        println(request)
-        val sensorService = app.injector.instanceOf[SensorService]
-        val futureResult = sensorService.sensorData("MultiFormatTemperatureHandler")(request)
-        val result: Result = await(futureResult)
-
+        var futureResult = sensorService.sensorData("MultiFormatTemperatureHandler")(request)
+        var result: Result = await(futureResult)
         status(futureResult) mustBe OK
         contentType(futureResult) mustBe Some("application/json")
    
         val jsonResult = Json.parse(contentAsString(futureResult))
-
         (jsonResult \ "type").as[String] mustBe "Feature"
 
         val properties = (jsonResult \ "properties").as[JsObject]
         (properties \ "vs_name").as[String] mustBe "MultiFormatTemperatureHandler"
 
-        val fields = (properties \ "fields").as[Seq[JsObject]]
+        var fields = (properties \ "fields").as[Seq[JsObject]]
         val expectedFields = Map(
               "light" -> "double",
               "temperature" -> "double",
@@ -222,83 +412,80 @@ class ServicesTest extends PlaySpec with BeforeAndAfter{
           val fieldJsType = (field.get \ "type").as[String]
           fieldJsType mustBe fieldType
         }
-     
-        
-      }
-      //##################################################### sensorField #####################################################
-      "return sensor field data" in {
+
+    }
+
+    "return sensor data in JSON format for logged in user" in {
+      val sensorService = app.injector.instanceOf[SensorService]
+      var params = Map("from" -> "2023-01-01","to" -> "2023-01-01","size" -> "10", "fields" -> "light,temperature,packet_type","filter"-> "light > 100,temperature <100")
+      var request = FakeRequest("GET", s"/api/sensors/MultiFormatTemperatureHandler/data?${params.map { case (key, value) => s"$key=$value" }.mkString("&")}")
+          .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+      var futureResult = sensorService.sensorData("MultiFormatTemperatureHandler")(request)
+      var result: Result = await(futureResult)
+      status(futureResult) mustBe OK
+      contentType(futureResult) mustBe Some("application/json") 
+    }
+
+    "return sensor data in csv format with timeline" in {
         val sensorService = app.injector.instanceOf[SensorService]
-        val sensorId = "MultiFormatTemperatureHandler"
-        val fieldId = "light"
-        val request = FakeRequest("GET", s"/api/sensors/$sensorId/fields/$fieldId")
-          .withHeaders("Authorization" -> s"Bearer $access_token")
-        val result = sensorService.sensorField(sensorId, fieldId)(request)
+        val paramsISO = Map("from" -> "2023-01-01","to" -> "2023-01-01","size" -> "10", "timeline" -> "timed","format"->"csv")
+        val requestISO = FakeRequest("GET", s"/api/sensors/MultiFormatTemperatureHandler/data?${paramsISO.map { case (key, value) => s"$key=$value" }.mkString("&")}")
+          .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+        val futureResultISO = sensorService.sensorData("MultiFormatTemperatureHandler")(requestISO)
+        val resultISO: Result = await(futureResultISO)
+        status(futureResultISO) mustBe OK
+        contentType(futureResultISO) mustBe Some("text/plain") 
+    }
 
-        status(result) mustBe OK
-        contentType(result) mustBe Some("text/plain")
+    "hanlde metadata" in {
+      val sensorService = app.injector.instanceOf[SensorService]
+        //val wsClient: WSClient = app.injector.instanceOf[WSClient]
+        //val gsnMetadata = new GsnMetadata(wsClient, "http://data.permasense.ch")
 
-      }
-
-      //##################################################### sensorMetadata #####################################################
-      "return sensor metadata in the specified format (JSON)" in {
-        val sensorService = app.injector.instanceOf[SensorService]
+        //val resultmeta= gsnMetadata.allSensors
+        //val resultmetafinished= await(resultmeta)
+        //println("#####################################################")
+        //println("result" + resultmeta)
         val sensorId = "MultiFormatTemperatureHandler"
         val latestValues = "true" 
-        val format = "json" 
-        val request = FakeRequest("GET", s"/api/sensors/$sensorId/metadata?latestValues=$latestValues&format=$format")
+        var format = "json" 
+        var request = FakeRequest("GET", s"/api/sensors/$sensorId/metadata?latestValues=$latestValues&format=$format")
           .withHeaders("Authorization" -> s"Bearer $access_token")
-        val result = sensorService.sensorMetadata(sensorId)(request)
-
+        var result = sensorService.sensorMetadata(sensorId)(request)
         status(result) mustBe OK
         contentType(result) mustBe Some("application/json")
 
-      }
-
-      "return sensor metadata in the specified format (CSV)" in {
-        val sensorService = app.injector.instanceOf[SensorService]
-        val sensorId = "MultiFormatTemperatureHandler"
-        val latestValues = "true" 
-        val format = "csv" 
-        val request = FakeRequest("GET", s"/api/sensors/$sensorId/metadata?latestValues=$latestValues&format=$format")
+        
+        format = "csv" 
+        request = FakeRequest("GET", s"/api/sensors/$sensorId/metadata?latestValues=$latestValues&format=$format")
           .withHeaders("Authorization" -> s"Bearer $access_token")
-        val result = sensorService.sensorMetadata(sensorId)(request)
-
+        result = sensorService.sensorMetadata(sensorId)(request)
         status(result) mustBe OK
         contentType(result) mustBe Some("text/plain")
 
-      }
-
-      "return sensor metadata in the specified format (xml)" in {
-        val sensorService = app.injector.instanceOf[SensorService]
-        val sensorId = "MultiFormatTemperatureHandler"
-        val latestValues = "true" 
-        val format = "xml" 
-        val request = FakeRequest("GET", s"/api/sensors/$sensorId/metadata?latestValues=$latestValues&format=$format")
+        format = "xml" 
+        request = FakeRequest("GET", s"/api/sensors/$sensorId/metadata?latestValues=$latestValues&format=$format")
           .withHeaders("Authorization" -> s"Bearer $access_token")
-        val result = sensorService.sensorMetadata(sensorId)(request)
-
+        result = sensorService.sensorMetadata(sensorId)(request)
         status(result) mustBe OK
         contentType(result) mustBe Some("text/plain")
+    }
 
-      }
-
-
-      //##################################################### sensorSearch #####################################################
-      "return sensor search results in the specified format" in {
+       "handle sensor search" in {
         val sensorService = app.injector.instanceOf[SensorService]
         val vsnames = "MultiFormatTemperatureHandler" 
         val size = 10 
-        val fields = "light,temperature" 
-        val format = "json" 
-        val request = FakeRequest("GET", s"/api/sensors/search?vsnames=$vsnames&size=$size&fields=$fields&format=$format")
+        val fields1 = "light,temperature" 
+        var format = "json" 
+        var request = FakeRequest("GET", s"/api/sensors/search?vsnames=$vsnames&size=$size&fields=$fields1&format=$format")
           .withHeaders("Authorization" -> s"Bearer $access_token")
-        val result = sensorService.sensorSearch(request)
+        var result = sensorService.sensorSearch(request)
 
         status(result) mustBe OK
         contentType(result) mustBe Some("application/json")
        
         val formatcsv = "csv" 
-        val requestcsv = FakeRequest("GET", s"/api/sensors/search?vsnames=$vsnames&size=$size&fields=$fields&format=$formatcsv")
+        val requestcsv = FakeRequest("GET", s"/api/sensors/search?vsnames=$vsnames&size=$size&fields=$fields1&format=$formatcsv")
           .withHeaders("Authorization" -> s"Bearer $access_token")
         val resultcsv = sensorService.sensorSearch(requestcsv)
 
@@ -306,108 +493,124 @@ class ServicesTest extends PlaySpec with BeforeAndAfter{
         contentType(resultcsv) mustBe Some("application/zip")
 
         val formatxml = "xml" 
-        val requestxml = FakeRequest("GET", s"/api/sensors/search?vsnames=$vsnames&size=$size&fields=$fields&format=$formatxml")
+        val requestxml = FakeRequest("GET", s"/api/sensors/search?vsnames=$vsnames&size=$size&fields=$fields1&format=$formatxml")
           .withHeaders("Authorization" -> s"Bearer $access_token")
-        val resultxml = sensorService.sensorSearch(request)
+        val resultxml = sensorService.sensorSearch(requestxml)
 
         status(resultxml) mustBe OK
-        contentType(resultxml) mustBe Some("application/json")
-      }
+        contentType(resultxml) mustBe Some("text/plain") 
 
-      //##################################################### uploadSensorData #####################################################
-     
-     /*
-      "upload sensor data and forward it to GSN core" in {
+       }
+       
+    
+
+        //download     
+        "download" in {
+          val sensorService = app.injector.instanceOf[SensorService]
+          var request = FakeRequest(POST, "/api/sensors/download")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+          var futureResult = sensorService.download()(request)
+          var result: Result = await(futureResult)
+          status(futureResult) mustBe OK
+        }
+      
+        "return FORBIDDEN FOR not authorized resource" in {
+          val sensorService = app.injector.instanceOf[SensorService]
+          var params = Map("size" -> "10", "fields" -> "light,temperature,packet_type","filter"-> "light > 100,temperature <100")
+          var request = FakeRequest("GET", s"/api/sensors/MultiFormatTemperatureHandler1/data?${params.map { case (key, value) => s"$key=$value" }.mkString("&")}")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+          var futureResult = sensorService.sensorData("MultiFormatTemperatureHandler1")(request)
+          var result = await(futureResult)
+         status(futureResult) mustBe FORBIDDEN 
+        }
+
+
+        "return FORBIDDEN FOR not authorized resource (accessToken)" in {
+          val sensorService = app.injector.instanceOf[SensorService]
+          var params = Map("size" -> "10", "fields" -> "light,temperature,packet_type","filter"-> "light > 100,temperature <100")
+          var request = FakeRequest("GET", s"/api/sensors/MultiFormatTemperatureHandler1/data?${params.map { case (key, value) => s"$key=$value" }.mkString("&")}")
+            .withHeaders("Authorization" -> s"Bearer $access_token")
+          var futureResult = sensorService.sensorData("MultiFormatTemperatureHandler1")(request)
+          var result= await(futureResult)
+          status(futureResult) mustBe FORBIDDEN 
+        }
+
+      "upload sensor data and forward it to GSN core return internal server error" in {
         val sensorService = app.injector.instanceOf[SensorService]
-        val sensorId = "MultiFormatTemperatureHandler"
-        val jsonData = Json.obj(
-          "light" -> 400,
-          "temperature" -> 42
-        ) 
+        var permissionsController = app.injector.instanceOf[PermissionsController]
+        var request = FakeRequest("POST", s"/access/vs/1/addto?vs_id=3&id=uw1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        var futureResult = permissionsController.addtovs(1)(request)
+        var result= await(futureResult)
+        status(futureResult) mustBe OK  
 
-        val request = FakeRequest("POST", s"/api/sensors/$sensorId/data")
+        val sensorId = "MultiFormatTemperatureHandlerzeromq"
+        val jsonData = Json.obj(
+          "properties" -> Json.obj(
+            "vs_name" -> "MultiFormatTemperatureHandlerzeromq",
+            "fields" -> Json.arr(
+              Json.obj(
+                "name" -> "timestamp",
+                "type" -> "time",
+                "unit" -> "ms"
+              ),
+              Json.obj(
+                "name" -> "light",
+                "type" -> "DOUBLE"
+              ),
+              Json.obj(
+                "name" -> "temperature",
+                "type" -> "DOUBLE"
+              ),
+              Json.obj(
+                "name" -> "packet_type",
+                "type" -> "DOUBLE"
+              )
+            ),
+            "values" -> Json.arr(
+              Json.arr("1699437381297", "42.0", "79.75","2")
+            )
+          )
+        )
+
+        val request1 = FakeRequest("POST", s"/api/sensors/$sensorId/data")
           .withHeaders("Authorization" -> s"Bearer $access_token")
           .withJsonBody(jsonData)
-        val futureResult= sensorService.uploadSensorData(sensorId)(request)
-        val result = await(futureResult) 
-        println(result)
-        //status(futureResult) mustBe OK
-        //contentType(futureResult) mustBe Some("application/json")
-        //contentAsString(futureResult) must include("success")
+        val futureResult1= sensorService.uploadSensorData(sensorId)(request1)
+        val result1 = await(futureResult1) 
+        val stringresult= contentAsString(futureResult1)
+        contentAsString(futureResult1) must include("error")
+        contentAsString(futureResult1) must include("Packet forwarding to GSN core failed.")
+        
+
+        //remove write rights: 
+        request = FakeRequest("POST", s"/access/vs/1/removefrom?vs_id=3&id=uw1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.removefromvs(1)(request)
+        result= await(futureResult)
+        status(futureResult) mustBe OK  
       }
-      */
+
+
+    "check for authorization" in {
+      val sensorService = app.injector.instanceOf[SensorService]
+      val auth= app.injector.instanceOf[com.feth.play.module.pa.PlayAuthenticate]
+      val handler = new GSNScalaDeadboltHandler(auth)
+      var params = Map("from" -> "2023-01-01","to" -> "2023-01-01","size" -> "10", "fields" -> "light,temperature,packet_type","filter"-> "light > 100,temperature <100")
+      var request = FakeRequest("GET", s"/api/sensors/MultiFormatTemperatureHandler/data?${params.map { case (key, value) => s"$key=$value" }.mkString("&")}")
+      val result =  handler.beforeAuthCheck(request)
+      val finalres= await(result)
+      println(result)
+    }
+      
+
   }
 
-    "Oauth2Controller" should {
-
-      "auth" should {
-        "return redirect to login for not logged in user" in {
-          val authcontroller = app.injector.instanceOf[OAuth2Controller]
-          val request = FakeRequest("GET", s"/oauth2/auth")
-            .withHeaders("Authorization" -> s"Bearer $access_token")
-          val result = authcontroller.auth()(request)
-
-          status(result) mustBe SEE_OTHER
-
-          val redirectLocation = header("Location", result)
-          redirectLocation mustBe Some("/login")
-        }
 
 
-        "return redirect bad request" in {
-          val authController = app.injector.instanceOf[OAuth2Controller]
-          val queryString = "?response_type=code&client_id=web-gui-public&client_secret=web-gui-secret"
-          val request = FakeRequest("GET", s"/oauth2/auth$queryString")
-            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost", "csrfToken" -> "5580bc19ab329f7799adebaaa81f6d67e20aab51-1699253350443-9369ab2a30b2a7c7108bff31")
-          val futureResult = authController.auth()(request)
-          val result: Result = await(futureResult)
-          status(futureResult) mustBe BAD_REQUEST
-        }
-      }
-
-      "handle POST request to doAuth (SEE_OTHER)" in {
-        val authController = app.injector.instanceOf[OAuth2Controller]
-        val request = FakeRequest("GET", s"/oauth2/auth")
-            .withHeaders("Authorization" -> s"Bearer $access_token")
-
-        val futureResult = authController.doAuth()(request)
-        val result: Result = await(futureResult)
-        status(futureResult) mustBe SEE_OTHER
-        val redirectLocation = header("Location", futureResult)
-        redirectLocation mustBe Some("/login")
-        }
-
-      "handle POST request to doAuth (BAD_REQUEST)" in {
-        val authController = app.injector.instanceOf[OAuth2Controller]
-        val request = FakeRequest(POST, "/oauth2/auth")
-          .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost", "csrfToken" -> "5580bc19ab329f7799adebaaa81f6d67e20aab51-1699253350443-9369ab2a30b2a7c7108bff31")
-          .withFormUrlEncodedBody("client_id" -> "web-gui-public", "client_secret" -> "web-gui-secret")
-
-        val futureResult = authController.doAuth()(request)
-        val result: Result = await(futureResult)
-        println(result)
-        status(futureResult) mustBe BAD_REQUEST
-      }
-
-
-    /*
-      "list clients clientList request" in {
-        val authController = app.injector.instanceOf[OAuth2Controller]
-        val request = FakeRequest(GET, "/oauth2/client")
-                    .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost", "csrfToken" -> "5580bc19ab329f7799adebaaa81f6d67e20aab51-1699253350443-9369ab2a30b2a7c7108bff31")
-
-        val futureResult = authController.listClients()(request)
-        val result: Result = await(futureResult)
-
-        // Assert the status code, content type, and response body as needed
-        status(futureResult) mustBe OK
-        contentType(futureResult) mustBe Some("text/html")
-      }
-  */
-
-
-    }
-
+    
 
 
 

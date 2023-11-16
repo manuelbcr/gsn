@@ -66,3 +66,5 @@ enablePlugins(DebianPlugin)
 enablePlugins(SystemdPlugin)
 
 daemonUser in Linux := "gsn"
+
+javaOptions in Test += "-Dconfig.file=conf/test.conf"
