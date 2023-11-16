@@ -465,6 +465,13 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
         result = sensorService.sensorMetadata(sensorId)(request)
         status(result) mustBe OK
         contentType(result) mustBe Some("text/plain")
+        
+        format = "xy" 
+        request = FakeRequest("GET", s"/api/sensors/$sensorId/metadata?latestValues=$latestValues&format=$format")
+          .withHeaders("Authorization" -> s"Bearer $access_token")
+        result = sensorService.sensorMetadata(sensorId)(request)
+        status(result) mustBe BAD_REQUEST
+
 
         format = "xml" 
         request = FakeRequest("GET", s"/api/sensors/$sensorId/metadata?latestValues=$latestValues&format=$format")
@@ -584,7 +591,7 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
         val result1 = await(futureResult1) 
         val stringresult= contentAsString(futureResult1)
         println(stringresult)
-        contentAsString(futureResult1) must include("error")
+        contentAsString(futureResult1) must include("success")
         
 
         //remove write rights: 
