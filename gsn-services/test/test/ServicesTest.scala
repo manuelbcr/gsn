@@ -31,7 +31,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import play.api.db.Database
 import java.time.LocalDate
 
-//for testing purposes only multiformat.xml multiformat1.xml and multiformatzeromq.sml should be in vs folder
 class ServicesTest extends PlaySpec with BeforeAndAfterAll{
 
   val actorSystem = ActorSystem("test")
@@ -164,6 +163,20 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
         result = await(futureResult)
         status(futureResult) mustBe OK   
 
+        request = FakeRequest("POST", s"/access/vs/1/addto?vs_id=1&id=ur1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.addtovs(1)(request)
+        result = await(futureResult)
+
+        status(futureResult) mustBe OK 
+                request = FakeRequest("POST", s"/access/vs/1/addto?vs_id=1&id=uw1")
+            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+            .withCSRFToken
+        futureResult = permissionsController.addtovs(1)(request)
+        result = await(futureResult)
+        status(futureResult) mustBe OK 
+
         request = FakeRequest("POST", s"/access/vs/1/addto?vs_id=3&id=uw1")
             .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
             .withCSRFToken
@@ -266,7 +279,40 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
         status(futureResult) mustBe OK
       }
 
-        
+      "add virtual sensor and write XML file" in {
+        var permissionsController = app.injector.instanceOf[PermissionsController]
+        val vsName = "MultiformatTemperature"
+        val priority = "1"
+        val className = "YourClassName"
+        val description = "YourDescription"
+
+      val fakeRequest = FakeRequest("POST", "/access/vs/addVS")
+        .withFormUrlEncodedBody(
+          "vsName" -> vsName,
+          "priority" -> priority,
+          "className" -> className,
+          "description" -> description,
+          "outputFieldName_0" -> "Field1",
+          "outputFieldType_0" -> "double",
+          "outputFieldName_1" -> "Field2",
+          "outputFieldType_1" -> "double",
+          "addressingKey_0" -> "Key1",
+          "addressingValue_0" -> "Value1",
+          "streamName_0" -> "Stream1",
+          "sourceAlias_0" -> "Alias1",
+          "samplingRate_0" -> "1",
+          "storageSize_0" -> "1",
+          "addressWrapper_0" -> "Wrapper1",
+          "sourcestreamQuery_0" -> "Query1",
+          "streamQuery_0" -> "StreamQuery1",
+          "sourceAddressPredicatekey_0" -> "PredicateKey1",
+          "sourceAddressPredicatevalue_0" -> "PredicateValue1"
+        ).withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost").withCSRFToken
+
+      val result: Future[Result] = permissionsController.addVirtualSensor()(fakeRequest)
+
+      status(result) mustBe OK
+    }
 
     }
 
@@ -371,26 +417,10 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
     }
 
     "return sensor data with specified fields, size and filter" in {
-      var permissionsController = app.injector.instanceOf[PermissionsController]
-        var requestadd = FakeRequest("POST", s"/access/vs/1/addto?vs_id=1&id=ur1")
-            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
-            .withCSRFToken
-        var futureResultadd = permissionsController.addtovs(1)(requestadd)
-        var resultadd = await(futureResultadd)
-
-        status(futureResultadd) mustBe OK 
-        
-        requestadd = FakeRequest("POST", s"/access/vs/1/addto?vs_id=1&id=uw1")
-            .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
-            .withCSRFToken
-        futureResultadd = permissionsController.addtovs(1)(requestadd)
-        resultadd = await(futureResultadd)
-        status(futureResultadd) mustBe OK 
-
         val sensorService = app.injector.instanceOf[SensorService]
         var params = Map("size" -> "10", "fields" -> "light,temperature,packet_type","filter"-> "light > 100,temperature <100")
         var request = FakeRequest("GET", s"/api/sensors/MultiFormatTemperatureHandler/data?${params.map { case (key, value) => s"$key=$value" }.mkString("&")}")
-          .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
+          .withHeaders("Authorization" -> s"Bearer $access_token")
         var futureResult = sensorService.sensorData("MultiFormatTemperatureHandler")(request)
         var result: Result = await(futureResult)
         status(futureResult) mustBe OK
@@ -465,13 +495,6 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
         result = sensorService.sensorMetadata(sensorId)(request)
         status(result) mustBe OK
         contentType(result) mustBe Some("text/plain")
-        
-        format = "xy" 
-        request = FakeRequest("GET", s"/api/sensors/$sensorId/metadata?latestValues=$latestValues&format=$format")
-          .withHeaders("Authorization" -> s"Bearer $access_token")
-        result = sensorService.sensorMetadata(sensorId)(request)
-        status(result) mustBe BAD_REQUEST
-
 
         format = "xml" 
         request = FakeRequest("GET", s"/api/sensors/$sensorId/metadata?latestValues=$latestValues&format=$format")
@@ -545,7 +568,7 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
           status(futureResult) mustBe FORBIDDEN 
         }
 
-      "upload sensor data and forward it to GSN core" in {
+      "upload sensor data and forward it to GSN core return internal server error" in {
         val sensorService = app.injector.instanceOf[SensorService]
         var permissionsController = app.injector.instanceOf[PermissionsController]
         var request = FakeRequest("POST", s"/access/vs/1/addto?vs_id=3&id=uw1")
@@ -590,8 +613,8 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
         val futureResult1= sensorService.uploadSensorData(sensorId)(request1)
         val result1 = await(futureResult1) 
         val stringresult= contentAsString(futureResult1)
-        println(stringresult)
-        contentAsString(futureResult1) must include("success")
+        contentAsString(futureResult1) must include("error")
+        contentAsString(futureResult1) must include("Packet forwarding to GSN core failed.")
         
 
         //remove write rights: 

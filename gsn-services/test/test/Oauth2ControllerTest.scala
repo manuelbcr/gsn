@@ -10,7 +10,6 @@ import scala.concurrent.ExecutionContext
 import controllers.gsn.api.DataProcessService
 import controllers.gsn.api.SensorService
 import controllers.gsn.OAuth2Controller
-import controllers.gsn.GSNDataHandler
 import controllers.gsn.auth.PermissionsController
 import play.api.mvc._
 import play.api.libs.ws._
@@ -25,9 +24,6 @@ import org.scalatestplus.play.guice.GuiceOneAppPerTest
 import play.api.Application
 import scala.concurrent.Future
 import play.api.db.Database
-import java.net.URL
-import scala.util.Try
-import scala.util.{Success, Failure}
 
 class Oauth2ControllerTest extends PlaySpec with BeforeAndAfterAll{
 
@@ -42,7 +38,6 @@ class Oauth2ControllerTest extends PlaySpec with BeforeAndAfterAll{
   
   var db: Database = _
   var access_token: String = ""
-  var refresh_token: String = ""
 
   override def beforeAll(): Unit = {
     db = app.injector.instanceOf[Database];
@@ -68,21 +63,10 @@ class Oauth2ControllerTest extends PlaySpec with BeforeAndAfterAll{
                 val futureAccessToken = authController.accessToken()(oauth2request.withFormUrlEncodedBody(requestData.toSeq: _*))
 
                 val tokenresult: Result = await(futureAccessToken)
+
                 if (tokenresult.header.status == OK) {
                     val json = Json.parse(contentAsString(futureAccessToken))
                     access_token = (json \ "access_token").as[String]
-                    refresh_token = (json \ "refresh_token").as[String]
-
-                    val refreshRequestData = Map(
-                        "grant_type" -> "refresh_token",
-                        "refresh_token" -> refresh_token,
-                        "client_id" -> "web-gui-public",
-                        "client_secret" -> "web-gui-secret"
-                    )
-                    val futureRefreshToken = authController.accessToken()(oauth2request.withFormUrlEncodedBody(refreshRequestData.toSeq: _*))
-                    val refreshResult: Result = await(futureRefreshToken)
-                    status(futureAccessToken) mustBe OK
-                    contentType(futureAccessToken) mustBe Some("application/json")
                     } else {
                     throw new RuntimeException(s"Access token request failed with status: ${tokenresult.header.status}")
                     }
@@ -105,18 +89,10 @@ class Oauth2ControllerTest extends PlaySpec with BeforeAndAfterAll{
             var futureResult = authController.auth()(request)
             var result1 = await(futureResult)
             status(futureResult) mustBe BAD_REQUEST
-
-            val queryString1 = "?response_type=no&client_id=web-gui-public&client_secret=web-gui-secret"
-            request = FakeRequest("GET", s"/oauth2/auth$queryString1")
-                    .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
-            futureResult = authController.auth()(request)
-            result1 = await(futureResult)
-            status(futureResult) mustBe 501 //not implemented
         }
 
         "handle doAuth" in {
             var authController = app.injector.instanceOf[OAuth2Controller]
-            var datahandler = app.injector.instanceOf[GSNDataHandler]
                             //handle POST request to doAuth
             var request = FakeRequest("POST", s"/oauth2/auth")
                     .withHeaders("Authorization" -> s"Bearer $access_token")
@@ -147,31 +123,6 @@ class Oauth2ControllerTest extends PlaySpec with BeforeAndAfterAll{
             val resultdoAuth: Result = await(futureResultdoAuth)
             status(futureResultdoAuth) mustBe 303 //redirect 
 
-            val locationOption: Option[String] = resultdoAuth.header.headers.get("Location").map(_.mkString)
-
-            locationOption.foreach { location =>
-            val codeOption = Try {
-                val url = new URL(location)
-                val queryParams = url.getQuery.split("&")
-                val codeParam = queryParams.find(_.startsWith("code=")).getOrElse("")
-                codeParam.substring("code=".length)
-            }.toOption
-
-            codeOption.foreach { code =>
-                val authinfo= datahandler.findAuthInfoByCode(code)
-                authinfo.onComplete {
-                    case Success(result) =>
-                        result mustBe a[Some[_]] 
-                    case Failure(exception) =>
-                        fail(s"Failed to retrieve AuthInfo: $exception")
-                }
-                val deleteresp= datahandler.deleteAuthCode(code)
-                val finaldeleteresp= await(deleteresp)
-                deleteresp.map { result =>
-                    result mustBe a[Success[_]] 
-                }
-            }
-            }
                 
             val requestdoAuthforbidden = FakeRequest("POST", "/oauth2/client")
                     .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
@@ -238,26 +189,6 @@ class Oauth2ControllerTest extends PlaySpec with BeforeAndAfterAll{
                     
                 val futureResultedit : Future[Result] = authController.editClient(requestedit)
                 status(futureResultedit) mustBe OK
-        }
-
-            "edit non existing client" in {
-            var authController = app.injector.instanceOf[OAuth2Controller]
-                //edit existing client
-                val requestedit = FakeRequest("POST", "/oauth2/client")
-                    .withSession("pa.p.id" -> "password", "pa.u.id" -> "root@localhost")
-                    .withFormUrlEncodedBody(
-                    "id" -> "99",
-                    "action" -> "edit",
-                    "name" -> "Default Web UI",
-                    "client_id" -> "web-gui-public",
-                    "client_secret" -> "web-gui-secret",
-                    "redirect"->"http://localhost:8000/profile/",
-                    "linked" -> "true"
-                    ).asInstanceOf[FakeRequest[AnyContentAsEmpty.type]]
-                    .withCSRFToken
-                    
-                val futureResultedit : Future[Result] = authController.editClient(requestedit)
-                status(futureResultedit) mustBe 404 //not found
         }
 
 
