@@ -1,0 +1,94 @@
+@import service.gsn.UserProvider
+@import helper._
+@import ch.epfl.gsn.data._
+@(jsonData: play.api.libs.json.JsValue,userProvider: UserProvider)
+@import play.api.libs.json._
+
+@main(userProvider,"Monitoring Charts") {
+    <html>
+  <head>
+    <title>Monitoring Charts</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+  </head>
+  <body>
+    <h1>Monitoring Charts</h1>
+
+    @if(jsonData != null) {
+      <div id="heapChart"></div>
+      <div id="nonHeapChart"></div>
+      <div id="pendingFinalizationCountChart"></div>
+      <div id="currentThreadCPUTimeChart"></div>
+      <div id="threadCountChart"></div>
+      
+      <script>
+        var data = @Html(Json.stringify(jsonData));
+        console.log("Data: ", data);
+        var timestamps = data.properties.values.map(function (item) {
+            return new Date(item[0]);
+        });
+
+
+        var heapValues = data.properties.values.map(function (item) {
+          return item[1];
+        });
+
+        var nonHeapValues = data.properties.values.map(function (item) {
+          return item[2];
+        });
+
+        var pendingFinalizationCountValues = data.properties.values.map(function (item) {
+          return item[3];
+        });
+
+        var currentThreadCpuTimeValues = data.properties.values.map(function (item) {
+          return item[4];
+        });
+
+        var threadCount = data.properties.values.map(function (item) {
+          return item[5];
+        });
+
+        createChart("heapChart", "Heap Chart", "Timestamp", "Heap Value", timestamps, heapValues);
+        createChart("nonHeapChart", "Non-Heap Chart", "Timestamp", "Non-Heap Value", timestamps, nonHeapValues);
+        createChart("pendingFinalizationCountChart", "Pending Finalization Count Chart", "Timestamp", "Pending Finalization Count Value", timestamps, pendingFinalizationCountValues);
+        createChart("currentThreadCPUTimeChart", "current thread cpu time Chart", "Timestamp", "cpu time", timestamps, currentThreadCpuTimeValues);
+        createChart("threadCountChart", "thread count Chart", "Timestamp", "threads", timestamps, threadCount);
+
+        function createChart(containerId, title, xAxisTitle, yAxisTitle, timestamps, values) {
+          Highcharts.chart(containerId, {
+            chart: {
+              type: 'line',
+              zoomType: 'x'
+            },
+            title: {
+              text: title
+            },
+            xAxis: {
+              title: {
+                text: xAxisTitle
+              },
+              labels: {
+                formatter: function () {
+                    return Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.value);
+                }   
+               },
+                categories: timestamps,
+            },
+            yAxis: {
+              title: {
+                text: yAxisTitle
+              }
+            },
+            series: [{
+              name: title,
+              data: values
+            }]
+          });
+        }
+      </script>
+    } else {
+      <p>No data available for charts.</p>
+    }
+  </body>
+  </html>
+}

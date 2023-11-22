@@ -27,7 +27,7 @@ package controllers.gsn.auth
 import scala.concurrent.{Future, Promise}
 import akka.actor._
 
-
+import scala.collection.mutable.StringBuilder
 import play.api.mvc._
 import models.gsn.{DataSource, Group, GroupDataSourceRead, GroupDataSourceWrite, SecurityRole, User, UserDataSourceRead, UserDataSourceWrite}
 import views.html._
@@ -36,7 +36,7 @@ import javax.inject.Inject
 import com.google.inject.Singleton
 import be.objectify.deadbolt.scala.models.PatternType
 import be.objectify.deadbolt.scala.{DeadboltActions, anyOf, allOf, allOfGroup}
-
+import scala.util.Try
 import scala.collection.JavaConverters._
 import play.core.j.JavaHelpers
 import play.mvc.Http.Context
@@ -48,12 +48,18 @@ import service.gsn.UserProvider
 import com.feth.play.module.pa.PlayAuthenticate
 import play.api.mvc.Results._
 import scala.concurrent.{ExecutionContext, Future}
+import play.api.Logger
+import java.nio.file.{Paths, Files}
+import ch.epfl.gsn.config.GsnConf
+import com.typesafe.config.ConfigFactory
+import scala.collection.mutable.ArrayBuffer
+import ch.epfl.gsn.xpr.XprConditions
+import ch.epfl.gsn.data.format._
       
 import javax.inject._
 import play.api.mvc._
 
 import io.ebean.Ebean
-import play.Logger
 
 
 @Singleton
@@ -66,12 +72,10 @@ class PermissionsController @Inject()(actorSystem: ActorSystem, userProvider: Us
         val st = actorSystem.actorSelection("/user/gsnSensorStore")
         val q = actorSystem.actorOf(Props(new QueryActor(p)))
         q ! GetAllSensors(false, None)
-        Logger.error("after")
 
         p.future.map { data =>
             Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
             data.map(s => Option(DataSource.findByValue(s.sensor.name)).getOrElse {
-              Logger.error("iun")
               val d = new DataSource()
               d.value = s.sensor.name
               d.is_public = false
@@ -89,7 +93,6 @@ class PermissionsController @Inject()(actorSystem: ActorSystem, userProvider: Us
 
       
     def addgroup(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request => Future {
-      //hack to work with java-style templates
      Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
      val count = Group.find.query().findCount()
      var ret:Result = null
@@ -135,7 +138,6 @@ class PermissionsController @Inject()(actorSystem: ActorSystem, userProvider: Us
   
   
 def addtogroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request =>{
-      //hack to work with java-style templates
         Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
         val count = Group.find.query().findCount()
         val g = request.queryString.get("group_id").map { x => Group.find.byId(x.head.toLong) }
@@ -154,7 +156,6 @@ def addtogroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Applicatio
 
 
 def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request =>{
-      //hack to work with java-style templates
      Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
      val count = Group.find.query().findCount()
         val g = request.queryString.get("group_id").map { x => Group.find.byId(x.head.toLong) }
@@ -173,7 +174,6 @@ def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Appli
 
 
   def groups(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request => Future {
-        //hack to work with java-style templates
         Context.current.set(JavaHelpers.createJavaContext(request, JavaHelpers.createContextComponents()))
         val count = Group.find.query().findCount()
   		  
@@ -189,7 +189,6 @@ def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Appli
 		}
   }
   def users(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request => Future {
-        //hack to work with java-style templates
         Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
         val count = User.find.query().findCount()
   		  Ok(access.userlist.render(User.find.query().setFirstRow((page - 1) * 10).setMaxRows(10).findList().asScala, SecurityRole.find.query().findList().asScala, count, page, 10,userProvider))
@@ -198,7 +197,6 @@ def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Appli
   
 
   def deleteuser(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request =>  {
-    //hack to work with java-style templates
     Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
     val count = User.find.query().findCount()
     val u = request.queryString.get("user_id").map { x => User.find.byId(x.head.toLong) }
@@ -220,7 +218,6 @@ def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Appli
   }}
   
   def addrole(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request => {
-      //hack to work with java-style templates
      Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
         val count = User.find.query().findCount()
         val r = request.queryString.get("role_id").map { x => SecurityRole.find.byId(x.head.toLong) }
@@ -239,7 +236,6 @@ def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Appli
 
 
    def removerole(page:Int) =deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request => {
-      //hack to work with java-style templates
      Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
      val count = User.find.query().findCount()
         val r = request.queryString.get("role_id").map { x => SecurityRole.find.byId(x.head.toLong) }
@@ -390,7 +386,6 @@ def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Appli
   
   
     def removefromvs(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request => {
-      //hack to work with java-style templates
       Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
       val count = DataSource.find.query().findCount()
       val v = request.queryString.get("vs_id").map { x => DataSource.find.byId(x.head.toLong) }
@@ -421,7 +416,59 @@ def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Appli
         })   
       }}
   
-      
+
+
+  //monitoring vs has to be in virtual sensors
+  def monitoringData() = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request => {
+    Try{
+      val sensorid="MemoryMonitorVS"
+      val vsname = sensorid.toLowerCase
+      val fieldStr: Option[String] = request.queryString.get("fields").flatMap(_.headOption)
+      val filterStr: Option[String] = request.queryString.get("filter").flatMap(_.headOption)
+      val timeFormat: Option[String] = request.queryString.get("timeFormat").flatMap(_.headOption)
+      val period: Option[String] = request.queryString.get("period").flatMap(_.headOption)
+      val orderBy: Option[String] = request.queryString.get("orderBy").flatMap(_.headOption)
+      val order: Option[String] = request.queryString.get("order").flatMap(_.headOption)
+      val timeline: Option[String] = request.queryString.get("timeline").flatMap(_.headOption)
+      val aggFunction = request.queryString.get("agg").flatMap(_.headOption)
+      val aggPeriod = request.queryString.get("aggPeriod").flatMap(_.headOption)
+      val format = controllers.gsn.api.Json
+      val filters = new ArrayBuffer[String]
+      val fields: Array[String] =
+        if (!fieldStr.isDefined) Array()
+        else fieldStr.get.split(",")
+      val filterArray: Array[String] =
+        if (!filterStr.isDefined) Array()
+        else filterStr.get.split(",")
+
+      val conds = XprConditions.parseConditions(filterArray).recover {
+        case e => throw new IllegalArgumentException("illegal conditions in filter: " + e.getMessage())
+      }.get.map(_.toString)
+      val agg = aggFunction.map(f => Aggregation(f, aggPeriod.get))
+      val p = Promise[Seq[SensorData]]
+      val q = actorSystem.actorOf(Props(new QueryActor(p)))
+      q ! GetSensorData(vsname, fields, conds ++ filters, None, timeFormat, period, agg, orderBy, order, timeline)
+
+      p.future.map { data =>
+        format match {
+          case controllers.gsn.api.Json =>
+            Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+            val pp = JsonSerializer.ser(data.head, Seq(), false)
+            Ok(access.monitoring.render(pp, userProvider))
+          case _ => BadRequest("Unsupported format")
+        }
+      }.recover {
+        case t => BadRequest("Error: " + t.getMessage)
+      }
+
+
+    }.recover{
+      case t=>Future(BadRequest("Error: "+t.getMessage))
+    }.get
+
+    }
+  }
+
 }
 
 

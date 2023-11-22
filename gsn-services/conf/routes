@@ -72,6 +72,7 @@ GET     /access/vs                        controllers.gsn.auth.PermissionsContro
 POST    /access/vs/:page/addto            controllers.gsn.auth.PermissionsController.addtovs(page:Int)
 POST    /access/vs/:page/removefrom       controllers.gsn.auth.PermissionsController.removefromvs(page:Int)
 GET     /access/vs/:page                  controllers.gsn.auth.PermissionsController.vs(page:Int)
+POST    /access/vs/addVS                  controllers.gsn.auth.PermissionsController.addVirtualSensor()
 GET     /access/users/add                 controllers.gsn.auth.Application.adduser
 POST    /access/users/add                 controllers.gsn.auth.Application.doAdduser
 GET     /access/users                     controllers.gsn.auth.PermissionsController.users(page:Int=1)
@@ -79,7 +80,7 @@ POST    /access/users/:page/addrole       controllers.gsn.auth.PermissionsContro
 POST    /access/users/:page/removerole    controllers.gsn.auth.PermissionsController.removerole(page:Int)
 POST    /access/users/:page/delete        controllers.gsn.auth.PermissionsController.deleteuser(page:Int)
 GET     /access/users/:page               controllers.gsn.auth.PermissionsController.users(page:Int)
-
+GET     /access/monitoringData            controllers.gsn.auth.PermissionsController.monitoringData
 
 
   
