@@ -256,8 +256,94 @@ def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Appli
   }
   
 
+    def addVirtualSensor() = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request =>{
 
-  
+    val body = request.body.asFormUrlEncoded.getOrElse(Map.empty[String, Seq[String]])
+    val vsName = body.get("vsName").flatMap(_.headOption).getOrElse("-1")
+    val priority = body.get("priority").flatMap(_.headOption).getOrElse("-1")
+    val className = body.get("className").flatMap(_.headOption).getOrElse("-1")
+    val description = body.get("description").flatMap(_.headOption).getOrElse("-1")
+
+    val outputFieldNames = body.filterKeys(_.startsWith("outputFieldName")).values.flatten.toSeq
+    val outputFieldTypes = body.filterKeys(_.startsWith("outputFieldType")).values.flatten.toSeq
+
+    val addressingKeys= body.filterKeys(_.startsWith("addressingKey")).values.flatten.toSeq
+    val addressingValss= body.filterKeys(_.startsWith("addressingValue")).values.flatten.toSeq
+
+    val streamNames= body.filterKeys(_.startsWith("streamName")).values.flatten.toSeq
+    val sourceAliases= body.filterKeys(_.startsWith("sourceAlias")).values.flatten.toSeq
+    val samplingRates= body.filterKeys(_.startsWith("samplingRate")).values.flatten.toSeq
+    val storageSizes= body.filterKeys(_.startsWith("storageSize")).values.flatten.toSeq
+    val addressWrappers = body.filterKeys(_.startsWith("addressWrapper")).values.flatten.toSeq
+    val sourceStreamQuerys = body.filterKeys(_.startsWith("sourcestreamQuery")).values.flatten.toSeq
+    val streamQuerys= body.filterKeys(_.startsWith("streamQuery")).values.flatten.toSeq
+    val sourceAddressPredicatekeys= body.filterKeys(_.startsWith("sourceAddressPredicatekey")).values.flatten.toSeq
+    val sourceAddressPredicatevalues= body.filterKeys(_.startsWith("sourceAddressPredicatevalue")).values.flatten.toSeq
+
+    val sb = new StringBuilder
+        sb.append(s"""<virtual-sensor name="$vsName" priority="$priority">\n""")
+        sb.append("             <processing-class>\n")
+        sb.append(s"                     <class-name>$className</class-name>\n")
+        sb.append("                     <init-params/>\n")
+        sb.append("                     <output-structure>\n")
+        
+        for (i <- outputFieldNames.indices) {
+          sb.append(s"""                      <field name="${outputFieldNames(i)}" type="${outputFieldTypes(i)}"/>\n""")
+        }
+
+        sb.append("                     </output-structure>\n")
+        sb.append("             </processing-class>\n")
+        sb.append(s"             <description>$description</description>\n")
+        sb.append("             <addressing>\n")
+        for(i<- addressingKeys.indices){
+          sb.append(s"""                  <predicate key="${addressingKeys(i)}"> ${addressingValss(i)}</predicate>\n""")
+        }
+        sb.append("             </addressing>\n")
+        sb.append("             <storage />\n")
+        sb.append("             <streams>\n")
+        for(i<- streamNames.indices){
+          sb.append(s"""                    <stream name="${streamNames(i)}">\n""")
+          for(j<- sourceAliases.indices){
+            sb.append(s"""                      <source alias="${sourceAliases(i)}" sampling-rate="${samplingRates(i)}" storage-size="${storageSizes(i)}">\n""")
+            for(k <- addressWrappers.indices){
+              sb.append(s"""                          <address wrapper="${addressWrappers(k)}">\n""")
+              for(l <- sourceAddressPredicatekeys.indices){
+                sb.append(s"""                            <predicate key="${sourceAddressPredicatekeys(l)}">${sourceAddressPredicatevalues(l)}</predicate>\n""")
+              }
+              sb.append(s"""                          </address>\n""")
+            }
+            sb.append(s"""                          <query>${sourceStreamQuerys(j)}</query>\n""")
+            sb.append(s"""                      </source>\n""")
+          }
+          sb.append(s"""                       <query>${streamQuerys(i)}</query>\n""")
+          sb.append(s"""                    </stream>\n""")
+        }
+        
+        sb.append("             </streams>\n")
+        sb.append("</virtual-sensor>")
+    val generatedXml = sb.toString()
+    val conf= ConfigFactory.load
+    val vsDir= conf getString "gsn.vslocation"
+    if(vsDir != ""){
+      val directoryPath = Paths.get(vsDir)
+      if (!Files.exists(directoryPath)) {
+        Files.createDirectories(directoryPath)
+      }
+
+      val fileName = s"${vsName}_${System.currentTimeMillis()}.xml"
+      val filePath = Paths.get(vsDir, fileName)
+
+      Files.write(filePath, generatedXml.getBytes)
+
+    }else {
+      Future.successful(NotFound("LOCATION TO SAVE NOT FOUND"))
+    }
+
+    
+
+    Future.successful(Ok("OK"))
+  }
+}
 
   
   

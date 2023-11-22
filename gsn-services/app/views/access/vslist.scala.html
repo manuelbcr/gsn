@@ -119,6 +119,88 @@
             @paginate(page, pageLength, count, controllers.gsn.auth.routes.PermissionsController.vs(_))
         </div>
     </div>
+
+<button type="button" class="btn btn-primary" id="addVirtualSensor">Add Virtual Sensor</button>
+
+
+<div id="addVirtualSensorModal" class="modal">
+    <div class="modal-dialog custom-modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Virtual Sensor</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="virtualSensorForm">
+                    <div>
+                        <div>
+                            &lt;virtual-sensor name= <input type="text" id="vsName" name="vsName" required>
+                            priority=<input type="number" id="priority" name="priority" required> &gt;
+                        </div>
+                        <div>
+                            <div>
+                                &lt;processing-class&gt;
+                            </div>
+                            
+                            &lt;class-name&gt;<input type="text"id="className" name="className" required> &gt;/class-name&gt;
+                        </div>
+                        <div>
+                            <div>
+                                &lt;output-structure&gt;
+                            </div>
+                            <div>
+                                <div id="outputStructureFields">
+
+                                </div>
+                                <button type="button" class="btn btn-success" id="addOutputField">Add Output Field</button>
+                            </div>
+                            <div>
+                                &lt;/output-structure&gt;
+                            </div>
+                        </div>
+                        <div>
+                            &lt;/processing-class&gt;
+                        </div>
+                        <div>
+                            &lt;description&gt;
+                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            &lt;/description&gt;
+                        </div>
+                        <div>
+                            <div>
+                                &lt;addressing&gt;
+                            </div>
+                            <div>
+                                <div id="addressingFields">
+
+                                </div>
+                                <button type="button" class="btn btn-success" id="addAddressing">Add Addressing Predicate</button>
+                            </div>
+                            <div>
+                                &lt;/addressing&gt;
+                            </div>                           
+                        </div>
+                        <div>
+                            <div>&lt;streams&gt;</div>
+                            <div>
+                                <div id="streamsFields">
+
+                                </div>
+                                <button type="button" class="btn btn-success" id="addStream">Add Stream</button>
+                            </div>
+                            <div>&lt;/streams&gt;</div>
+                        </div>
+                       
+                    </div>
+
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
     <script type="text/javascript">
     function check(item){
         var i = $(item);
@@ -129,6 +211,78 @@
         }
     }
     $('select').select2();
+
+
+
+
+
+
+
+    $('#addVirtualSensor').on('click', function () {
+        $('#addVirtualSensorModal').modal('show');
+    });
+
+
+    let outputFieldIndex = 0;
+
+        $('#addOutputField').on('click', function () {
+
+            $('#outputStructureFields').append('<div>&lt;field name=<input type="text" name="outputFieldName' + outputFieldIndex + '" required> type=<input type="text" name="outputFieldType' + outputFieldIndex + '" required>&gt;</div>');
+            outputFieldIndex++;
+        });
+
+
+    let addressingIndex = 0;
+    $('#addAddressing').on('click', function () {
+
+        $('#addressingFields').append('<div>&lt;predicate key=<input type="text" name="addressingKey' + addressingIndex + '" required>&gt;<input type="text" name="addressingValue' + addressingIndex + '" required>&lt;/predicate&gt;</div>');
+        addressingIndex++;
+    });
+    let streamIndex = 0;
+    $('#addStream').on('click', function () {
+        $('#streamsFields').append('<div>&lt;stream name=<input type="text" name="streamName' + streamIndex + '" required>&gt;</div><div><div id="sourceFields"></div><button type="button" class="btn btn-success" id="addSource">Add Source</button></div>&lt;query&gt;<input type="text" name="streamQuery' + streamIndex +'" required>&lt;/query&gt;<div>&lt;/stream&gt;</div>');
+        streamIndex++;
+    });
+
+
+    let sourceIndex=0;
+    let sourceAddressIndex=0;
+    let sourceAddressPredicateIndex=0;
+    $('#streamsFields').on('click', '#addSource', function () {
+    $('#sourceFields').append('<div>&lt;source alias=<input type="text" name="sourceAlias' + sourceIndex +'" required> sampling-rate=<input type="number" name="samplingRate' + sourceIndex +'" required>storage-size=<input type="number" name="storageSize' + sourceIndex +'" required>&gt;</div><div><div id="sourceAddressFields"></div><button type="button" class="btn btn-success" id="addSourceAddress">Add Address</button></div>&lt;query&gt;<input type="text" name="sourcestreamQuery'+sourceIndex+'" required></query><div>&lt;/source&gt;</div>');
+    sourceIndex++;
+
+    $('#sourceFields').on('click', '#addSourceAddress', function () {
+        $('#sourceAddressFields').append('<div>&lt;address wrapper=<input type="text" name="addressWrapper' +sourceAddressIndex+'" required>&gt;</div><div><div id="sourceAddressPredicates"></div><button type="button" class="btn btn-success" id="addSourceAddressPredicates">Add Predicate</button></div><div>&lt;/address&gt;</div>');
+        sourceAddressIndex++;
+    });
+    
+
+
+    $('#sourceAddressFields').on('click', '#addSourceAddressPredicates', function () {
+        $('#sourceAddressPredicates').append('<div>&lt;predicate key=<input type="text" name="sourceAddressPredicatekey' +sourceAddressPredicateIndex+'" required>&gt;</div><input type="text" name="sourceAddressPredicatevalue' +sourceAddressPredicateIndex+'" required><div>&lt;/predicate&gt;</div>');
+        sourceAddressPredicateIndex++;
+    });
+    
+});
+
+    $('#virtualSensorForm').submit(function (event) {
+        event.preventDefault();
+
+        var formData = $(this).serializeArray();
+        console.log(formData);
+        $.ajax({
+            type: 'POST',
+            url: '@controllers.gsn.auth.routes.PermissionsController.addVirtualSensor()',
+            data: formData,
+            success: function (data) {
+                $('#addVirtualSensorModal').modal('hide');
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+    });
     </script>
     }
     
