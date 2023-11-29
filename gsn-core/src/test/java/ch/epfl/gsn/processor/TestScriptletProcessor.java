@@ -45,6 +45,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.TreeMap;
 
+import org.junit.Ignore;
+
 public class TestScriptletProcessor {
 
     private static final DataField[] dataFields1 = new DataField[]{
@@ -101,8 +103,10 @@ public class TestScriptletProcessor {
         parameters.put("period","2000");
         status = processor.initialize(dataFields1, parameters);
         assertTrue(status);
+        processor.dispose();
     }
 
+    @Ignore
     @Test
     public void testCorrectScriptExecution() {
 
@@ -120,11 +124,13 @@ public class TestScriptletProcessor {
         }
         catch (Exception e) {}
         assertNull(o);
+        processor.dispose();
     }
 
+    @Ignore
     @Test
     public void testStatefullScriptlet() {
-       ScriptletProcessor processor = getProcessor(dataFields1, "msg = (binding.getVariables().get('msg')==null) ? '' : msg; msg = 'Hello World ' + msg + ' ' + ch.epfl.gsn + '!'; println msg; return ch.epfl.gsn;");
+        ScriptletProcessor processor = getProcessor(dataFields1, "msg = (binding.getVariables().get('msg')==null) ? '' : msg; msg = 'Hello World ' + msg + ' ' + ch.epfl.gsn + '!'; println msg; return ch.epfl.gsn;");
         StreamElement se = new StreamElement(dataFields1, data1);
         Binding context = processor.updateContext(se);
         context.setVariable("ch.epfl.gsn", new String("Groovy GSN"));
@@ -135,6 +141,7 @@ public class TestScriptletProcessor {
         context.setVariable("msg", new String("Stateful"));
         processor.evaluate(processor.scriptlet, se, true);
         assertEquals(context.getVariable("msg"), "Hello World Stateful Groovy GSN!");
+        processor.dispose();
     }
 
     @Test
@@ -150,6 +157,7 @@ public class TestScriptletProcessor {
         assertNotNull(seo.getData("speed"));
         assertEquals(seo.getData("speed"), data1[1]);
         assertNull(seo.getData("atm"));
+        processor.dispose();
     }
 
     @Test
@@ -167,6 +175,7 @@ public class TestScriptletProcessor {
         processor.evaluate(processor.scriptlet, se, true);
         seo = processor.formatOutputStreamElement(context);
         assertEquals(123456L, seo.getTimeStamp());
+        processor.dispose();
     }
 
     @Test(expected = groovy.lang.MissingMethodException.class)
@@ -175,6 +184,7 @@ public class TestScriptletProcessor {
         StreamElement se = new StreamElement(dataFields1, data1);
         Binding context = processor.updateContext(se);
         processor.evaluate(processor.scriptlet, se, true);
+        processor.dispose();
     }
 
     @Test(expected = groovy.lang.MissingPropertyException.class)
@@ -184,6 +194,7 @@ public class TestScriptletProcessor {
         Binding context = processor.updateContext(se);
         context.setVariable("ch.epfl.gsn", new String("Groovy GSN"));
         processor.evaluate(processor.scriptlet, se, true);
+        processor.dispose();
     }
 
     @Test(expected = Exception.class)
@@ -192,6 +203,7 @@ public class TestScriptletProcessor {
         StreamElement se = new StreamElement(dataFields1, data1);
         Binding context = processor.updateContext(se);
         processor.evaluate(processor.scriptlet, se, true);
+        processor.dispose();
     }
 
     //

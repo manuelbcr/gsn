@@ -49,6 +49,8 @@ import ch.epfl.gsn.storage.hibernate.HibernateStorage;
 import java.io.Serializable;
 import java.util.*;
 
+import org.junit.Ignore;
+
 public class TestHibernateStorage {
 
     private ArrayList<DataField> dataField = null;
@@ -57,8 +59,7 @@ public class TestHibernateStorage {
 
     @BeforeClass
     public static void initClass() {
-        //dbInfo = new HibernateUtil.DBConnectionInfo("org.h2.Driver", "jdbc:h2:mem:test", "sa", "");
-        dbInfo = new DBConnectionInfo("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/ch.epfl.gsn", "root", "");
+        dbInfo = new DBConnectionInfo("org.h2.Driver", "jdbc:h2:mem:coreTest", "sa", "");
     }
 
     @Before

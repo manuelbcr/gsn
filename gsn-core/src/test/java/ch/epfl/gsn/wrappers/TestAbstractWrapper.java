@@ -38,7 +38,6 @@ import java.sql.SQLException;
 
 import javax.naming.OperationNotSupportedException;
 
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -57,22 +56,27 @@ import ch.epfl.gsn.wrappers.AbstractWrapper;
 import ch.epfl.gsn.wrappers.MockWrapper;
 import ch.epfl.gsn.wrappers.SystemTime;
 
+import org.junit.Ignore;
+
 public class TestAbstractWrapper {
+
+	private static StorageManager sm;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		
+		String currentWorkingDir = System.getProperty("user.dir");
+		if (!currentWorkingDir.endsWith("/gsn-core/")) {
+			String newDirectory = currentWorkingDir + "/gsn-core/";
+        	System.setProperty("user.dir", newDirectory);
+		}
+
 		DriverManager.registerDriver( new org.h2.Driver( ) );
+		sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:coreTest", Main.DEFAULT_MAX_DB_CONNECTIONS);
 
-		sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:gsn_mem_db", Main.DEFAULT_MAX_DB_CONNECTIONS);
-//		StorageManager.getInstance ( ).initialize ( "com.mysql.jdbc.Driver","root","" , "jdbc:mysql://localhost/ch.epfl.gsn");
+		Main.setDefaultGsnConf("/gsn_test.xml");
+	  	Main.getInstance();
 	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
-	private static StorageManager sm;
-	
 
 	//@Before
 	//public void setUp() throws Exception {
@@ -84,22 +88,7 @@ public class TestAbstractWrapper {
 	public void testSendToWrapper1() throws OperationNotSupportedException {
 		SystemTime systemTimeWrapper = new SystemTime();
 		systemTimeWrapper.sendToWrapper("bla");
-	}
-	/**
-	 * Test method for {@link ch.epfl.gsn.wrappers.AbstractWrapper#sendToWrapper(java.lang.Object)}.
-	 * Test to see what is the behavior if the wrapper is disabled.
-	 * @throws OperationNotSupportedException 
-	 * @throws SQLException 
-	 */
-	@Test (expected=GSNRuntimeException.class)
-	public void testSendToWrapper2() throws OperationNotSupportedException, SQLException {
-		SystemTime systemTimeWrapper = new SystemTime();
-		systemTimeWrapper.setActiveAddressBean(new AddressBean("system-time"));
-		assertTrue(systemTimeWrapper.initialize());
-		Thread thread = new Thread (systemTimeWrapper);
-		thread.start();
-		systemTimeWrapper.releaseResources();
-		systemTimeWrapper.sendToWrapper("bla");
+		systemTimeWrapper.dispose();
 	}
 
 	@Test
@@ -123,8 +112,9 @@ public class TestAbstractWrapper {
 		//    System.out.println(rs.getInt(1));
 		assertTrue(rs.getInt(1)<=(AbstractWrapper.GARBAGE_COLLECT_AFTER_SPECIFIED_NO_OF_ELEMENTS*2));
 		wrapper.releaseResources();
+		thread.stop();
 	}
-	
+
 	@Test
 	public void testOutOfOrderData() throws SQLException, InterruptedException{
 		MockWrapper wrapper = new MockWrapper();

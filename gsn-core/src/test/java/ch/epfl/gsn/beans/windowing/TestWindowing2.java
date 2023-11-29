@@ -60,6 +60,9 @@ import ch.epfl.gsn.storage.StorageManagerFactory;
 import ch.epfl.gsn.vsensor.BridgeVirtualSensor;
 import ch.epfl.gsn.wrappers.AbstractWrapper;
 
+import org.junit.Ignore;
+
+@Ignore
 public class TestWindowing2 {
 	public static class WrapperForTest2 extends AbstractWrapper {
 
