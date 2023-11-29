@@ -76,7 +76,7 @@ public class CSVHandler {
     private String checkPointFile;
 
     public boolean initialize(String dataFile, String inFields, String inFormats, char separator, char stringSeparator, int skipFirstXLines, String nullValues) {
-        return initialize(dataFile, inFields, inFormats, separator, stringSeparator, skipFirstXLines, nullValues, LOCAL_TIMEZONE_ID, "check-poin/" + (new File(dataFile).getName() + ".chk-point"));
+        return initialize(dataFile, inFields, inFormats, separator, stringSeparator, skipFirstXLines, nullValues, LOCAL_TIMEZONE_ID, "csv-check-points/" + (new File(dataFile).getName()));
     }
 
     public boolean initialize(String dataFile, String inFields, String inFormats, char separator, char stringSeparator, int skipFirstXLines, String nullValues, String timeZone, String checkpointFile) {
@@ -88,7 +88,7 @@ public class CSVHandler {
         this.timeZone = DateTimeZone.forID(timeZone);
         this.checkPointFile = checkpointFile;
         File file = new File(dataFile);
-
+       
         if (!file.isFile()) {
             logger.error("The specified CSV data file: " + dataFile + " doesn't exists.");
             return false;
@@ -107,8 +107,9 @@ public class CSVHandler {
             logger.error(e.getMessage(), e);
             return false;
         }
-        if (!validateFormats(this.formats))
+        if (!validateFormats(this.formats)){
             return false;
+        }
         if (fields.length != formats.length) {
             logger.error("loading the csv-wrapper failed as the length of fields(" + fields.length + ") doesn't match the length of formats(" + formats.length + ")");
             return false;
