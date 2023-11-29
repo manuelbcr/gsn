@@ -29,7 +29,6 @@ package ch.epfl.gsn.wrappers;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
-import java.lang.management.ThreadMXBean;
 
 import org.slf4j.LoggerFactory;
 
@@ -54,22 +53,17 @@ public class MemoryMonitoringWrapper extends AbstractWrapper {
    private static int                threadCounter                         = 0;
    
    private transient DataField [ ]   outputStructureCache                  = new DataField [ ] { new DataField( FIELD_NAME_HEAP , "bigint" , "Heap memory usage." ) ,
-         new DataField( FIELD_NAME_NON_HEAP , "bigint" , "Nonheap memory usage." ) , new DataField( FIELD_NAME_PENDING_FINALIZATION_COUNT , "int" , "The number of objects with pending finalization."),new DataField( FIELD_NAME_CURRENT_THREAD_CPU_TIME , "bigint" , "Thread cpu time" ),new DataField( FIELD_NAME_THREAD_COUNT , "int" , "Thread Count" ) };
+         new DataField( FIELD_NAME_NON_HEAP , "bigint" , "Nonheap memory usage." ) , new DataField( FIELD_NAME_PENDING_FINALIZATION_COUNT , "int" , "The number of objects with pending finalization." ) };
    
    private static final String       FIELD_NAME_HEAP                       = "HEAP";
    
    private static final String       FIELD_NAME_NON_HEAP                   = "NON_HEAP";
    
    private static final String       FIELD_NAME_PENDING_FINALIZATION_COUNT = "PENDING_FINALIZATION_COUNT";
-
-   private static final String       FIELD_NAME_CURRENT_THREAD_CPU_TIME    = "CURRENT_THREAD_CPU_TIME";
-   private static final String       FIELD_NAME_THREAD_COUNT               = "THREAD_COUNT";
    
-   private static final String [ ]   FIELD_NAMES                           = new String [ ] { FIELD_NAME_HEAP , FIELD_NAME_NON_HEAP , FIELD_NAME_PENDING_FINALIZATION_COUNT, FIELD_NAME_CURRENT_THREAD_CPU_TIME, FIELD_NAME_THREAD_COUNT };
+   private static final String [ ]   FIELD_NAMES                           = new String [ ] { FIELD_NAME_HEAP , FIELD_NAME_NON_HEAP , FIELD_NAME_PENDING_FINALIZATION_COUNT };
    
    private static final MemoryMXBean mbean                                 = ManagementFactory.getMemoryMXBean( );
-
-   private static final ThreadMXBean tbean                                 = ManagementFactory.getThreadMXBean( );
    
    public boolean initialize ( ) {
       AddressBean addressBean = getActiveAddressBean( );
@@ -93,10 +87,9 @@ public class MemoryMonitoringWrapper extends AbstractWrapper {
          long heapMemoryUsage = mbean.getHeapMemoryUsage( ).getUsed( );
          long nonHeapMemoryUsage = mbean.getNonHeapMemoryUsage( ).getUsed( );
          int pendingFinalizationCount = mbean.getObjectPendingFinalizationCount( );
-         long currentThreadCPUTime= tbean.getCurrentThreadCpuTime( );
-         int threadCount = tbean.getThreadCount();
-         StreamElement streamElement = new StreamElement( FIELD_NAMES , new Byte [ ] { DataTypes.BIGINT , DataTypes.BIGINT , DataTypes.INTEGER,DataTypes.BIGINT, DataTypes.INTEGER  } , new Serializable [ ] { heapMemoryUsage ,
-               nonHeapMemoryUsage , pendingFinalizationCount,currentThreadCPUTime,threadCount } , System.currentTimeMillis( ) );
+         
+         StreamElement streamElement = new StreamElement( FIELD_NAMES , new Byte [ ] { DataTypes.BIGINT , DataTypes.BIGINT , DataTypes.INTEGER } , new Serializable [ ] { heapMemoryUsage ,
+               nonHeapMemoryUsage , pendingFinalizationCount } , System.currentTimeMillis( ) );
          postStreamElement( streamElement );
       }
    }
