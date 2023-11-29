@@ -1,0 +1,7 @@
+<sensor-server>
+   <max-db-connections>8</max-db-connections>
+   <max-sliding-db-connections>8</max-sliding-db-connections>
+
+<storage user="sa" password="" driver="org.h2.Driver" url="jdbc:h2:mem:coreTest" />
+
+</sensor-server>
