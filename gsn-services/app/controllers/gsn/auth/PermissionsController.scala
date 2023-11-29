@@ -55,7 +55,7 @@ import com.typesafe.config.ConfigFactory
 import scala.collection.mutable.ArrayBuffer
 import ch.epfl.gsn.xpr.XprConditions
 import ch.epfl.gsn.data.format._
-      
+import play.api.libs.json.Json      
 import javax.inject._
 import play.api.mvc._
 
@@ -419,9 +419,9 @@ def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Appli
 
 
   //monitoring vs has to be in virtual sensors
-  def monitoringData() = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { implicit request => {
-    Try{
-      val sensorid="MemoryMonitorVS"
+  def monitoringData() = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request =>
+    Try {
+      val sensorid="SystemMonitorVS"
       val vsname = sensorid.toLowerCase
       val fieldStr: Option[String] = request.queryString.get("fields").flatMap(_.headOption)
       val filterStr: Option[String] = request.queryString.get("filter").flatMap(_.headOption)
@@ -449,25 +449,45 @@ def removefromgroup(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Appli
       val q = actorSystem.actorOf(Props(new QueryActor(p)))
       q ! GetSensorData(vsname, fields, conds ++ filters, None, timeFormat, period, agg, orderBy, order, timeline)
 
-      p.future.map { data =>
+      val resultFuture = p.future.flatMap { data =>
         format match {
           case controllers.gsn.api.Json =>
-            Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
+            Context.current.set(JavaHelpers.createJavaContext(request, JavaHelpers.createContextComponents()))
+
             val pp = JsonSerializer.ser(data.head, Seq(), false)
-            Ok(access.monitoring.render(pp, userProvider))
-          case _ => BadRequest("Unsupported format")
+            val p1 = Promise[Seq[SensorData]]
+            val q1 = actorSystem.actorOf(Props(new QueryActor(p1)))
+            q1 ! GetSensorData("sensormonitorvs", fields, conds ++ filters, None, timeFormat, period, agg, orderBy, order, timeline)
+
+            p1.future.map { data1 =>
+              format match {
+                case controllers.gsn.api.Json =>
+                  Context.current.set(JavaHelpers.createJavaContext(request, JavaHelpers.createContextComponents()))
+                  val pp1 = JsonSerializer.ser(data1.head, Seq(), false)
+                  Ok(access.monitoring.render(pp1, pp, userProvider))
+                case _ => BadRequest("Unsupported format")
+              }
+            }.recover {
+              case t =>
+                Context.current.set(JavaHelpers.createJavaContext(request, JavaHelpers.createContextComponents()))
+                Ok(access.monitoring.render(Json.obj(), pp, userProvider))
+            }
+
+          case _ => Future.successful(BadRequest("Unsupported format"))
         }
       }.recover {
-        case t => BadRequest("Error: " + t.getMessage)
+        case t =>
+          Context.current.set(JavaHelpers.createJavaContext(request, JavaHelpers.createContextComponents()))
+          Ok(access.monitoring.render(Json.obj(), Json.obj(), userProvider))
       }
 
-
-    }.recover{
-      case t=>Future(BadRequest("Error: "+t.getMessage))
+      resultFuture
+    }.recover {
+      case t => Future.successful(BadRequest("Error: " + t.getMessage))
     }.get
-
-    }
   }
+
+
 
 }
 
