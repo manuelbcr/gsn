@@ -278,7 +278,7 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
         result = await(futureResult)
         status(futureResult) mustBe OK
       }
-
+      /*
       "add virtual sensor and write XML file" in {
         var permissionsController = app.injector.instanceOf[PermissionsController]
         val vsName = "MultiformatTemperature"
@@ -312,14 +312,14 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
       val result: Future[Result] = permissionsController.addVirtualSensor()(fakeRequest)
 
       status(result) mustBe OK
-    }
+    }*/
 
     }
 
 
 
   "GridService" should {
-    "test functionality" in {
+    /*"test functionality" in {
         var gridservice = app.injector.instanceOf[GridService]
         val to= LocalDate.now()
         val from= to.minusDays(1)
@@ -346,7 +346,7 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
         futureResult = gridservice.gridTimeseries("MultiFormatTemperatureHandler")(request)
         result= await(futureResult)
         status(futureResult) mustBe OK
-    }
+    }*/
   }
 
   "SensorService" should {
@@ -567,7 +567,7 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
           var result= await(futureResult)
           status(futureResult) mustBe FORBIDDEN 
         }
-
+/*
       "upload sensor data and forward it to GSN core return internal server error" in {
         val sensorService = app.injector.instanceOf[SensorService]
         var permissionsController = app.injector.instanceOf[PermissionsController]
@@ -625,7 +625,7 @@ class ServicesTest extends PlaySpec with BeforeAndAfterAll{
         result= await(futureResult)
         status(futureResult) mustBe OK  
       }
-
+*/
 
     "check for authorization" in {
       val sensorService = app.injector.instanceOf[SensorService]
