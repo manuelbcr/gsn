@@ -82,6 +82,9 @@ import ch.epfl.gsn.utils.ValidityTools;
 import ch.epfl.gsn.vsensor.SQLValidatorIntegration;
 import ch.epfl.gsn.wrappers.WrappersUtil;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 //import java.sql.Connection;
 //import java.sql.DriverManager;
 //import java.sql.SQLException;
@@ -93,13 +96,14 @@ public final class Main {
     public static final int        DEFAULT_MAX_DB_CONNECTIONS       = 8;
 	public static final String     DEFAULT_GSN_CONF_FOLDER            = "../conf";
 	public static final String     DEFAULT_VIRTUAL_SENSOR_FOLDER = "../virtual-sensors";
+	public static String		   DEFAULT_GSN_CONF = "/gsn.xml";
 	public static transient Logger logger                           = LoggerFactory.getLogger ( Main.class );
 
 	/**
 	 * Mapping between the wrapper name (used in addressing of stream source)
 	 * into the class implementing DataSource.
 	 */
-	private static  Properties                            wrappers ;
+	private static Properties                             wrappers ;
 	private static Main                                   singleton ;
 	public static String                                  gsnConfFolder          = DEFAULT_GSN_CONF_FOLDER;
 	public static String                                  virtualSensorDirectory = DEFAULT_VIRTUAL_SENSOR_FOLDER;
@@ -126,13 +130,11 @@ public final class Main {
     private static ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
     private Main() throws Exception {
-
-		ValidityTools.checkAccessibilityOfFiles ( WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE , gsnConfFolder + "/gsn.xml");
+		ValidityTools.checkAccessibilityOfFiles ( WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE , gsnConfFolder + DEFAULT_GSN_CONF);
 		ValidityTools.checkAccessibilityOfDirs ( virtualSensorDirectory );
 		containerConfig = loadContainerConfiguration();
 		updateSplashIfNeeded(new String[] {"GSN is starting...", "All GSN logs are available at: logs/ch.epfl.gsn.log"});
 		System.out.println("Global Sensor Networks (GSN) is starting...");
-	
         int maxDBConnections = containerConfig.getMaxDBConnections();
         int maxSlidingDBConnections = containerConfig.getMaxSlidingDBConnections();
 		
@@ -142,7 +144,6 @@ public final class Main {
         
         StorageConfig sc = containerConfig.getSliding() != null ? containerConfig.getSliding().getStorage() : containerConfig.getStorage() ;
         windowStorage = StorageManagerFactory.getInstance(sc.getJdbcDriver ( ) , sc.getJdbcUsername ( ) , sc.getJdbcPassword ( ) , sc.getJdbcURL ( ), maxSlidingDBConnections);
-        
         validationStorage = StorageManagerFactory.getInstance("org.h2.Driver", "sa", "", "jdbc:h2:mem:validator", Main.DEFAULT_MAX_DB_CONNECTIONS);
 
         logger.trace ( "The Container Configuration file loaded successfully." );
@@ -158,13 +159,18 @@ public final class Main {
 		}
 		
 		VSensorLoader vsloader = VSensorLoader.getInstance ( virtualSensorDirectory );
-		File vsDir=new File(virtualSensorDirectory);
+
+		String currentWorkingDir = System.getProperty("user.dir");
+    	Path absolutePath = Paths.get(currentWorkingDir, virtualSensorDirectory);
+		File vsDir = absolutePath.toFile();
+		//File vsDir=new File(virtualSensorDirectory);
 		for (File f:vsDir.listFiles()){
 			if (f.getName().endsWith(".xml")){
 				VsConf vs= VsConf.load(f.getPath());
 				vsConf.put(vs.name(), vs);
 			}
 		}
+
 		Main.vsLoader = vsloader;
 
 		vsloader.addVSensorStateChangeListener(new SQLValidatorIntegration(SQLValidator.getInstance()));
@@ -176,8 +182,8 @@ public final class Main {
 		ContainerImpl.getInstance().addVSensorDataListener(DataDistributer.getInstance(LocalDeliveryWrapper.class));
 		ContainerImpl.getInstance().addVSensorDataListener(DataDistributer.getInstance(ZeroMQDeliverySync.class));
 		ContainerImpl.getInstance().addVSensorDataListener(DataDistributer.getInstance(ZeroMQDeliveryAsync.class));
-		vsloader.startLoading();
 
+		vsloader.startLoading();
 	}
 
 	private static void closeSplashIfneeded() {
@@ -241,6 +247,7 @@ public final class Main {
 		if (args.length > 1) {
 			Main.virtualSensorDirectory = args[1];
 		}
+
 		updateSplashIfNeeded(new String[] {"GSN is trying to start.","All GSN logs are available at: logs/gsn.log"});
 		Runtime.getRuntime().addShutdownHook(new Thread()
 	        {
@@ -289,11 +296,11 @@ public final class Main {
 	}
 
 	public static ContainerConfig loadContainerConfiguration() {
-		ValidityTools.checkAccessibilityOfFiles (WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE , gsnConfFolder + "/gsn.xml");
+		ValidityTools.checkAccessibilityOfFiles (WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE , gsnConfFolder + DEFAULT_GSN_CONF);
 		ValidityTools.checkAccessibilityOfDirs (virtualSensorDirectory);
 		ContainerConfig toReturn = null;
 		try {
-			toReturn = loadContainerConfig (gsnConfFolder + "/gsn.xml");
+			toReturn = loadContainerConfig (gsnConfFolder + DEFAULT_GSN_CONF);
 			logger.info ( "Loading wrappers.properties at : " + WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE);
 			wrappers = WrappersUtil.loadWrappers(new HashMap<String, Class<?>>());
 			logger.info ( "Wrappers initialization ..." );
@@ -306,10 +313,13 @@ public final class Main {
 	}
 
 	public static ContainerConfig loadContainerConfig (String gsnXMLpath) throws ClassNotFoundException {
-		if (!new File(gsnXMLpath).isFile()) {
+		String currentWorkingDir = System.getProperty("user.dir");
+		Path absolutePath = Paths.get(currentWorkingDir, gsnXMLpath);
+        File f = absolutePath.toFile();
+		if (!f.isFile()) {
 			logger.error("Couldn't find the gsn.xml file @: "+(new File(gsnXMLpath).getAbsolutePath()));
 			System.exit(1);
-		}		
+		}	
 		GsnConf gsn = GsnConf.load(gsnXMLpath);
 		gsnConf = gsn;
 		ContainerConfig conf=BeansInitializer.container(gsn);
@@ -363,7 +373,7 @@ public final class Main {
 	public static ContainerConfig getContainerConfig() {
 		if (singleton == null)
 			try {
-				return loadContainerConfig(Main.gsnConfFolder + "/gsn.xml");
+				return loadContainerConfig(Main.gsnConfFolder + DEFAULT_GSN_CONF);
 			} catch (Exception e) {
 				return null;
 			}
@@ -400,7 +410,6 @@ public final class Main {
             }
         }
         return sm;
-
     }
 
     public static StorageManager getStorage(String vsName) {
@@ -434,6 +443,10 @@ public final class Main {
     
     public static ThreadMXBean getThreadMXBean() {
         return threadBean;
+    }
+
+	public static void setDefaultGsnConf(String newDefaultGsnConf) {
+        DEFAULT_GSN_CONF = newDefaultGsnConf;
     }
 
 }
