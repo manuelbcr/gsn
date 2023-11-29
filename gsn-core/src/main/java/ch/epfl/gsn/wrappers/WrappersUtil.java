@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import ch.epfl.gsn.Main;
 import ch.epfl.gsn.wrappers.WrappersUtil;
 
+import java.nio.file.Paths;
+
 import org.slf4j.Logger;
 public class WrappersUtil {
   
@@ -44,14 +46,16 @@ public class WrappersUtil {
   public static final String     DEFAULT_WRAPPER_PROPERTIES_FILE  = Main.gsnConfFolder +"/wrappers.properties";
   public static Properties loadWrappers(HashMap<String, Class<?>> wrappers, String location) {
     Properties config = new Properties ();
+    String currentWorkingDir = System.getProperty("user.dir");
+    String filePath = Paths.get(currentWorkingDir, location).toString();
     try {// Trying to load the wrapper specified in the configuration file of the container. 
-      config.load(new FileReader( location ));
+      config.load(new FileReader( filePath ));
     } catch ( IOException e ) {
-      logger.error ( new StringBuilder ( ).append ( "Check the :" ).append ( location ).append ( " file and make sure it's syntactically correct: " ).append(e.getMessage()).toString ( ) );
+      logger.error ( new StringBuilder ( ).append ( "Check the :" ).append ( filePath ).append ( " file and make sure it's syntactically correct: " ).append(e.getMessage()).toString ( ) );
       logger.info ( "Sample wrappers extention properties file is provided in GSN distribution." );
       System.exit ( 1 );
     }  
-   // TODO: Checking for duplicates in the wrappers file.
+    // TODO: Checking for duplicates in the wrappers file.
     return config;
   }  
   public static Properties loadWrappers(HashMap<String, Class<?>> wrappers){
