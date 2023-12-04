@@ -26,9 +26,11 @@
 
 package ch.epfl.gsn.utils;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.net.UnknownHostException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -47,7 +49,7 @@ import ch.epfl.gsn.utils.ValidityTools;
 
 import org.junit.Ignore;
 
-@Ignore
+
 public class TestValidityTools {
 
 	@BeforeClass
@@ -66,4 +68,55 @@ public class TestValidityTools {
 		String updatedWorkingDir = System.getProperty("user.dir");
 		ValidityTools.checkAccessibilityOfFiles ( "../conf/wrappers.properties", "../conf/gsn.xml");
 	}
+
+	@Test
+    public void testIsNotAccessibleSocket() throws UnknownHostException {
+        assertFalse(ValidityTools.isAccessibleSocket("localhost", 9999, 3000));
+		assertFalse(ValidityTools.isAccessibleSocket("localhost", 9999));
+    }
+
+	@Test
+	public void testInvalidParameters() throws UnknownHostException, RuntimeException {
+        ValidityTools.isAccessibleSocket(null, -1, 3000);
+    }
+
+    @Test
+    public void testGetHostName() {
+        assertEquals("example.com", ValidityTools.getHostName("example.com:8080"));
+    }
+
+    @Test
+    public void testGetPortNumber() {
+        assertEquals(8080, ValidityTools.getPortNumber("example.com:8080"));
+    }
+
+	@Test
+    public void testIsLocalhost() {
+        assertTrue(ValidityTools.isLocalhost("localhost"));
+        assertTrue(ValidityTools.isLocalhost("127.0.0.1"));
+        assertFalse(ValidityTools.isLocalhost("example.com"));
+    }
+
+	@Test
+    public void testIsValidJavaVariable() {
+        assertTrue(ValidityTools.isValidJavaVariable("validIdentifier"));
+        assertFalse(ValidityTools.isValidJavaVariable("123invalid"));
+        assertFalse(ValidityTools.isValidJavaVariable(null));
+    }
+
+	@Test(expected = ClassNotFoundException.class)
+    public void testInvaliIsDBAccessible() throws ClassNotFoundException, SQLException {
+        ValidityTools.isDBAccessible("invalidDriverClass", "invalid", "invalid", "invalid");
+    }
+
+	@Test
+    public void testIsInt() {
+        assertTrue(ValidityTools.isInt("123"));
+        assertTrue(ValidityTools.isInt("-456"));
+        assertTrue(ValidityTools.isInt("0"));
+		assertFalse(ValidityTools.isInt(null));
+		assertFalse(ValidityTools.isInt("abc"));
+        assertFalse(ValidityTools.isInt("12.34"));
+        assertFalse(ValidityTools.isInt("   "));
+    }
 }
