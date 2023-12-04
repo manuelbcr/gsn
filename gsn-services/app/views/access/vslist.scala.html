@@ -1,8 +1,8 @@
 @import scala.collection.mutable.Buffer
 @import service.gsn.UserProvider 
 @import controllers.gsn.auth.GSNGroup 
-@import models.gsn._
-@(vs: Buffer[models.gsn.DataSource], groups: Buffer[models.gsn.Group], users: Buffer[models.gsn.User], count:Int, page:Int, pageLength:Int,userProvider: UserProvider) 
+@import models.gsn.auth._
+@(vs: Buffer[models.gsn.auth.DataSource], groups: Buffer[models.gsn.auth.Group], users: Buffer[models.gsn.auth.User], count:Int, page:Int, pageLength:Int,userProvider: UserProvider) 
 @import helper._ 
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapBasic.f) }
 

@@ -1,7 +1,7 @@
 package test;
 
 import com.feth.play.module.pa.providers.oauth2.google.GoogleAuthUser;
-import models.gsn.User;
+import models.gsn.auth.User;
 import net.sf.ehcache.CacheManager;
 import org.fest.assertions.Assertions;
 import org.junit.Ignore;

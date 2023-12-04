@@ -2,7 +2,7 @@
 @import scala.collection.mutable.Buffer
 @import controllers.gsn.auth.GSNEditClient
 @import play.api.data.Form
-@(clients: Buffer[models.gsn.Client], editForm: Form[GSNEditClient],userProvider: UserProvider)
+@(clients: Buffer[models.gsn.auth.Client], editForm: Form[GSNEditClient],userProvider: UserProvider)
 @import helper._ 
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapBasic.f) }
 

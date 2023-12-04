@@ -1,4 +1,4 @@
-package models.gsn;
+package models.gsn.auth;
 
 import com.feth.play.module.pa.user.AuthUser;
 import io.ebean.Finder;

@@ -17,17 +17,14 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
-* File: app/models/gsn/auth/UserDataSourceRead.java
+* File: app/models/gsn/auth/GroupDataSourceRead.java
 *
 * @author Julien Eberle
 *
 */
-package models.gsn;
+package models.gsn.auth;
 
 import java.util.List;
-
-import io.ebean.Finder;
-import io.ebean.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -36,15 +33,18 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.JoinColumn;
 
+import io.ebean.Finder;
+import io.ebean.Model;
+
 /**
  * Initial version based on work by Steve Chaloner (steve@objectify.be) for
  * Deadbolt2
  */
 @Entity
-@Table(name="user_data_source_read",  uniqueConstraints={
-		   @UniqueConstraint(columnNames = {"user_id", "data_source_id"})
+@Table(name="group_data_source_read",  uniqueConstraints={
+		   @UniqueConstraint(columnNames={"group_id", "data_source_id"})
 		})
-public class UserDataSourceRead extends Model {
+public class GroupDataSourceRead extends Model {
 	/**
 	 * 
 	 */
@@ -54,25 +54,25 @@ public class UserDataSourceRead extends Model {
 	public Long id;
     
 	@ManyToOne
-	@JoinColumn(name = "user_id") 
-	public User user;
+	@JoinColumn(name = "group_id")
+	public Group group;
 	
 	@ManyToOne
 	@JoinColumn(name = "data_source_id")
 	public DataSource data_source;
 
-	public static final Finder<Long, UserDataSourceRead> find = new Finder<>(UserDataSourceRead.class);
+	public static final Finder<Long, GroupDataSourceRead> find = new Finder<>(GroupDataSourceRead.class);
 
-	public static List<UserDataSourceRead> findByUser(User value) {
-		return find.query().where().eq("user", value).findList();
+	public static List<GroupDataSourceRead> findByUser(Group value) {
+		return find.query().where().eq("group", value).findList();
 	}
 	
-	public static List<UserDataSourceRead> findByDataSource(DataSource value) {
+	public static List<GroupDataSourceRead> findByDataSource(DataSource value) {
 		return find.query().where().eq("data_source", value).findList();
 	}
 	
-	public static UserDataSourceRead findByBoth(User u, DataSource d) {
-		return find.query().where().eq("user", u).eq("data_source", d).findOne();
+	public static GroupDataSourceRead findByBoth(Group g, DataSource d) {
+		return find.query().where().eq("group", g).eq("data_source", d).findOne();
 	}
 
 }

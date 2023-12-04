@@ -1,4 +1,4 @@
-package models.gsn;
+package models.gsn.auth;
 
 import be.objectify.deadbolt.java.models.Permission;
 import be.objectify.deadbolt.java.models.Role;
@@ -12,7 +12,7 @@ import com.feth.play.module.pa.user.EmailIdentity;
 import com.feth.play.module.pa.user.NameIdentity;
 import com.feth.play.module.pa.user.FirstLastNameIdentity;
 import io.ebean.Finder;
-import models.gsn.TokenAction.Type;
+import models.gsn.auth.TokenAction.Type;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
 

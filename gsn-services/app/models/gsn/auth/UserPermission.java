@@ -1,4 +1,4 @@
-package models.gsn;
+package models.gsn.auth;
 
 import be.objectify.deadbolt.java.models.Permission;
 import io.ebean.Finder;

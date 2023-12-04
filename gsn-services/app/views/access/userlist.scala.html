@@ -1,6 +1,6 @@
 @import scala.collection.mutable.Buffer 
 @import service.gsn.UserProvider 
-@(users: Buffer[models.gsn.User], roles: Buffer[models.gsn.SecurityRole], count:Int, page:Int, pageLength:Int,userProvider: UserProvider) 
+@(users: Buffer[models.gsn.auth.User], roles: Buffer[models.gsn.auth.SecurityRole], count:Int, page:Int, pageLength:Int,userProvider: UserProvider) 
 @import helper._
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapBasic.f)} 
 @main(userProvider,Messages("gsn.access.users.title"),"userlist") {

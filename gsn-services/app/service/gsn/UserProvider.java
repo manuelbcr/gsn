@@ -6,7 +6,7 @@ import javax.inject.Inject;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.user.AuthUser;
 
-import models.gsn.User;
+import models.gsn.auth.User;
 import play.mvc.Http.Session;
 
 /**

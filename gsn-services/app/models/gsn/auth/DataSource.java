@@ -17,57 +17,70 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
-* File: app/models/gsn/auth/Group.java
+* File: app/models/gsn/auth/DataSource.java
 *
 * @author Julien Eberle
 *
 */
-package models.gsn;
+package models.gsn.auth;
 
 import java.util.List;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 import io.ebean.Finder;
 import io.ebean.Model;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
+import be.objectify.deadbolt.java.models.Permission;
+
+/**
+ * Initial version based on work by Steve Chaloner (steve@objectify.be) for
+ * Deadbolt2
+ */
 @Entity
-@Table(name = Group.tableName)
-public class Group extends Model{
+public class DataSource extends Model implements Permission {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	public static final String tableName = "groups";
 
 	@Id
 	public Long id;
-
-	public String name;
-	public String description;
+    
+	public String value;
+	
+	public boolean is_public;
 	
 	@OneToMany(cascade = CascadeType.ALL)
-	public List<GroupDataSourceRead> dataSourceRead;
+	public List<UserDataSourceRead> userRead;
 	
 	@OneToMany(cascade = CascadeType.ALL)
-	public List<GroupDataSourceWrite> dataSourceWrite;
+	public List<UserDataSourceWrite> userWrite;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	public List<GroupDataSourceRead> groupRead;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	public List<GroupDataSourceWrite> groupWrite;
 	
-	@ManyToMany(mappedBy = "groups")
-	public List<User> users;
+	public static final Finder<Long, DataSource> find = new Finder<>(DataSource.class);
 
-	public static final Finder<Long, Group> find = new Finder<>(Group.class);
-
-	public static Group findByName(String name) {
-		return find.query().where().eq("name", name).findOne();
+	public static DataSource findByValue(String value) {
+		return find.query().where().eq("value", value).findOne();
 	}
 
-	public String getName() {
-		return name;
+	public String getValue() {
+		return value;
+	}
+	
+	public boolean getIs_public(){
+		return is_public;
+	}
+	
+	public void setIs_public(boolean p){
+		is_public=p;
 	}
 }

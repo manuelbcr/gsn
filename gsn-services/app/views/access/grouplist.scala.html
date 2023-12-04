@@ -2,7 +2,7 @@
 @import controllers.gsn.auth.GSNGroup 
 @import service.gsn.UserProvider
 @import play.api.data.Form
-@(userProvider: UserProvider, groups: Buffer[models.gsn.Group], users: Buffer[models.gsn.User], groupForm: Form[GSNGroup], count:Int, page:Int, pageLength:Int) 
+@(userProvider: UserProvider, groups: Buffer[models.gsn.auth.Group], users: Buffer[models.gsn.auth.User], groupForm: Form[GSNGroup], count:Int, page:Int, pageLength:Int) 
 @import helper._ 
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapBasic.f) }
 

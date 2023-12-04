@@ -2,7 +2,7 @@ package test;
 
 import com.feth.play.module.pa.providers.oauth2.eventbrite.EventBriteAuthProvider;
 import com.feth.play.module.pa.providers.oauth2.eventbrite.EventBriteAuthUser;
-import models.gsn.User;
+import models.gsn.auth.User;
 import org.fluentlenium.core.domain.FluentWebElement;
 import org.junit.Test;
 import org.junit.Ignore;

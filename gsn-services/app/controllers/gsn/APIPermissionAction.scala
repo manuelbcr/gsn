@@ -30,8 +30,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import security.gsn.GSNDeadboltHandler
 import scalaoauth2.provider._
 import play.core.j.JavaHelpers
-import models.gsn.User
-import models.gsn.DataSource
+import models.gsn.auth.User
+import models.gsn.auth.DataSource
 import play.mvc.Http
 import collection.JavaConverters._
 import play.Logger

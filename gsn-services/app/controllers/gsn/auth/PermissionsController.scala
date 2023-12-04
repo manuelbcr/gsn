@@ -29,7 +29,7 @@ import akka.actor._
 
 import scala.collection.mutable.StringBuilder
 import play.api.mvc._
-import models.gsn.{DataSource, Group, GroupDataSourceRead, GroupDataSourceWrite, SecurityRole, User, UserDataSourceRead, UserDataSourceWrite}
+import models.gsn.auth.{DataSource, Group, GroupDataSourceRead, GroupDataSourceWrite, SecurityRole, User, UserDataSourceRead, UserDataSourceWrite}
 import views.html._
 import security.gsn.GSNScalaDeadboltHandler
 import javax.inject.Inject

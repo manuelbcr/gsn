@@ -5,7 +5,7 @@ import scalaoauth2.provider._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.Date
-import models.gsn._
+import models.gsn.auth._
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser
 import providers.gsn.GSNUsernamePasswordAuthUser
 import scala.collection.JavaConverters._

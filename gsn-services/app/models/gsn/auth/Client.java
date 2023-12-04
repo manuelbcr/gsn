@@ -22,7 +22,7 @@
 * @author Julien Eberle
 *
 */
-package models.gsn;
+package models.gsn.auth;
 
 import java.util.List;
 

@@ -17,14 +17,15 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
-* File: app/models/gsn/auth/UserDataSourceWrite.java
+* File: app/models/gsn/auth/OAuthToken.java
 *
 * @author Julien Eberle
 *
 */
-package models.gsn;
+package models.gsn.auth;
 
 import java.util.List;
+import java.util.UUID;
 
 import io.ebean.Finder;
 import io.ebean.Model;
@@ -32,19 +33,9 @@ import io.ebean.Model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.persistence.JoinColumn;
 
-/**
- * Initial version based on work by Steve Chaloner (steve@objectify.be) for
- * Deadbolt2
- */
 @Entity
-@Table(name="user_data_source_write",  uniqueConstraints={
-		   @UniqueConstraint(columnNames={"user_id", "data_source_id"})
-		})
-public class UserDataSourceWrite extends Model {
+public class OAuthToken extends Model{
 	/**
 	 * 
 	 */
@@ -52,27 +43,45 @@ public class UserDataSourceWrite extends Model {
 
 	@Id
 	public Long id;
-    
+
 	@ManyToOne
-	@JoinColumn(name = "user_id") 
 	public User user;
-	
+
 	@ManyToOne
-	@JoinColumn(name = "data_source_id")
-	public DataSource data_source;
-	
-	public static final Finder<Long, UserDataSourceWrite> find = new Finder<>(UserDataSourceWrite.class);
+	public Client client;
 
-	public static List<UserDataSourceWrite> findByUser(User value) {
-		return find.query().where().eq("user", value).findList();
-	}
+	public String token;
+	public String refresh;
+	public Long creation;
+	public Long duration;
+
+	public static final Finder<Long, OAuthToken> find = new Finder<>(OAuthToken.class);
 	
-	public static List<UserDataSourceWrite> findByDataSource(DataSource value) {
-		return find.query().where().eq("data_source", value).findList();
-	}
-	
-	public static UserDataSourceWrite findByBoth(User u, DataSource d) {
-		return find.query().where().eq("user", u).eq("data_source", d).findOne();
+	public static List<OAuthToken> findByUserClient(User u, Client c) {
+		return find.query().where().eq("user", u).eq("client", c).findList();
 	}
 
+	public static OAuthToken findByToken(String value) {
+		return find.query().where().eq("token", value).findOne();
+	}
+	
+	public static OAuthToken findByRefresh(String value) {
+		return find.query().where().eq("refresh", value).findOne();
+	}
+	
+	public static OAuthToken generate(User user,Client client){
+		OAuthToken t = new OAuthToken();
+		t.user = user;
+		t.client = client;
+		t.token =  UUID.randomUUID().toString();
+		t.creation = System.currentTimeMillis();
+		t.duration = 600000L;
+		t.refresh = UUID.randomUUID().toString();
+		t.save();
+		return t;
+	}
+
+	public Client getClient(){
+		return client;
+	}
 }

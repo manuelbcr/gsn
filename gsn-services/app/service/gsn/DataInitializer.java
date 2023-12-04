@@ -1,6 +1,6 @@
 package service.gsn;
 
-import models.gsn.SecurityRole;
+import models.gsn.auth.SecurityRole;
 
 import java.util.Arrays;
 

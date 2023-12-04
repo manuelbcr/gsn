@@ -17,60 +17,57 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
-* File: app/models/gsn/auth/OAuthCode.java
+* File: app/models/gsn/auth/Group.java
 *
 * @author Julien Eberle
 *
 */
-package models.gsn;
+package models.gsn.auth;
 
-import java.util.UUID;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import io.ebean.Finder;
 import io.ebean.Model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-
-
 @Entity
-public class OAuthCode extends Model{
+@Table(name = Group.tableName)
+public class Group extends Model{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	public static final String tableName = "groups";
 
 	@Id
 	public Long id;
 
-	@ManyToOne
-	public User user;
+	public String name;
+	public String description;
+	
+	@OneToMany(cascade = CascadeType.ALL)
+	public List<GroupDataSourceRead> dataSourceRead;
+	
+	@OneToMany(cascade = CascadeType.ALL)
+	public List<GroupDataSourceWrite> dataSourceWrite;
+	
+	@ManyToMany(mappedBy = "groups")
+	public List<User> users;
 
-	@ManyToOne
-	public Client client;
-	
-	public String code;
-	public Long creation;
-	
-	public static final Finder<Long, OAuthCode> find = new Finder<>(OAuthCode.class);
+	public static final Finder<Long, Group> find = new Finder<>(Group.class);
 
-	public static OAuthCode findByCode(String value) {
-		return find.query().where().eq("code", value).findOne();
+	public static Group findByName(String name) {
+		return find.query().where().eq("name", name).findOne();
 	}
-	
-	
-	public static OAuthCode generate(User user, Client client){
-		OAuthCode t = new OAuthCode();
-		t.user = user;
-		t.client = client;
-		t.code =  UUID.randomUUID().toString();
-		t.creation = System.currentTimeMillis();
-		t.save();
-		return t;
-	}
-	
-	public Client getClient(){
-		return client;
+
+	public String getName() {
+		return name;
 	}
 }

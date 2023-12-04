@@ -1,8 +1,8 @@
 package controllers.gsn.auth;
 
-import models.gsn.TokenAction;
-import models.gsn.TokenAction.Type;
-import models.gsn.User;
+import models.gsn.auth.TokenAction;
+import models.gsn.auth.TokenAction.Type;
+import models.gsn.auth.User;
 import play.data.Form;
 import play.data.FormFactory;
 import play.i18n.MessagesApi;

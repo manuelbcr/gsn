@@ -28,7 +28,7 @@ import be.objectify.deadbolt.scala.{DynamicResourceHandler,AuthenticatedRequest,
 import play.api.mvc.{Request, Result, Results, Session}
 import play.api.mvc.Controller
 import be.objectify.deadbolt.scala.models.Subject
-import models.gsn.User
+import models.gsn.auth.User
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import play.mvc.Http
@@ -61,7 +61,7 @@ class GSNScalaDeadboltHandler(auth: PlayAuthenticate,dynamicResourceHandler: Opt
   }
 
 
-case class UserSubject(user: models.gsn.User) extends Subject {
+case class UserSubject(user: models.gsn.auth.User) extends Subject {
   override val identifier: String = user.id.toString
   override val roles: List[be.objectify.deadbolt.scala.models.Role] = user.roles.asScala.map { role =>
     new be.objectify.deadbolt.scala.models.Role {

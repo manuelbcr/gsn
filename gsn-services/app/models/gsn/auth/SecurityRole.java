@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package models.gsn;
+package models.gsn.auth;
 
 import be.objectify.deadbolt.java.models.Role;
 import io.ebean.Finder;

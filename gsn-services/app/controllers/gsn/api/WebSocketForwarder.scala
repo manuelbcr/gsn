@@ -33,8 +33,8 @@ import play.mvc.Http
 import security.gsn.GSNDeadboltHandler
 import play.core.j.JavaHelpers
 import scalaoauth2.provider.AuthInfoRequest
-import models.gsn.User
-import models.gsn.DataSource
+import models.gsn.auth.User
+import models.gsn.auth.DataSource
 import controllers.gsn.GSNDataHandler
 import collection.JavaConverters._
 import scalaoauth2.provider.{ProtectedResource, ProtectedResourceRequest}

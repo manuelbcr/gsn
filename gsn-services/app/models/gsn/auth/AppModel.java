@@ -1,4 +1,4 @@
-package models.gsn;
+package models.gsn.auth;
 
 import io.ebean.Model;
 

@@ -63,7 +63,7 @@ import play.api.Play.current
 import play.api.mvc._
 import play.Logger
 import scala.util.Success
-import models.gsn.User
+import models.gsn.auth.User
 import scalaoauth2.provider.AuthInfo
 import java.io.ByteArrayOutputStream
 import play.api.mvc.InjectedController
