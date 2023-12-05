@@ -116,7 +116,6 @@ public class Application extends Controller {
 
 
 	public Result adduser() {
-		Logger.error("here");
 		return ok(adduser.render(this.provider.getSignupForm(),this.userProvider));
 	}
 

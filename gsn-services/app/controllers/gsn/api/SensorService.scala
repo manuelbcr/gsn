@@ -105,13 +105,10 @@ class SensorService @Inject()(actorSystem: ActorSystem, ec: ExecutionContext,pla
       
       val p=Promise[Seq[SensorData]]
       val st = actorSystem.actorSelection("/user/gsnSensorStore")
-      val neme= actorSystem.name
-      Logger.error(s"actorsystem $neme")
       val q = actorSystem.actorOf(Props(new QueryActor(p)))
       implicit val timeout: Timeout = Timeout(5.seconds)
       q ! GetAllSensors(latestVals,timeFormat)
       val defaultMetaPropsScala: Seq[String] = defaultMetaProps.asScala
-      Logger.error(s"Before mapping: p.isCompleted=${p.isCompleted}, p.future.isCompleted=${p.future.isCompleted}")
       p.future.map { data =>
         val out = format match {
           case Json => JsonSerializer.ser(data, Seq(), latestVals)
@@ -206,7 +203,6 @@ def sensorData(sensorid:String) = headings((APIPermissionAction(playAuth,false, 
     val filterArray: Array[String] =
       if (!filterStr.isDefined) Array()
       else filterStr.get.split(",")
-    Logger.error("insensordata")
     if (fromStr.isDefined) {
       val fromMillis = if (fromStr.get.contains("+")) {
         isoFormatter.parseDateTime(fromStr.get).getMillis
@@ -240,7 +236,6 @@ def sensorData(sensorid:String) = headings((APIPermissionAction(playAuth,false, 
     val agg = aggFunction.map(f => Aggregation(f, aggPeriod.get))
     val p = Promise[Seq[SensorData]]
     val q = actorSystem.actorOf(Props(new QueryActor(p)))
-    Logger.error("insensordata")
     q ! GetSensorData(vsname, fields, conds ++ filters, size, timeFormat, period, agg, orderBy, order, timeline)
 
     p.future.map { data =>

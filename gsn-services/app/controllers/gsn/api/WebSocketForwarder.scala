@@ -54,12 +54,9 @@ import play.Logger
 class WebSocketForwarder @Inject()(playAuth: PlayAuthenticate)(implicit actorSystem: ActorSystem, ec: ExecutionContext) extends InjectedController {
 
   def socket(sensorid: String)= WebSocket.acceptOrResult[Message, Message] { requestHeader =>
-    Logger.error(s"here $sensorid")
     if (playAuth.isLoggedIn(new Http.Session(requestHeader.session.data.asJava))) {
       val user = User.findByAuthUserIdentity(playAuth.getUser(JavaHelpers.createJavaContext(requestHeader, JavaHelpers.createContextComponents())))
-      Logger.error(s"user $user")
       if (hasAccess(user, false, sensorid)) {
-        Logger.error("hasAccesss")
         val flow: Flow[Message, Message, _] = createWebSocketFlow(sensorid)
         Future.successful(Right(flow))
       } else {
