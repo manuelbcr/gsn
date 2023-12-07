@@ -43,24 +43,16 @@ class APIPermissionAction @Inject()(playAuth: PlayAuthenticate, toWrite: Boolean
 
   override protected def executionContext: ExecutionContext = ctx
   override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
-    Logger.error("here invokeblock")
     val session = request.session
     val sessiondata= request.session.data
-    Logger.error(s"request $request")
-    Logger.error(s"request $session")
-    Logger.error(s"sessiondata $sessiondata")
     if (playAuth.isLoggedIn(new Http.Session(request.session.data.asJava))) {
-      Logger.error("here invokeblock")
       val u = User.findByAuthUserIdentity(playAuth.getUser(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents())))
-      Logger.error(s"here invokeblock $u")
       if (hasAccess(u,toWrite,vsnames:_*)) block(request)
       else Future(Results.Forbidden("Logged in user has no access to these resources"))
     }else{
-      Logger.error("here invokeblock else")
       //implicit request => authorize(new MyDataHandler()) { authInfo => val user = authInfo.user
       //Action.async { implicit request => authorize(new GSNDataHandler()) { authInfo =>
       authorize(new GSNDataHandler())({authInfo => {
-        Logger.error("here invokeblock else authorize")
         val u = User.findById(authInfo.user.id)
         if (hasAccess(u,toWrite,vsnames:_*)) block(AuthInfoRequest(AuthInfo[User](u, authInfo.clientId, authInfo.scope, authInfo.redirectUri), request))
         else Future(Results.Forbidden("Logged in user has no access to these resources"))

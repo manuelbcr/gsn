@@ -59,7 +59,7 @@ debianPackageDependencies in Debian += "java11-runtime"
 
 debianPackageRecommends in Debian ++= Seq("postgresql", "gsn-core", "nginx")
 
-//serverLoading in Debian := ServerLoader.Systemd
+serverLoading in Debian := Some(ServerLoader.Systemd)
 
 enablePlugins(DebianPlugin)
 

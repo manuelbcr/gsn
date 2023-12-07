@@ -104,6 +104,7 @@ linuxPackageMappings := {
         case linuxPackage => linuxPackage
     }
 }
+enablePlugins(SystemdPlugin)
 
 scalacOptions += "-deprecation"
 
