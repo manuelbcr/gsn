@@ -1,15 +1,16 @@
-package gsn.vsensor;
+package ch.epfl.gsn.vsensor;
 
 import java.io.Serializable;
 
-import gsn.beans.DataField;
-import gsn.beans.StreamElement;
+import ch.epfl.gsn.beans.DataField;
+import ch.epfl.gsn.beans.StreamElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 public class VaisalaDemuxBridgeVirtualSensor extends BridgeVirtualSensorPermasense {
 	
-	private static final transient Logger logger = Logger.getLogger(VaisalaDemuxBridgeVirtualSensor.class);
+	private static final transient Logger logger = LoggerFactory.getLogger(VaisalaDemuxBridgeVirtualSensor.class);
 
 	private static final DataField[] dataField = {	new DataField("TIMESTAMP", "BIGINT"),
 						new DataField("GENERATION_TIME", "BIGINT"),
