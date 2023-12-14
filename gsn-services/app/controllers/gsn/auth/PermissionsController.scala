@@ -64,34 +64,37 @@ import io.ebean.Ebean
 
 @Singleton
 class PermissionsController @Inject()(actorSystem: ActorSystem, userProvider: UserProvider, deadbolt: DeadboltActions, playAuth: PlayAuthenticate)(implicit ec: ExecutionContext) {
-    def vs(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup( Application.USER_ROLE))() { request =>
-      val count = DataSource.find.query().findCount() // Define 'count' here
+    
+    def vs(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { request =>
 
+      val countFuture: Future[Int] = Future {
+        DataSource.find.query().findCount()
+      }
 
-        val p = Promise[Seq[SensorData]]
-        val st = actorSystem.actorSelection("/user/gsnSensorStore")
-        val q = actorSystem.actorOf(Props(new QueryActor(p)))
-        q ! GetAllSensors(false, None)
+      val p = Promise[Seq[SensorData]]
+      val st = actorSystem.actorSelection("/user/gsnSensorStore")
+      val q = actorSystem.actorOf(Props(new QueryActor(p)))
+      q ! GetAllSensors(false, None)
 
+      val resultFuture: Future[Result] = countFuture.flatMap { count =>
         p.future.map { data =>
-            Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
-            data.map(s => Option(DataSource.findByValue(s.sensor.name)).getOrElse {
-              val d = new DataSource()
-              d.value = s.sensor.name
-              d.is_public = false
-              d.save()
-              d
-            })
-          Ok(views.html.access.vslist(DataSource.find.query().setFirstRow((page - 1) * 10).setMaxRows(10).findList().asScala, Group.find.query().findList().asScala, User.find.query().findList().asScala, count, page, 10, userProvider))
-          }(ec)
+          Context.current.set(JavaHelpers.createJavaContext(request, JavaHelpers.createContextComponents()))
+          data.map(s => Option(DataSource.findByValue(s.sensor.name)).getOrElse {
+            val d = new DataSource()
+            d.value = s.sensor.name
+            d.is_public = false
+            d.save()
+            d
+          })
 
+          Ok(views.html.access.vslist(DataSource.find.query().setFirstRow((page - 1) * 10).setMaxRows(10).findList().asScala, Group.find.query().findList().asScala, User.find.query().findList().asScala, count, page, 10, userProvider))
+        }(ec)
+      }
+
+      resultFuture
     }
 
 
-
-
-
-      
     def addgroup(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request => Future {
      Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
      val count = Group.find.query().findCount()
