@@ -90,9 +90,9 @@ import ch.epfl.gsn.wrappers.WrappersUtil;
 
 public final class Main {
 	
-    public static final int        DEFAULT_MAX_DB_CONNECTIONS       = 8;
-	public static final String     DEFAULT_GSN_CONF_FOLDER            = "../conf";
-	public static final String     DEFAULT_VIRTUAL_SENSOR_FOLDER = "../virtual-sensors";
+    public static final int        DEFAULT_MAX_DB_CONNECTIONS       = 48;
+	public static final String     DEFAULT_GSN_CONF_FOLDER          = "../conf";
+	public static final String     DEFAULT_VIRTUAL_SENSOR_FOLDER    = "../virtual-sensors";
 	public static transient Logger logger                           = LoggerFactory.getLogger ( Main.class );
 
 	/**

@@ -22,3 +22,5 @@ csv-check-points/
 .vagrant/rgloader/
 
 .DS_Store
+.vscode/settings.json
+.gitignore

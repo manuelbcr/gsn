@@ -1,13 +1,13 @@
 language: scala
 scala:
-   - 2.11.2
+   - 2.12.4
 sudo: false
 jdk:
-  - openjdk7
+  - openjdk11
 script:
   - sbt compile
 branches:
   only:
     - master
-    - opensense
+    - permasense2-jdk-11-gsn-services
 

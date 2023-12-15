@@ -75,6 +75,7 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
         try {
             thread = new Thread(this);
             thread.start();
+            thread.setName("DataDistributer");
             // Start the keep alive Timer -- Note that the implementation is backed by one single thread for all the RestDelivery instances.
             keepAliveTimer = new  javax.swing.Timer(getKeepAlivePeriod(), new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
