@@ -37,7 +37,7 @@ import java.io.Serializable;
 import java.sql.*;
 import java.util.ArrayList;
 
-import org.apache.commons.dbcp.*;
+import org.apache.commons.dbcp2.*;
 import org.slf4j.LoggerFactory;
 
 import ch.epfl.gsn.Main;
@@ -67,10 +67,10 @@ public abstract class StorageManager {
     public void init(String databaseDriver, String username, String password, String databaseURL, int maxDBConnections) {
         this.databaseDriver = databaseDriver;
         pool = DataSources.getDataSource(new DBConnectionInfo(databaseDriver,databaseURL,username,password));
-        pool.setMaxActive(maxDBConnections);
+        pool.setMaxTotal(maxDBConnections);
         pool.setMaxIdle(maxDBConnections);
 
-        pool.setRemoveAbandoned(true);    // removing unused connections, used to clean after poorly written code
+        pool.setRemoveAbandonedOnBorrow(true);    // removing unused connections, used to clean after poorly written code
         pool.setRemoveAbandonedTimeout(300);    // 5 minutes
         //
         Connection con = null;
@@ -421,6 +421,10 @@ public abstract class StorageManager {
         } finally {
             close(conn);
         }
+    }
+
+    public BasicDataSource getPool(){
+        return pool;
     }
 
     public void executeDropTable(CharSequence tableName, Connection connection) {
@@ -848,7 +852,7 @@ public abstract class StorageManager {
      * @throws SQLException
      */
     public Connection getConnection() throws SQLException {
-        logger.debug("Asking a con. to DB: "+pool.getUrl()+" => busy: "+pool.getNumActive()+", max-size: "+pool.getMaxActive()+", idle: "+pool.getNumIdle());
+        logger.debug("Asking a con. to DB: "+pool.getUrl()+" => busy: "+pool.getNumActive()+", max-size: "+pool.getMaxTotal()+", idle: "+pool.getNumIdle());
         return pool.getConnection();
     }
 

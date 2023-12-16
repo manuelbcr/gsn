@@ -25,7 +25,7 @@
 
 package ch.epfl.gsn.storage.hibernate;
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 
 public class DBConnectionInfo {
         private String driverClass, url, userName, password;
