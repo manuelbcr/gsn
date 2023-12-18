@@ -49,7 +49,7 @@ import org.slf4j.Logger;
 
 public class InputStream implements Serializable{
 
-	private static final long serialVersionUID = 6910141410904878762L;
+	private static final long 							serialVersionUID = 6910141410904878762L;
 
 	public static final int                             INITIAL_DELAY_5000MSC = 5000;
 
@@ -67,11 +67,11 @@ public class InputStream implements Serializable{
 
 	private String                                      query;
 
-	private  StreamSource[]                 sources;
+	private  StreamSource[]                 			sources;
 
-	private HashMap < CharSequence , StreamSource >           streamSourceAliasNameToStreamSourceName =  new HashMap < CharSequence , StreamSource >( );
+	private HashMap < CharSequence , StreamSource >     streamSourceAliasNameToStreamSourceName =  new HashMap < CharSequence , StreamSource >( );
 
-	private transient VirtualSensor pool;
+	private transient VirtualSensor 					pool;
 
 	private final transient TreeMap< CharSequence , CharSequence > rewritingData         = new TreeMap < CharSequence , CharSequence >( new CaseInsensitiveComparator());
 
@@ -79,7 +79,7 @@ public class InputStream implements Serializable{
 
 	private StringBuilder                               rewrittenSQL;
 
-	private boolean queryCached;
+	private boolean 									queryCached;
 
 	/**
 	 * For making one initial delay.

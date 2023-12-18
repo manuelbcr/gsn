@@ -51,7 +51,7 @@ import org.h2.engine.Session;
 
 public class SQLValidator implements VSensorStateChangeListener {
 
-	private static final transient Logger logger             = LoggerFactory.getLogger( SQLValidator.class );
+	private static final transient Logger logger = LoggerFactory.getLogger( SQLValidator.class );
 
 	private Session session = null;
 	private Connection connection;
@@ -63,7 +63,7 @@ public class SQLValidator implements VSensorStateChangeListener {
 		return validator  ;
 	}
 
-	private  SQLValidator() throws SQLException {
+	private SQLValidator() throws SQLException {
 		Properties properties = new Properties();
 		properties.put("user", "sa");
 		properties.put("password","");
