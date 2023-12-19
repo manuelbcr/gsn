@@ -1,6 +1,7 @@
 /**
 * Global Sensor Networks (GSN) Source Code
 * Copyright (c) 2006-2016, Ecole Polytechnique Federale de Lausanne (EPFL)
+* Copyright (c) 2020-2023, University of Innsbruck
 * 
 * This file is part of GSN.
 * 
@@ -17,8 +18,6 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
-* File: src/ch/epfl/gsn/Main.java
-*
 * @author parobert
 * @author cl3m
 * @author Jerome Rousselot
@@ -28,6 +27,11 @@
 * @author Behnaz Bostanipour
 * @author Timotee Maret
 * @author Julien Eberle
+* @author Tonio Gsell
+* @author Mustafa Yuecel
+* @author Davide Desclavis
+* @author Manuel Buchauer
+* @author Jan Beutel
 *
 */
 
@@ -45,7 +49,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.SplashScreen;
 import java.io.File;
-import java.io.FileNotFoundException;
+// import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,11 +62,11 @@ import org.slf4j.Logger;
 
 import org.zeromq.ZContext;
 
-import ch.epfl.gsn.ContainerImpl;
-import ch.epfl.gsn.DataDistributer;
+// import ch.epfl.gsn.ContainerImpl;
+// import ch.epfl.gsn.DataDistributer;
 import ch.epfl.gsn.Main;
-import ch.epfl.gsn.Mappings;
-import ch.epfl.gsn.VSensorLoader;
+// import ch.epfl.gsn.Mappings;
+// import ch.epfl.gsn.VSensorLoader;
 import ch.epfl.gsn.beans.BeansInitializer;
 import ch.epfl.gsn.beans.ContainerConfig;
 import ch.epfl.gsn.beans.StorageConfig;
@@ -90,16 +94,16 @@ import ch.epfl.gsn.wrappers.WrappersUtil;
 
 public final class Main {
 	
-    public static final int        DEFAULT_MAX_DB_CONNECTIONS       = 48;
+    public static final int        DEFAULT_MAX_DB_CONNECTIONS       = 128;
 	public static final String     DEFAULT_GSN_CONF_FOLDER          = "../conf";
-	public static final String     DEFAULT_VIRTUAL_SENSOR_FOLDER    = "../virtual-sensors";
+	public static final String     DEFAULT_VIRTUAL_SENSOR_FOLDER    = "../conf/virtual-sensors";
 	public static transient Logger logger                           = LoggerFactory.getLogger ( Main.class );
 
 	/**
 	 * Mapping between the wrapper name (used in addressing of stream source)
 	 * into the class implementing DataSource.
 	 */
-	private static  Properties                            wrappers ;
+	private static Properties                             wrappers ;
 	private static Main                                   singleton ;
 	public static String                                  gsnConfFolder          = DEFAULT_GSN_CONF_FOLDER;
 	public static String                                  virtualSensorDirectory = DEFAULT_VIRTUAL_SENSOR_FOLDER;
@@ -112,10 +116,10 @@ public final class Main {
     private static HashMap<VSensorConfig, StorageManager> storagesConfigs         = new HashMap<VSensorConfig, StorageManager>();
     private ContainerConfig                               containerConfig;
     private MonitoringServer                              monitoringServer;
-    private static VSensorLoader vsLoader; 
-    private static GsnConf gsnConf;
-    private static Map <String,VsConf> vsConf = new HashMap<String,VsConf>();
-    private static ArrayList<Monitorable> toMonitor = new ArrayList<Monitorable>();
+    private static VSensorLoader                 		  vsLoader; 
+    private static GsnConf 								  gsnConf;
+    private static Map <String,VsConf>					  vsConf                  = new HashMap<String,VsConf>();
+    private static ArrayList<Monitorable> 				  toMonitor               = new ArrayList<Monitorable>();
     
     
     /*
@@ -314,7 +318,7 @@ public final class Main {
 		gsnConf = gsn;
 		ContainerConfig conf=BeansInitializer.container(gsn);
 		Class.forName(conf.getStorage().getJdbcDriver());
-		conf.setContainerConfigurationFileName (  gsnXMLpath );
+		conf.setContainerConfigurationFileName (gsnXMLpath);
 		//return conf;
 		 // Create a JDBC connection using the URL approach
 		//String jdbcUrl = conf.getStorage().getJdbcURL(); // Get the JDBC URL from your configuration
