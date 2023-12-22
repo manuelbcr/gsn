@@ -1,10 +1,10 @@
-@(signupForm: play.data.Form[_])
+@import service.gsn.UserProvider
+@(playAuth: com.feth.play.module.pa.PlayAuthenticate, userProvider: UserProvider, signupForm: Form[_])
 
 @import helper._
-@import play.core.j.PlayMagicForJava._
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapBasic.f) }
 
-@main(Messages("playauthenticate.signup.title"),"signup") {
+@main(userProvider, Messages("playauthenticate.signup.title"),"signup") {
 
   <div class="row">
     <div class="col-xs-12 col-sm-6 col-md-8">
@@ -16,11 +16,11 @@
 
     <div class="col-xs-6 col-md-4">
         @* Display proprietary login form *@
-    	@helper.form(controllers.gsn.auth.routes.LocalAuthController.doSignup, 'class -> "form-horizontal", 'role -> "form") {
-
+    	@helper.form(controllers.gsn.auth.routes.Application.doSignup, 'class -> "form-horizontal", 'role -> "form") {
+            @helper.CSRF.formField
             @if(signupForm.hasGlobalErrors) {
 		        <p class="alert alert-danger">
-		          @signupForm.globalError.message
+		          @signupForm.getGlobalError.get.message
 		     	</p>
             }
 
@@ -28,10 +28,8 @@
                 signupForm("name"),
                 '_label -> Messages("playauthenticate.signup.name")
              )
-             
-             @_profilePartial(signupForm)
 
-             @_emailPartial(signupForm, true)
+             @_emailPartial(signupForm)
 
              @_passwordPartial(signupForm)
 
@@ -42,7 +40,7 @@
     <div class="col-xs-6 col-md-4">
         @Messages("playauthenticate.signup.oauth")
         @* Display list of available providers *@
-        @_providerPartial(skipCurrent=false)
+        @_providerPartial(playAuth, skipCurrent=false)
     </div>
 
   </div>

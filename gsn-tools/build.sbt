@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   "com.mchange" % "c3p0" % "0.9.5-pre10",
   "org.reactivemongo" %% "play2-reactivemongo" % "0.12.4",
   "ch.qos.logback" % "logback-classic" % "1.1.1" % "test",
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+  "org.scalatest" %% "scalatest" % "3.2.9" % "test",
   "org.scalamock" %% "scalamock-scalatest-support" % "3.4.1" % "test",
   "com.typesafe.akka" %% "akka-testkit" % "2.5.3" % "test",
   "org.mindrot" % "jbcrypt" % "0.3m"

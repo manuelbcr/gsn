@@ -251,7 +251,9 @@ object SensorDatabase {
     try{
 	  vsDB(sensorConf.ds).withSession {implicit session=>
         val stmt=session.conn.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY)
-        stmt.setFetchSize(Integer.MIN_VALUE)
+        //mod for now
+        //stmt.setFetchSize(Integer.MIN_VALUE)
+        stmt.setFetchSize(10)
         val rs=stmt.executeQuery(query.toString)
 	    log.trace(query.toString)
         while (rs.next) {
@@ -274,8 +276,13 @@ object SensorDatabase {
         }
 	  } 
       val selectedOutput=sensor.fields.filter(f=>fieldNames.contains(f.fieldName)) 
-      val noValueIdx=selectedOutput.zipWithIndex.
-        filter(a=>a._1.fieldName.equalsIgnoreCase("nodata_value")).head._2 
+      //mod for now
+      //val noValueIdx=selectedOutput.zipWithIndex.
+      //  filter(a=>a._1.fieldName.equalsIgnoreCase("nodata_value")).head._2 
+
+      val noValueIdxOption = selectedOutput.zipWithIndex.find(a => a._1.fieldName.equalsIgnoreCase("nodata_value")).map(_._2)
+      val noValueIdx = noValueIdxOption.getOrElse(0)
+      
 	  if (aggregation.isDefined && !timeSeries){
         val ts=
           Seq(Series(timeOutput(sensor.name),Seq(time.head))) ++

@@ -33,10 +33,12 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import io.ebean.Finder;
+import io.ebean.Model;
 
 @Entity
 @Table(name = Group.tableName)
-public class Group extends AppModel{
+public class Group extends Model{
 	/**
 	 * 
 	 */
@@ -59,15 +61,13 @@ public class Group extends AppModel{
 	@ManyToMany(mappedBy = "groups")
 	public List<User> users;
 
-	//for some unknown reason the AppModel.Finder doesn't work ????
-	public static play.db.ebean.Model.Finder<Long, Group> find = new play.db.ebean.Model.Finder<Long, Group>(
-			Long.class, Group.class);
+	public static final Finder<Long, Group> find = new Finder<>(Group.class);
+
+	public static Group findByName(String name) {
+		return find.query().where().eq("name", name).findOne();
+	}
 
 	public String getName() {
 		return name;
-	}
-
-	public static Group findByName(String name) {
-		return find.where().eq("name", name).findUnique();
 	}
 }

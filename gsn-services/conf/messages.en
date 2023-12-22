@@ -6,13 +6,12 @@ constraint.min=Minimum value: {0}
 constraint.max=Maximum value: {0}
 constraint.minLength=Minimum length: {0}
 constraint.maxLength=Maximum length: {0}
-constraint.email=E-mail
+constraint.email=Email
 
 # --- Formats
 format.date=Date (''{0}'')
 format.numeric=Numeric
 format.real=Real
-format.boolean=
 
 # --- Errors
 error.invalid=Invalid value
@@ -50,9 +49,9 @@ playauthenticate.change_password.success=Password has been changed successfully.
 playauthenticate.password.signup.error.passwords_not_same=Passwords do not match.
 playauthenticate.password.login.unknown_user_or_pw=Unknown user or password.
 
-playauthenticate.password.verify_signup.subject=Global Sensor Networks: Complete your signup
-playauthenticate.password.verify_email.subject=Global Sensor Networks: Confirm your e-mail address
-playauthenticate.password.reset_email.subject=Global Sensor Networks: How to reset your password
+playauthenticate.password.verify_signup.subject=PlayAuthenticate: Complete your signup
+playauthenticate.password.verify_email.subject=PlayAuthenticate: Confirm your e-mail address
+playauthenticate.password.reset_email.subject=PlayAuthenticate: How to reset your password
 
 # play-authenticate: Additional translations
 
@@ -67,9 +66,7 @@ playauthenticate.login.oauth=or log in using one of the following providers:
 playauthenticate.login.basic=or try HTTP basic auth (as example/secret)
 
 playauthenticate.signup.title=Signup
-playauthenticate.signup.name=Your username
-playauthenticate.signup.firstname=Your first name
-playauthenticate.signup.lastname=Your last name
+playauthenticate.signup.name=Your name
 playauthenticate.signup.now=Sign up now
 playauthenticate.signup.oauth=or sign up using one of the following providers:
 
@@ -95,7 +92,7 @@ playauthenticate.link.account.ok=OK
 # play-authenticate: Signup folder translations
 
 playauthenticate.verify.email.title=Verify your e-mail
-playauthenticate.verify.email.requirement=Before you can use Global Sensor Networks, you first need to verify your e-mail address.
+playauthenticate.verify.email.requirement=Before you can use PlayAuthenticate, you first need to verify your e-mail address.
 playauthenticate.verify.email.cta=An e-mail has been sent to the registered address. Please follow the embedded link to activate your account.
 
 playauthenticate.password.reset.title=Reset password
@@ -105,7 +102,7 @@ playauthenticate.password.forgot.title=Forgot password
 playauthenticate.password.forgot.cta=Send reset instructions
 
 playauthenticate.oauth.access.denied.title=OAuth access denied
-playauthenticate.oauth.access.denied.explanation=If you want to use Global Sensor Networks with OAuth, you must accept the connection.
+playauthenticate.oauth.access.denied.explanation=If you want to use PlayAuthenticate with OAuth, you must accept the connection.
 playauthenticate.oauth.access.denied.alternative=If you rather not like to do this, you can also
 playauthenticate.oauth.access.denied.alternative.cta=sign up with a username and password instead
 
@@ -144,32 +141,17 @@ playauthenticate.profile.edit.btn=Save
 playauthenticate.profile.firstname=Firstname
 playauthenticate.profile.lastname=Lastname
 
-### --- play-authenticate END
-gsn.access.groups=Groups
-gsn.access.groups.title=Groups management
-gsn.access.groups.add=Add
-gsn.access.groups.edit=Edit
-gsn.access.groups.name=Name
-gsn.access.groups.delete=Delete
-gsn.access.groups.vs=Virtual Sensors linked
-gsn.access.groups.members=Members
-gsn.access.groups.description=Description
-gsn.access.groups.addto.error=Error adding user to group
-gsn.access.vs.title=Virtual Sensors
-gsn.access.vs.allowed.write=write
-gsn.access.vs.allowed.read=read
-gsn.access.vs.allowed.write.users=Users with write
-gsn.access.vs.allowed.write.groups=Groups with write
-gsn.access.vs.allowed.read.users=Users with read
-gsn.access.vs.allowed.read.groups=Groups with read
-gsn.access.vs.allowed.all=Publicly visible
-gsn.access.users=Users
-gsn.access.users.title=Users management
-gsn.access.users.add=Add
-gsn.access.users.add_title=Add user
-gsn.access.users.remove=Remove
-gsn.access.roles=Roles
-gsn.access.actions=Actions
+# play-authenticate - sample: Index page
+playauthenticate.index.title=Welcome to Play Authenticate
+playauthenticate.index.intro=Play Authenticate sample app
+playauthenticate.index.intro_2=This is a template for a simple application with authentication.
+playauthenticate.index.intro_3=Check the main navigation above for simple page examples including supported authentication features.
+playauthenticate.index.heading=Heading
+playauthenticate.index.details=View details
+
+# play-authenticate - sample: Restricted page
+playauthenticate.restricted.secrets=Secrets, everywhere!
+
 
 gsn.oauth2.auth.title=GSN External access
 gsn.oauth2.auth.access=An application would like to connect to your account
@@ -188,3 +170,24 @@ gsn.oauth2.clients.id=Client ID
 gsn.oauth2.clients.secret=Client secret
 gsn.oauth2.clients.add=Save
 gsn.oauth2.clients.editing=Editing
+
+gsn.access.groups=Groups
+gsn.access.groups.title=Groups management
+gsn.access.groups.add=Add
+gsn.access.groups.edit=Edit
+gsn.access.groups.name=Name
+gsn.access.groups.delete=Delete
+gsn.access.groups.vs=Virtual Sensors linked
+gsn.access.groups.members=Members
+gsn.access.groups.description=Description
+gsn.access.groups.addto.error=Error adding user to group
+gsn.access.vs.title=Virtual Sensors
+gsn.access.vs.allowed.write=write
+gsn.access.vs.allowed.read=read
+gsn.access.vs.allowed.write.users=Users with write
+gsn.access.vs.allowed.write.groups=Groups with write
+gsn.access.vs.allowed.read.users=Users with read
+gsn.access.vs.allowed.read.groups=Groups with read
+gsn.access.vs.allowed.all=Publicly visible
+
+### --- play-authenticate END

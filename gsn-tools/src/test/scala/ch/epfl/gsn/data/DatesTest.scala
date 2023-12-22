@@ -1,14 +1,14 @@
 package ch.epfl.gsn.data
 
-import org.scalatest.Matchers
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import org.joda.time.Interval
 import org.joda.time.MonthDay
 import ch.epfl.gsn.data.time.Periods
 import org.joda.time.DateTime
 import org.joda.time.Period
 import org.joda.time.Duration
-class DatesTest  extends FunSpec with Matchers {
+class DatesTest  extends AnyFunSpec with Matchers {
     
   describe("date intervals"){
     val intr="07-01/07-20"

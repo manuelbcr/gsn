@@ -1,35 +1,11 @@
-/**
-* Global Sensor Networks (GSN) Source Code
-* Copyright (c) 2006-2016, Ecole Polytechnique Federale de Lausanne (EPFL)
-* 
-* This file is part of GSN.
-* 
-* GSN is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-* 
-* GSN is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-* 
-* You should have received a copy of the GNU General Public License
-* along with GSN.  If not, see <http://www.gnu.org/licenses/>.
-* 
-* File: app/providers/gsn/GSNUsernamePasswordAuthProvider.java
-*
-* @author Julien Eberle
-*
-*/
 package providers.gsn;
 
 import com.feth.play.module.mail.Mailer.Mail.Body;
+import com.feth.play.module.mail.Mailer.MailerFactory;
 import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthProvider;
 import com.feth.play.module.pa.providers.password.UsernamePasswordAuthUser;
-import com.google.inject.Inject;
-
+import controllers.routes;
 import models.gsn.auth.LinkedAccount;
 import models.gsn.auth.TokenAction;
 import models.gsn.auth.TokenAction.Type;
@@ -37,25 +13,28 @@ import models.gsn.auth.User;
 import play.Application;
 import play.Logger;
 import play.data.Form;
+import play.data.FormFactory;
 import play.data.validation.Constraints.Email;
 import play.data.validation.Constraints.MinLength;
 import play.data.validation.Constraints.Required;
 import play.i18n.Lang;
-import play.i18n.Messages;
+import play.inject.ApplicationLifecycle;
 import play.mvc.Call;
 import play.mvc.Http.Context;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static play.data.Form.form;
-
+@Singleton
 public class GSNUsernamePasswordAuthProvider
 		extends
-		UsernamePasswordAuthProvider<String, GSNLoginUsernamePasswordAuthUser, GSNUsernamePasswordAuthUser, GSNUsernamePasswordAuthProvider.GSNLogin, GSNUsernamePasswordAuthProvider.GSNSignup> {
+		UsernamePasswordAuthProvider<String, GSNLoginUsernamePasswordAuthUser, GSNUsernamePasswordAuthUser, GSNUsernamePasswordAuthProvider.MyLogin, GSNUsernamePasswordAuthProvider.MySignup> {
 
 	private static final String SETTING_KEY_VERIFICATION_LINK_SECURE = SETTING_KEY_MAIL
 			+ "." + "verificationLink.secure";
@@ -75,17 +54,12 @@ public class GSNUsernamePasswordAuthProvider
 		return needed;
 	}
 
-	public static GSNUsernamePasswordAuthProvider getProvider() {
-		return (GSNUsernamePasswordAuthProvider) PlayAuthenticate
-				.getProvider(UsernamePasswordAuthProvider.PROVIDER_KEY);
-	}
+	public static class MyIdentity {
 
-	public static class GSNIdentity {
-
-		public GSNIdentity() {
+		public MyIdentity() {
 		}
 
-		public GSNIdentity(final String email) {
+		public MyIdentity(final String email) {
 			this.email = email;
 		}
 
@@ -93,67 +67,104 @@ public class GSNUsernamePasswordAuthProvider
 		@Email
 		public String email;
 
-
 	}
 
-	public static class GSNLogin extends GSNIdentity
+	public static class MyLogin extends MyIdentity
 			implements
 			com.feth.play.module.pa.providers.password.UsernamePasswordAuthProvider.UsernamePassword {
 
 		@Required
 		@MinLength(5)
-		public String password;
+		protected String password;
 
-		
 		@Override
 		public String getEmail() {
 			return email;
+		}
+
+		public void setEmail(String email) {
+			this.email = email;
 		}
 
 		@Override
 		public String getPassword() {
 			return password;
 		}
-	}
 
-	public static class GSNSignup extends GSNLogin {
-
-		@Required
-		@MinLength(5)
-		public String repeatPassword;
-
-		@Required
-		public String name;
-		
-		@Required
-		public String firstname;
-		
-		@Required
-		public String lastname;
-
-		public String validate() {
-			if (password == null || !password.equals(repeatPassword)) {
-				return Messages
-						.get("playauthenticate.password.signup.error.passwords_not_same");
-			}
-			return null;
+		public void setPassword(String password) {
+			this.password = password;
 		}
 	}
 
-	public static final Form<GSNSignup> SIGNUP_FORM = form(GSNSignup.class);
-	public static final Form<GSNLogin> LOGIN_FORM = form(GSNLogin.class);
+	public static class MySignup extends MyLogin {
 
-	@Inject
-	public GSNUsernamePasswordAuthProvider(Application app) {
-		super(app);
+		@Required
+		@MinLength(5)
+		private String repeatPassword;
+
+		@Required
+		private String name;
+
+		public String validate() {
+			if (password == null || !password.equals(repeatPassword)) {
+				return "playauthenticate.password.signup.error.passwords_not_same";
+			}
+			return null;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getRepeatPassword() {
+			return repeatPassword;
+		}
+
+		public void setRepeatPassword(String repeatPassword) {
+			this.repeatPassword = repeatPassword;
+		}
 	}
 
-	protected Form<GSNSignup> getSignupForm() {
+	private final Provider<Application> appProvider;
+	private final Form<MySignup> SIGNUP_FORM;
+	private final Form<MyLogin> LOGIN_FORM;
+
+	@Inject
+	public GSNUsernamePasswordAuthProvider(final Provider<Application> appProvider, final PlayAuthenticate auth, final FormFactory formFactory,
+										  final ApplicationLifecycle lifecycle, MailerFactory mailerFactory) {
+		super(auth, lifecycle, mailerFactory);
+		this.appProvider = appProvider;
+
+		this.SIGNUP_FORM = formFactory.form(MySignup.class);
+		this.LOGIN_FORM = formFactory.form(MyLogin.class);
+	}
+
+	public Form<MySignup> getSignupForm() {
 		return SIGNUP_FORM;
 	}
 
-	protected Form<GSNLogin> getLoginForm() {
+	public Form<MyLogin> getLoginForm() {
 		return LOGIN_FORM;
+	}
+
+	@Override
+	protected MySignup getSignup(final Context ctx) {
+		// TODO change to getSignupForm().bindFromRequest(request) after 2.1
+		Context.current.set(ctx);
+		final Form<MySignup> filledForm = getSignupForm().bindFromRequest();
+		return filledForm.get();
+	}
+
+	@Override
+	protected MyLogin getLogin(final Context ctx) {
+		// TODO change to getLoginForm().bindFromRequest(request) after 2.1
+		Context.current.set(ctx);
+		final Form<MyLogin> filledForm = getLoginForm().bindFromRequest();
+		return filledForm.get();
 	}
 
 	@Override
@@ -221,17 +232,17 @@ public class GSNUsernamePasswordAuthProvider
 
 	@Override
 	protected GSNUsernamePasswordAuthUser buildSignupAuthUser(
-			final GSNSignup signup, final Context ctx) {
+			final MySignup signup, final Context ctx) {
 		return new GSNUsernamePasswordAuthUser(signup);
 	}
 
 	@Override
 	protected GSNLoginUsernamePasswordAuthUser buildLoginAuthUser(
-			final GSNLogin login, final Context ctx) {
+			final MyLogin login, final Context ctx) {
 		return new GSNLoginUsernamePasswordAuthUser(login.getPassword(),
 				login.getEmail());
 	}
-	
+
 
 	@Override
 	protected GSNLoginUsernamePasswordAuthUser transformAuthUser(final GSNUsernamePasswordAuthUser authUser, final Context context) {
@@ -241,14 +252,14 @@ public class GSNUsernamePasswordAuthProvider
 	@Override
 	protected String getVerifyEmailMailingSubject(
 			final GSNUsernamePasswordAuthUser user, final Context ctx) {
-		return Messages.get("playauthenticate.password.verify_signup.subject");
+		return "playauthenticate.password.verify_signup.subject";
 	}
 
 	@Override
 	protected String onLoginUserNotFound(final Context context) {
 		context.flash()
-				.put(controllers.gsn.auth.LocalAuthController.FLASH_ERROR_KEY,
-						Messages.get("playauthenticate.password.login.unknown_user_or_pw"));
+				.put(controllers.gsn.auth.Application.FLASH_ERROR_KEY,
+						"playauthenticate.password.login.unknown_user_or_pw");
 		return super.onLoginUserNotFound(context);
 	}
 
@@ -261,7 +272,7 @@ public class GSNUsernamePasswordAuthProvider
 		final String url = controllers.gsn.auth.routes.Signup.verify(token).absoluteURL(
 				ctx.request(), isSecure);
 
-		final Lang lang = Lang.preferred(ctx.request().acceptLanguages());
+		final Lang lang = Lang.preferred(appProvider.get(), ctx.request().acceptLanguages());
 		final String langCode = lang.code();
 
 		final String html = getEmailTemplate(
@@ -299,7 +310,7 @@ public class GSNUsernamePasswordAuthProvider
 
 	protected String getPasswordResetMailingSubject(final User user,
 			final Context ctx) {
-		return Messages.get("playauthenticate.password.reset_email.subject");
+		return "playauthenticate.password.reset_email.subject";
 	}
 
 	protected Body getPasswordResetMailingBody(final String token,
@@ -310,7 +321,7 @@ public class GSNUsernamePasswordAuthProvider
 		final String url = controllers.gsn.auth.routes.Signup.resetPassword(token).absoluteURL(
 				ctx.request(), isSecure);
 
-		final Lang lang = Lang.preferred(ctx.request().acceptLanguages());
+		final Lang lang = Lang.preferred(appProvider.get(), ctx.request().acceptLanguages());
 		final String langCode = lang.code();
 
 		final String html = getEmailTemplate(
@@ -337,7 +348,7 @@ public class GSNUsernamePasswordAuthProvider
 
 	protected String getVerifyEmailMailingSubjectAfterSignup(final User user,
 			final Context ctx) {
-		return Messages.get("playauthenticate.password.verify_email.subject");
+		return "playauthenticate.password.verify_email.subject";
 	}
 
 	protected String getEmailTemplate(final String template,
@@ -391,7 +402,7 @@ public class GSNUsernamePasswordAuthProvider
 		final String url = controllers.gsn.auth.routes.Signup.verify(token).absoluteURL(
 				ctx.request(), isSecure);
 
-		final Lang lang = Lang.preferred(ctx.request().acceptLanguages());
+		final Lang lang = Lang.preferred(appProvider.get(), ctx.request().acceptLanguages());
 		final String langCode = lang.code();
 
 		final String html = getEmailTemplate(

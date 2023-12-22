@@ -108,7 +108,7 @@ public class JDBCWrapper extends AbstractWrapper {
 
         if ((databaseURL != null) && (username != null) && (password != null) && (driver != null)) {
             useDefaultStorageManager = false;
-            sm = StorageManagerFactory.getInstance(driver, username, password, databaseURL, 8);
+            sm = StorageManagerFactory.getInstance(driver, username, password, databaseURL, Main.DEFAULT_MAX_DB_CONNECTIONS);
             logger.warn("Using specified storage manager: " + databaseURL);
         } else {
             sm = Main.getDefaultStorage();

@@ -27,12 +27,15 @@ package models.gsn.auth;
 import java.util.List;
 import java.util.UUID;
 
+import io.ebean.Finder;
+import io.ebean.Model;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 @Entity
-public class OAuthToken extends AppModel{
+public class OAuthToken extends Model{
 	/**
 	 * 
 	 */
@@ -40,32 +43,30 @@ public class OAuthToken extends AppModel{
 
 	@Id
 	public Long id;
+
 	@ManyToOne
 	public User user;
+
 	@ManyToOne
 	public Client client;
+
 	public String token;
 	public String refresh;
 	public Long creation;
 	public Long duration;
 
-	public Client getClient(){
-		return client;
-	}
-
-	public static final AppModel.Finder<Long, OAuthToken> find = new AppModel.Finder<Long, OAuthToken>(
-			Long.class, OAuthToken.class);
+	public static final Finder<Long, OAuthToken> find = new Finder<>(OAuthToken.class);
 	
 	public static List<OAuthToken> findByUserClient(User u, Client c) {
-		return find.where().eq("user", u).eq("client", c).findList();
+		return find.query().where().eq("user", u).eq("client", c).findList();
 	}
 
 	public static OAuthToken findByToken(String value) {
-		return find.where().eq("token", value).findUnique();
+		return find.query().where().eq("token", value).findOne();
 	}
 	
 	public static OAuthToken findByRefresh(String value) {
-		return find.where().eq("refresh", value).findUnique();
+		return find.query().where().eq("refresh", value).findOne();
 	}
 	
 	public static OAuthToken generate(User user,Client client){
@@ -78,5 +79,9 @@ public class OAuthToken extends AppModel{
 		t.refresh = UUID.randomUUID().toString();
 		t.save();
 		return t;
+	}
+
+	public Client getClient(){
+		return client;
 	}
 }

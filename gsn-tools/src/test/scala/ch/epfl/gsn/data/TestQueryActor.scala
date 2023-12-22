@@ -3,20 +3,18 @@ package ch.epfl.gsn.data
 import akka.testkit._
 import ch.epfl.gsn.data.QueryActor;
 import akka.actor._
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.FunSpec
+//import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.BeforeAndAfterAll
 import scala.concurrent.Promise
-import org.scalatest.Matchers
-import org.scalatest.WordSpecLike
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class TestQueryActor   //TestKit(ActorSystem("test") )
-  // BeforeAndAfterAll
-   extends TestKit(ActorSystem("test")) with ImplicitSender
-with WordSpecLike with Matchers with BeforeAndAfterAll {
+class TestQueryActor extends TestKit(ActorSystem("test")) with ImplicitSender with AnyWordSpecLike with Matchers with BeforeAndAfterAll {
 
 
-  override def afterAll() { system.shutdown() }
+  //override def afterAll() { system.shutdown() }
+  override def afterAll() { TestKit.shutdownActorSystem(system) }
   
   "MyTrait is called when triggered" must {
     

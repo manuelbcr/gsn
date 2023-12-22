@@ -27,7 +27,6 @@ package controllers.gsn.api
 import play.api.mvc._
 import play.api.Play.current
 import scala.concurrent.Future
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.util.Try
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Promise
@@ -36,8 +35,12 @@ import akka.actor.Props
 import play.Logger
 import ch.epfl.gsn.data._
 import ch.epfl.gsn.data.format._
+import play.api.mvc.InjectedController
+import javax.inject.Inject
+import akka.actor._
+import scala.concurrent.ExecutionContext
 
-object GridService  extends Controller with GsnService {   
+class GridService @Inject()(actorSystem: ActorSystem)(implicit ec: ExecutionContext) extends InjectedController with GsnService {   
   def gridData(sensorid:String) =grid(sensorid,EsriAscii)
   def gridTimeseries(sensorid:String)=grid(sensorid,Json,true)
 
@@ -68,8 +71,9 @@ object GridService  extends Controller with GsnService {
         filters+= "timed<"+dateFormatter.parseDateTime(toStr.get).getMillis
                               
       val p=Promise[Seq[SensorData]]               
-      val q=Akka.system.actorOf(Props(new QueryActor(p)))
+      val q=actorSystem.actorOf(Props(new QueryActor(p)))
       Logger.debug("request the query actor")
+      Logger.debug(s"values $vsname,$filters,$size,$timeFormat,$box,$agg,$asTimeSeries")
       q ! GetGridData(vsname,filters,size,timeFormat,box,agg,asTimeSeries)
       p.future.map{data=>        
         Logger.debug("before formatting")
@@ -79,6 +83,9 @@ object GridService  extends Controller with GsnService {
               val pp=EsriSerializer.ser(data.head,Seq(),false)
               Ok(pp)
             case Json=>
+              val pp=JsonSerializer.ser(data.head,Seq(),false)
+              Ok(pp)
+            case _ => 
               val pp=JsonSerializer.ser(data.head,Seq(),false)
               Ok(pp)
           }

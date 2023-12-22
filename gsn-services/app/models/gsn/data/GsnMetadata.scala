@@ -33,21 +33,22 @@ import concurrent.Future
 import ch.epfl.gsn.data._
 import ch.epfl.gsn.config.VsConf
 import java.io.File
+import play.api.libs.ws.WSRequest
+import play.api.libs.ws.WSClient
+import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
-class GsnMetadata(gsnServer:String) {
+class GsnMetadata @Inject()(wsClient: WSClient,gsnServer:String)(implicit ec: ExecutionContext) {
 
   import play.api.Play.current
-  implicit val context = Execution.Implicits.defaultContext
 
   def allSensors:Future[Map[String,Sensor]]={
     println("all over again")
     getGsnSensors
   }
 
-
-  
-  def getGsnSensors={
-    val holder: WSRequestHolder = WS.url(gsnServer+"/rest/sensors")
+    def getGsnSensors={
+    val holder: WSRequest = wsClient.url(gsnServer + "/rest/sensors")
     val f=holder.get().map { response =>
       (response.json \ "features" ).as[JsArray].value.map{f=>
         val s=toSensor(f)

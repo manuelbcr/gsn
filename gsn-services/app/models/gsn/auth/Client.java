@@ -33,30 +33,50 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import io.ebean.Finder;
+import io.ebean.Model;
+
 
 @Entity
-public class Client extends AppModel{
+public class Client extends Model{
 
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	public Long id;
+
 	public String name;
 	public String clientId;
 	public String secret;
 	public String redirect;
+
 	@OneToMany(cascade = CascadeType.ALL)
 	public List<OAuthToken> tokens;
+
 	@OneToMany(cascade = CascadeType.ALL)
 	public List<OAuthCode> codes;
+
 	@ManyToOne
 	public User user;
+
 	@ManyToMany
 	public List<User> trusted_users;
+
 	public Boolean linked = false;
 
-	public static final play.db.ebean.Model.Finder<Long, Client> find = new play.db.ebean.Model.Finder<Long, Client>(
-			Long.class, Client.class);
+	public static final Finder<Long, Client> find = new Finder<>(Client.class);
+
+	public static Client findByName(String value) {
+		return find.query().where().eq("name", value).findOne();
+	}
+	
+	public static Client findById(String value) {
+		return find.query().where().eq("clientId", value).findOne();
+	}
+	
+	public static List<Client> findByUser(User u){
+		return find.query().where().eq("user", u).findList();
+	}
 
 	public boolean isLinked() {
 		return linked;
@@ -97,17 +117,5 @@ public class Client extends AppModel{
     public User getUser(){
     	return user;
     }
-    
-	public static Client findByName(String value) {
-		return find.where().eq("name", value).findUnique();
-	}
-	
-	public static Client findById(String value) {
-		return find.where().eq("clientId", value).findUnique();
-	}
-	
-	public static List<Client> findByUser(User u){
-		return find.where().eq("user", u).findList();
-	}
 	
 }

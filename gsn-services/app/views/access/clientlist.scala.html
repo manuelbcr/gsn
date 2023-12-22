@@ -1,10 +1,12 @@
+@import service.gsn.UserProvider 
 @import scala.collection.mutable.Buffer
-@import controllers.gsn.auth.GSNEditClient 
-@(clients: Buffer[models.gsn.auth.Client], editForm: Form[GSNEditClient])
+@import controllers.gsn.auth.GSNEditClient
+@import play.api.data.Form
+@(clients: Buffer[models.gsn.auth.Client], editForm: Form[GSNEditClient],userProvider: UserProvider)
 @import helper._ 
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapBasic.f) }
 
-@main(Messages("gsn.oauth2.clients.title"),"clientlist") {
+@main(userProvider,Messages("gsn.oauth2.clients.title"),"clientlist") {
 <div id="groups" class="row">
 	<div class="col-md-12">
 		<h1>@Messages("gsn.oauth2.clients.title")</h1>
@@ -55,6 +57,7 @@
 			@inputPassword(	editForm("client_secret"), '_label -> Messages("gsn.oauth2.clients.secret") )
 			@inputText( editForm("redirect"), '_label -> Messages("gsn.oauth2.clients.redirect") )
 			@checkbox( editForm("linked"), '_label -> Messages("gsn.oauth2.clients.user") )
+			@CSRF.formField
 			<button type="submit" class="btn btn-primary">@Messages("gsn.oauth2.clients.add")</button>
 			}
 		</div>

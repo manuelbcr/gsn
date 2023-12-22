@@ -35,12 +35,14 @@ import play.api.libs.concurrent.Akka
 import akka.actor.Props
 import scala.concurrent.Future
 import scala.concurrent.Promise
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import scala.concurrent.ExecutionContext
 import ch.epfl.gsn.data.format._
 import ch.epfl.gsn.process.WeightedMovingAverage
 import ch.epfl.gsn.process.LinearInterpolation
+import javax.inject.Inject
+import akka.actor._
 
-object DataProcessService extends Controller with GsnService{
+class DataProcessService @Inject()(actorSystem: ActorSystem)(implicit ec: ExecutionContext) extends InjectedController with GsnService{
   
   private def process(process:String,params:Array[String],data:SensorData)={
     process match {
@@ -84,7 +86,7 @@ object DataProcessService extends Controller with GsnService{
         filters+= "timed<"+dateFormatter.parseDateTime(toStr.get).getMillis
        
       val p=Promise[Seq[SensorData]]               
-      val q=Akka.system.actorOf(Props(new QueryActor(p)))
+      val q=actorSystem.actorOf(Props(new QueryActor(p)))
       
       q ! GetSensorData(sensorid,Seq(fieldid),filters,size,timeFormat)
       p.future.map{data=>       
@@ -93,8 +95,11 @@ object DataProcessService extends Controller with GsnService{
             case Json=>Ok(JsonSerializer.ser(rd,Seq(),false))
             case Csv=>Ok(CsvSerializer.ser(rd,Seq(),false))
             case Xml=>Ok(XmlSerializer.ser(rd, Seq(), false))
+            case _ => Ok(JsonSerializer.ser(rd,Seq(),false))
         }                             
       }.recover{
+        case t: IllegalArgumentException =>
+          BadRequest(s"Error: ${t.getMessage}")
         case t=> 
           t.printStackTrace()
           BadRequest(t.getMessage)              

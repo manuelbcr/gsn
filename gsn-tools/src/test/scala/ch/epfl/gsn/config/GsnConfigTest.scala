@@ -2,9 +2,11 @@ package ch.epfl.gsn.config
 
 import org.scalatest._
 
-import ch.epfl.gsn.config.GsnConf;
+import ch.epfl.gsn.config.GsnConf
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class GsnConfigTest extends FunSpec with Matchers {
+class GsnConfigTest extends AnyFunSpec with Matchers {
     
   describe("default gsn config"){
     val gsn=GsnConf.defaultGsn 

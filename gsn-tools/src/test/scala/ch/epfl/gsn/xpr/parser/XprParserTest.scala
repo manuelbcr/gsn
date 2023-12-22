@@ -1,14 +1,14 @@
 package ch.epfl.gsn.xpr.parser
 
-import org.scalatest.Matchers
 
 import ch.epfl.gsn.xpr.parser.XprParser;
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import ch.epfl.gsn.xpr._
 import util._
 
-class XprParserTest extends FunSpec with Matchers {
+class XprParserTest extends AnyFunSpec with Matchers {
     
   describe("parse expression"){
     it("should get parsed function"){

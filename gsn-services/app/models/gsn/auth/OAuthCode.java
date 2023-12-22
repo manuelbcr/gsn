@@ -26,13 +26,16 @@ package models.gsn.auth;
 
 import java.util.UUID;
 
+import io.ebean.Finder;
+import io.ebean.Model;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import scala.util.Random;
+
 
 @Entity
-public class OAuthCode extends AppModel{
+public class OAuthCode extends Model{
 	/**
 	 * 
 	 */
@@ -40,27 +43,24 @@ public class OAuthCode extends AppModel{
 
 	@Id
 	public Long id;
+
 	@ManyToOne
 	public User user;
+
 	@ManyToOne
 	public Client client;
+	
 	public String code;
 	public Long creation;
 	
-	public Client getClient(){
-		return client;
-	}
-
-
-	public static final AppModel.Finder<Long, OAuthCode> find = new AppModel.Finder<Long, OAuthCode>(
-			Long.class, OAuthCode.class);
-
+	public static final Finder<Long, OAuthCode> find = new Finder<>(OAuthCode.class);
 
 	public static OAuthCode findByCode(String value) {
-		return find.where().eq("code", value).findUnique();
+		return find.query().where().eq("code", value).findOne();
 	}
 	
-	public static OAuthCode generate(User user,Client client){
+	
+	public static OAuthCode generate(User user, Client client){
 		OAuthCode t = new OAuthCode();
 		t.user = user;
 		t.client = client;
@@ -68,5 +68,9 @@ public class OAuthCode extends AppModel{
 		t.creation = System.currentTimeMillis();
 		t.save();
 		return t;
+	}
+	
+	public Client getClient(){
+		return client;
 	}
 }

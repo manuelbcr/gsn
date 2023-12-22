@@ -59,6 +59,7 @@ public abstract class AbstractVirtualSensor implements Monitorable{
 	private Long 	    inputCount = 0L;
 	
 	private long        lastOutputedTime = 0;
+	private long        lastInputTime = 0;
 
     /*
      * Map threads would keep track of thread ID (and name) of each wrapper associated with this Virtual Sensor
@@ -223,7 +224,9 @@ public abstract class AbstractVirtualSensor implements Monitorable{
 	public Hashtable<String, Object> getStatistics(){
 		Hashtable<String, Object> stat = anomalyDetector.getStatistics(); 
 		stat.put("vs."+virtualSensorConfiguration.getName().replaceAll("\\.", "_") +".output.produced.counter", outputCount);
+		stat.put("vs."+virtualSensorConfiguration.getName().replaceAll("\\.", "_") +".outupt.lastOutputedTime",lastOutputedTime);
 		stat.put("vs."+virtualSensorConfiguration.getName().replaceAll("\\.", "_") +".input.produced.counter", inputCount);
+		stat.put("vs."+virtualSensorConfiguration.getName().replaceAll("\\.", "_") +".input.lastInputTime",lastInputTime);
 
         /*
         *    We know the IDs of threads associated with this VSensor
@@ -265,7 +268,9 @@ public abstract class AbstractVirtualSensor implements Monitorable{
 	
 	public final void dataAvailable_decorated ( String inputStreamName , StreamElement streamElement ){
 		dataAvailable ( inputStreamName , streamElement );
+		final long currentTime = System.currentTimeMillis( );
 		inputCount = inputCount == Long.MAX_VALUE ? 0 : inputCount + 1;
+		lastInputTime = currentTime;
 	}
 
 	/**

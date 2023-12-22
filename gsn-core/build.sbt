@@ -1,6 +1,6 @@
 import NativePackagerHelper._
 
-//import com.typesafe.sbt.packager.archetypes.ServerLoader
+import com.typesafe.sbt.packager.archetypes.systemloader.ServerLoader
 
 import com.typesafe.sbt.packager.archetypes.TemplateWriter
 
@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
   //"mysql" % "mysql-connector-java" % "5.1.29",
   "mysql" % "mysql-connector-java" % "8.0.28",
   "org.postgresql" % "postgresql" % "9.3-1102-jdbc41",
-  "commons-dbcp" % "commons-dbcp" % "1.4",
+  "org.apache.commons" % "commons-dbcp2" % "2.0",
   "org.hibernate" % "hibernate-core" % "3.6.10.Final",
   "org.apache.httpcomponents" % "httpclient" % "4.3.2",
   "org.apache.commons" % "commons-email" % "1.3.2",
@@ -44,7 +44,7 @@ libraryDependencies ++= Seq(
   "org.eclipse.paho" % "org.eclipse.paho.client.mqttv3" % "1.1.0",
   "org.eclipse.californium" % "californium-core" % "1.0.4",
   "junit" % "junit" % "4.11" %  "test",
-  //"ch.epfl.gsn" % "gsn-tools" % "2.0.1",
+  //"ch.epfl.gsn" % "gsn-tools" % "2.0.3",
   "org.easymock" % "easymockclassextension" % "3.2" % "test",
   "commons-fileupload" % "commons-fileupload" % "1.3.3",
   "javax.servlet" % "javax.servlet-api" % "3.0.1" % "provided",
@@ -72,11 +72,7 @@ debianPackageDependencies in Debian += "java11-runtime"
 
 debianPackageRecommends in Debian ++= Seq("postgresql", "munin-node", "gsn-services")
 
-//serverLoading in Debian := ServerLoader.Systemd
-
-enablePlugins(DebianPlugin)
-
-enablePlugins(SystemdPlugin)
+serverLoading in Debian := Some(ServerLoader.Systemd)
 
 daemonUser in Linux := "gsn"
 
@@ -108,6 +104,7 @@ linuxPackageMappings := {
         case linuxPackage => linuxPackage
     }
 }
+enablePlugins(SystemdPlugin)
 
 scalacOptions += "-deprecation"
 

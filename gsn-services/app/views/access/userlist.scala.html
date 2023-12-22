@@ -1,8 +1,9 @@
 @import scala.collection.mutable.Buffer 
-@(users: Buffer[models.gsn.auth.User], roles: Buffer[models.gsn.auth.SecurityRole], count:Int, page:Int, pageLength:Int) 
+@import service.gsn.UserProvider 
+@(users: Buffer[models.gsn.auth.User], roles: Buffer[models.gsn.auth.SecurityRole], count:Int, page:Int, pageLength:Int,userProvider: UserProvider) 
 @import helper._
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapBasic.f)} 
-@main(Messages("gsn.access.users.title"),"userlist") {
+@main(userProvider,Messages("gsn.access.users.title"),"userlist") {
 <div id="groups" class="row">
 	<div class="col-md-12">
 		<h1>@Messages("gsn.access.users.title")</h1>
@@ -49,7 +50,7 @@
 						</ul>
 					</td>
                     <td>
-                        @if(u == controllers.gsn.auth.LocalAuthController.getLocalUser(play.mvc.Controller.session())){
+                        @if(u == userProvider.getUser(play.mvc.Controller.session())){
                             -
                         }else{
                             <button type="button" class="btn btn-danger btn-xs" onclick="$.post('@controllers.gsn.auth.routes.PermissionsController.deleteuser(page)?user_id=' + @u.id, function(data){document.location='@controllers.gsn.auth.routes.PermissionsController.users(page)'});">@Messages("gsn.access.users.remove")</button>
@@ -60,10 +61,11 @@
 			</tbody>
 		</table>
 		@paginate(page, pageLength, count, controllers.gsn.auth.routes.PermissionsController.users(_))
-        <div><a class="btn btn-primary pull-right" href="@controllers.gsn.auth.routes.LocalAuthController.adduser()">@Messages("gsn.access.users.add_title")</a></div>
+        <div><a class="btn btn-primary pull-right" href="@controllers.gsn.auth.routes.Application.adduser()">@Messages("gsn.access.users.add_title")</a></div>
 	</div>
 </div>
 <script type="text/javascript">
 $('select').select2();
 </script>
 }
+

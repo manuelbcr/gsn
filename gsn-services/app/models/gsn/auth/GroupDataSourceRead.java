@@ -31,6 +31,10 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.persistence.JoinColumn;
+
+import io.ebean.Finder;
+import io.ebean.Model;
 
 /**
  * Initial version based on work by Steve Chaloner (steve@objectify.be) for
@@ -38,9 +42,9 @@ import javax.persistence.UniqueConstraint;
  */
 @Entity
 @Table(name="group_data_source_read",  uniqueConstraints={
-		   @UniqueConstraint(columnNames={"group", "data_source"})
+		   @UniqueConstraint(columnNames={"group_id", "data_source_id"})
 		})
-public class GroupDataSourceRead extends AppModel {
+public class GroupDataSourceRead extends Model {
 	/**
 	 * 
 	 */
@@ -50,24 +54,25 @@ public class GroupDataSourceRead extends AppModel {
 	public Long id;
     
 	@ManyToOne
+	@JoinColumn(name = "group_id")
 	public Group group;
 	
 	@ManyToOne
+	@JoinColumn(name = "data_source_id")
 	public DataSource data_source;
-	
-	public static play.db.ebean.Model.Finder<Long, GroupDataSourceRead> find = new play.db.ebean.Model.Finder<Long, GroupDataSourceRead>(
-			Long.class, GroupDataSourceRead.class);
+
+	public static final Finder<Long, GroupDataSourceRead> find = new Finder<>(GroupDataSourceRead.class);
 
 	public static List<GroupDataSourceRead> findByUser(Group value) {
-		return find.where().eq("group", value).findList();
+		return find.query().where().eq("group", value).findList();
 	}
 	
 	public static List<GroupDataSourceRead> findByDataSource(DataSource value) {
-		return find.where().eq("data_source", value).findList();
+		return find.query().where().eq("data_source", value).findList();
 	}
 	
 	public static GroupDataSourceRead findByBoth(Group g, DataSource d) {
-		return find.where().eq("group", g).eq("data_source", d).findUnique();
+		return find.query().where().eq("group", g).eq("data_source", d).findOne();
 	}
 
 }

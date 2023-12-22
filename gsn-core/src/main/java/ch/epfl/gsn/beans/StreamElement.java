@@ -67,7 +67,7 @@ public final class StreamElement implements Serializable {
 
 	private Byte [ ]                               fieldTypes;
 
-	private transient long                                   internalPrimayKey = -1;
+	private transient long                         internalPrimayKey = -1;
 
 	private static final String NULL_ENCODING = "NULL"; // null encoding for transmission over xml-rpc
 

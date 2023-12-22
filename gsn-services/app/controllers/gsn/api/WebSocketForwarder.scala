@@ -25,7 +25,6 @@
 package controllers.gsn.api
 
 import play.api.libs.iteratee._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import com.feth.play.module.pa.PlayAuthenticate
 import play.api.mvc._
 import scala.util.Try
@@ -37,76 +36,77 @@ import scalaoauth2.provider.AuthInfoRequest
 import models.gsn.auth.User
 import models.gsn.auth.DataSource
 import controllers.gsn.GSNDataHandler
-import collection.JavaConversions._
+import collection.JavaConverters._
 import scalaoauth2.provider.{ProtectedResource, ProtectedResourceRequest}
 import org.zeromq.ZMQ
-import controllers.gsn.Global
 import java.util.Date
 import ch.epfl.gsn.beans.StreamElement
 import ch.epfl.gsn.data._
 import ch.epfl.gsn.data.format._
+import javax.inject.Inject
+import akka.actor._
+import akka.stream.scaladsl.Flow
+import scala.concurrent.ExecutionContext
+import play.api.http.websocket.{Message, TextMessage}
+import play.Logger
 
 
-object WebSocketForwarder extends Controller{
+class WebSocketForwarder @Inject()(playAuth: PlayAuthenticate)(implicit actorSystem: ActorSystem, ec: ExecutionContext) extends InjectedController {
 
-
-    def socket(sensorid:String) = WebSocket.tryAccept [String] { request => 
-      
-        val socket = {
-      
-            val deserializer = new StreamElementDeserializer()
-		        val subscriber = Global.context.socket(ZMQ.SUB)
-		        subscriber.connect("tcp://localhost:"+Global.gsnConf.zmqConf.proxyPort)
-		        subscriber.setReceiveTimeOut(3000)
-		        subscriber.subscribe((sensorid+":").getBytes)
-
-            val in = {
-                def cont: Iteratee[String, Unit] = Cont {
-                    case Input.EOF => {
-                        subscriber.close()
-                        Done((), Input.EOF)
-                    }
-                    case other => {
-                        cont
-                    }
-                }
-                cont
-            }
-
-            val out = Enumerator.repeat {
-                Try {
-                    var rec = subscriber.recv()
-    				        while (rec == null){
-    				            subscriber.subscribe((sensorid+":").getBytes)
-    				            rec = subscriber.recv()
-    				        }
-                    val o = deserializer.deserialize(sensorid, rec)
-    					      val ts = new Date(o.getTimeStamp())
-    					      "{ \"timestamp\":\""+ts+"\","+o.getFieldNames.map(x =>  "\"" + x.toLowerCase() + "\":\"" + o.getData(x) + "\"").mkString(",")+"}"
-                }.recover{
-                    case t:Exception=>
-                        "{\"error\": \""+t.getMessage+"\"}" 
-                }.get 
-		        }
-		
-            (in, out)
+  def socket(sensorid: String)= WebSocket.acceptOrResult[Message, Message] { requestHeader =>
+    if (playAuth.isLoggedIn(new Http.Session(requestHeader.session.data.asJava))) {
+      val user = User.findByAuthUserIdentity(playAuth.getUser(JavaHelpers.createJavaContext(requestHeader, JavaHelpers.createContextComponents())))
+      if (hasAccess(user, false, sensorid)) {
+        val flow: Flow[Message, Message, _] = createWebSocketFlow(sensorid)
+        Future.successful(Right(flow))
+      } else {
+        Future.successful(Left(Forbidden("Logged in user has no access to these resources")))
+      }
+    } else {
+      ProtectedResource.handleRequest(new ProtectedResourceRequest(requestHeader.headers.toMap, requestHeader.queryString), new GSNDataHandler()).flatMap {
+        case Left(_) => Future.successful(Left(Forbidden("Logged in user has no access to these resources")))
+        case Right(authInfo) => {
+          val user = User.findById(authInfo.user.id)
+          if (hasAccess(user, false, sensorid)) {
+            val flow: Flow[Message, Message, _] = createWebSocketFlow(sensorid)
+            Future.successful(Right(flow))
+          } else {
+            Future.successful(Left(Forbidden("Logged in user has no access to these resources")))
+          }
         }
-      
-        if (PlayAuthenticate.isLoggedIn(new Http.Session(request.session.data))) {
-            val u = User.findByAuthUserIdentity(PlayAuthenticate.getUser(JavaHelpers.createJavaContext(request)))
-            if (Global.hasAccess(u,false,sensorid)) Future(Right(socket))
-            else Future(Left(Forbidden("Logged in user has no access to these resources")))
-        }else{
-          
-            ProtectedResource.handleRequest(new ProtectedResourceRequest(request.headers.toMap, request.queryString), new GSNDataHandler()).flatMap {
-                case Left(e) => Future(Left(Forbidden("Logged in user has no access to these resources")))
-                case Right(authInfo) => {
-                    val u = User.findById(authInfo.user.id)
-                    if (Global.hasAccess(u,false,sensorid)) Future(Right(socket))
-                    else Future(Left(Forbidden("Logged in user has no access to these resources")))
-                }
-            }
-        }
+      }
+    }
   }
- 
+
+    private def createWebSocketFlow(sensorid: String): Flow[Message, Message, _] = {
+    val deserializer = new StreamElementDeserializer()
+    val context = ZMQ.context(1)
+    val subscriber = context.socket(ZMQ.SUB)
+    subscriber.connect("tcp://localhost:" + 22022)
+    subscriber.setReceiveTimeOut(3000)
+    subscriber.subscribe((sensorid + ":").getBytes)
+
+    Flow[Message].collect {
+        case TextMessage(text) =>
+        val responseText = try {
+            var rec = subscriber.recv()
+            while (rec == null) {
+            subscriber.subscribe((sensorid + ":").getBytes)
+            rec = subscriber.recv()
+            }
+            val o = deserializer.deserialize(sensorid, rec)
+            val ts = new java.util.Date(o.getTimeStamp())
+            "{ \"timestamp\":\"" + ts + "\"," + o.getFieldNames.map(x => "\"" + x.toLowerCase() + "\":\"" + o.getData(x) + "\"").mkString(",") + "}"
+        } catch {
+            case t: Exception => "{\"error\": \"" + t.getMessage + "\"}"
+        }
+        TextMessage(responseText)
+    }
+    }
+
+
+  def hasAccess(user: User, toWrite: Boolean, vsname: String): Boolean = {
+    val ds = DataSource.findByValue(vsname)
+    ds == null || (ds.getIs_public && !toWrite) || user.hasAccessTo(ds, toWrite)
+  }
 }

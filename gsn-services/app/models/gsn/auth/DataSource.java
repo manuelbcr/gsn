@@ -26,19 +26,22 @@ package models.gsn.auth;
 
 import java.util.List;
 
+import io.ebean.Finder;
+import io.ebean.Model;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-import be.objectify.deadbolt.core.models.Permission;
+import be.objectify.deadbolt.java.models.Permission;
 
 /**
  * Initial version based on work by Steve Chaloner (steve@objectify.be) for
  * Deadbolt2
  */
 @Entity
-public class DataSource extends AppModel implements Permission {
+public class DataSource extends Model implements Permission {
 	/**
 	 * 
 	 */
@@ -55,16 +58,19 @@ public class DataSource extends AppModel implements Permission {
 	public List<UserDataSourceRead> userRead;
 	
 	@OneToMany(cascade = CascadeType.ALL)
-	public List<GroupDataSourceRead> groupRead;
-	
-	@OneToMany(cascade = CascadeType.ALL)
 	public List<UserDataSourceWrite> userWrite;
-	
+
+	@OneToMany(cascade = CascadeType.ALL)
+	public List<GroupDataSourceRead> groupRead;
+
 	@OneToMany(cascade = CascadeType.ALL)
 	public List<GroupDataSourceWrite> groupWrite;
 	
-	public static play.db.ebean.Model.Finder<Long, DataSource> find = new play.db.ebean.Model.Finder<Long, DataSource>(
-			Long.class, DataSource.class);
+	public static final Finder<Long, DataSource> find = new Finder<>(DataSource.class);
+
+	public static DataSource findByValue(String value) {
+		return find.query().where().eq("value", value).findOne();
+	}
 
 	public String getValue() {
 		return value;
@@ -76,9 +82,5 @@ public class DataSource extends AppModel implements Permission {
 	
 	public void setIs_public(boolean p){
 		is_public=p;
-	}
-
-	public static DataSource findByValue(String value) {
-		return find.where().eq("value", value).findUnique();
 	}
 }

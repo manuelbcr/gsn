@@ -1,14 +1,14 @@
-@(acceptForm: play.data.Form[controllers.gsn.auth.Account.Accept], aUser: com.feth.play.module.pa.user.AuthUser, bUser: com.feth.play.module.pa.user.AuthUser)
+@import service.gsn.UserProvider
+@(userProvider: UserProvider, acceptForm: Form[controllers.gsn.auth.Account.Accept], aUser: com.feth.play.module.pa.user.AuthUser, bUser: com.feth.play.module.pa.user.AuthUser)
 
 @import helper._
-@import play.core.j.PlayMagicForJava._
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapBasic.f) }
 
 @label = {
 	@Messages("playauthenticate.merge.accounts.question",aUser,bUser)
 }
 
-@main(Messages("playauthenticate.merge.accounts.title")) {
+@main(userProvider, Messages("playauthenticate.merge.accounts.title")) {
 
 	<h1>@Messages("playauthenticate.merge.accounts.title")</h1>
 	<p>
@@ -16,7 +16,7 @@
 
             @if(acceptForm.hasGlobalErrors) {
 		        <p class="alert alert-danger">
-		          @acceptForm.globalError.message
+		          @acceptForm.getGlobalError.get.message
 		     	</p>
             }
 

@@ -26,11 +26,15 @@ package models.gsn.auth;
 
 import java.util.List;
 
+import io.ebean.Finder;
+import io.ebean.Model;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.persistence.JoinColumn;
 
 /**
  * Initial version based on work by Steve Chaloner (steve@objectify.be) for
@@ -38,9 +42,9 @@ import javax.persistence.UniqueConstraint;
  */
 @Entity
 @Table(name="user_data_source_read",  uniqueConstraints={
-		   @UniqueConstraint(columnNames={"user", "data_source"})
+		   @UniqueConstraint(columnNames = {"user_id", "data_source_id"})
 		})
-public class UserDataSourceRead extends AppModel {
+public class UserDataSourceRead extends Model {
 	/**
 	 * 
 	 */
@@ -50,24 +54,25 @@ public class UserDataSourceRead extends AppModel {
 	public Long id;
     
 	@ManyToOne
+	@JoinColumn(name = "user_id") 
 	public User user;
 	
 	@ManyToOne
+	@JoinColumn(name = "data_source_id")
 	public DataSource data_source;
-	
-	public static play.db.ebean.Model.Finder<Long, UserDataSourceRead> find = new play.db.ebean.Model.Finder<Long, UserDataSourceRead>(
-			Long.class, UserDataSourceRead.class);
+
+	public static final Finder<Long, UserDataSourceRead> find = new Finder<>(UserDataSourceRead.class);
 
 	public static List<UserDataSourceRead> findByUser(User value) {
-		return find.where().eq("user", value).findList();
+		return find.query().where().eq("user", value).findList();
 	}
 	
 	public static List<UserDataSourceRead> findByDataSource(DataSource value) {
-		return find.where().eq("data_source", value).findList();
+		return find.query().where().eq("data_source", value).findList();
 	}
 	
 	public static UserDataSourceRead findByBoth(User u, DataSource d) {
-		return find.where().eq("user", u).eq("data_source", d).findUnique();
+		return find.query().where().eq("user", u).eq("data_source", d).findOne();
 	}
 
 }

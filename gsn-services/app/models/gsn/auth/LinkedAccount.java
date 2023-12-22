@@ -1,34 +1,11 @@
-/**
-* Global Sensor Networks (GSN) Source Code
-* Copyright (c) 2006-2016, Ecole Polytechnique Federale de Lausanne (EPFL)
-* 
-* This file is part of GSN.
-* 
-* GSN is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-* 
-* GSN is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-* 
-* You should have received a copy of the GNU General Public License
-* along with GSN.  If not, see <http://www.gnu.org/licenses/>.
-* 
-* File: app/models/gsn/auth/LinkedAccount.java
-*
-* @author Julien Eberle
-*
-*/
 package models.gsn.auth;
+
+import com.feth.play.module.pa.user.AuthUser;
+import io.ebean.Finder;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-
-import com.feth.play.module.pa.user.AuthUser;
 
 @Entity
 public class LinkedAccount extends AppModel {
@@ -47,12 +24,11 @@ public class LinkedAccount extends AppModel {
 	public String providerUserId;
 	public String providerKey;
 
-	public static final Finder<Long, LinkedAccount> find = new Finder<Long, LinkedAccount>(
-			Long.class, LinkedAccount.class);
+	public static final Finder<Long, LinkedAccount> find = new Finder<>(LinkedAccount.class);
 
 	public static LinkedAccount findByProviderKey(final User user, String key) {
-		return find.where().eq("user", user).eq("providerKey", key)
-				.findUnique();
+		return find.query().where().eq("user", user).eq("providerKey", key)
+				.findOne();
 	}
 
 	public static LinkedAccount create(final AuthUser authUser) {

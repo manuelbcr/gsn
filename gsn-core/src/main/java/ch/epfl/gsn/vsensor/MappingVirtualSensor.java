@@ -2,13 +2,12 @@ package ch.epfl.gsn.vsensor;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import java.io.ByteArrayOutputStream;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
@@ -50,7 +49,7 @@ public class MappingVirtualSensor extends BridgeVirtualSensorPermasense {
 	      DataEnumerator result = Main.getStorage(getVirtualSensorConfiguration()).executeQuery( query , false );
 	      while ( result.hasMoreElements( ) ) 
 	    	  latestvalues.add(result.nextElement());
-	    } catch (SQLException e) {
+	    } catch (Exception e) {
 	      logger.error("ERROR IN EXECUTING, query: "+query);
 	      logger.error(e.getMessage(),e);
 	    }

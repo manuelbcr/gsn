@@ -22,38 +22,58 @@
 * @author Julien Eberle
 *
 */
+
 package controllers.gsn
 
-import be.objectify.deadbolt.java.actions.DynamicAction
 import play.api.mvc._
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 import security.gsn.GSNDeadboltHandler
+import scalaoauth2.provider._
 import play.core.j.JavaHelpers
-import scalaoauth2.provider.AuthInfoRequest
 import models.gsn.auth.User
 import models.gsn.auth.DataSource
-import scalaoauth2.provider._
 import play.mvc.Http
-import collection.JavaConversions._
+import collection.JavaConverters._
+import play.Logger
+import javax.inject.Inject
 import com.feth.play.module.pa.PlayAuthenticate
-import org.slf4j.LoggerFactory
+import play.api.mvc.Results.Forbidden
 
-case class APIPermissionAction(toWrite: Boolean, vsnames: String*)(implicit ctx: ExecutionContext) extends ActionFunction[Request, ({type L[A] = Request[A]})#L] with OAuth2Provider {
-  
-  private val log = LoggerFactory.getLogger(classOf[APIPermissionAction])
-  
+class APIPermissionAction @Inject()(playAuth: PlayAuthenticate, toWrite: Boolean, vsnames: String*)(implicit ctx: ExecutionContext) extends ActionFunction[Request, ({type L[A] = Request[A]})#L] with OAuth2Provider {
+
+  override protected def executionContext: ExecutionContext = ctx
   override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
-    if (PlayAuthenticate.isLoggedIn(new Http.Session(request.session.data))) {
-      val u = User.findByAuthUserIdentity(PlayAuthenticate.getUser(JavaHelpers.createJavaContext(request)))
-      if (Global.hasAccess(u,toWrite,vsnames:_*)) block(request)
-      else Future(Forbidden("Logged in user has no access to these resources"))
+    val session = request.session
+    val sessiondata= request.session.data
+    if (playAuth.isLoggedIn(new Http.Session(request.session.data.asJava))) {
+      val u = User.findByAuthUserIdentity(playAuth.getUser(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents())))
+      if (hasAccess(u,toWrite,vsnames:_*)) block(request)
+      else Future(Results.Forbidden("Logged in user has no access to these resources"))
     }else{
+      //implicit request => authorize(new MyDataHandler()) { authInfo => val user = authInfo.user
+      //Action.async { implicit request => authorize(new GSNDataHandler()) { authInfo =>
       authorize(new GSNDataHandler())({authInfo => {
         val u = User.findById(authInfo.user.id)
-        if (Global.hasAccess(u,toWrite,vsnames:_*)) block(AuthInfoRequest(AuthInfo[User](u, authInfo.clientId, authInfo.scope, authInfo.redirectUri), request))
-        else Future(Forbidden("Logged in user has no access to these resources"))
+        if (hasAccess(u,toWrite,vsnames:_*)) block(AuthInfoRequest(AuthInfo[User](u, authInfo.clientId, authInfo.scope, authInfo.redirectUri), request))
+        else Future(Results.Forbidden("Logged in user has no access to these resources"))
       }})(request, ctx)
+      
     }
   }
-  
+
+
+  def hasAccess(user: User,toWrite: Boolean,vsnames: String*):Boolean =  
+    vsnames.foldRight[Boolean](true)((vs,b) => b && hasAccess(user,toWrite,vs))
+
+       
+   def hasAccess(user: User,toWrite: Boolean,vsname: String):Boolean = {
+     val ds = DataSource.findByValue(vsname)
+     ds == null || (ds.getIs_public && !toWrite) || user.hasAccessTo(ds, toWrite)
+   }
+}
+
+object APIPermissionAction {
+  def apply(playAuth: PlayAuthenticate,toWrite: Boolean, vsnames: String*)(implicit ctx: ExecutionContext): APIPermissionAction = {
+    new APIPermissionAction(playAuth,toWrite, vsnames: _*)
+  }
 }
