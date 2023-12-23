@@ -67,6 +67,8 @@ class PermissionsController @Inject()(actorSystem: ActorSystem, userProvider: Us
     
     def vs(page: Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { request =>
 
+      val existingDataSources: Seq[DataSource] = DataSource.find.query().findList().asScala
+
       val countFuture: Future[Int] = Future {
         DataSource.find.query().findCount()
       }
@@ -79,7 +81,8 @@ class PermissionsController @Inject()(actorSystem: ActorSystem, userProvider: Us
       val resultFuture: Future[Result] = countFuture.flatMap { count =>
         p.future.map { data =>
           Context.current.set(JavaHelpers.createJavaContext(request, JavaHelpers.createContextComponents()))
-          data.map(s => Option(DataSource.findByValue(s.sensor.name)).getOrElse {
+
+          val receivedDataSources = data.map(s => Option(DataSource.findByValue(s.sensor.name)).getOrElse {
             val d = new DataSource()
             d.value = s.sensor.name
             d.is_public = false
@@ -87,13 +90,24 @@ class PermissionsController @Inject()(actorSystem: ActorSystem, userProvider: Us
             d
           })
 
-          Ok(views.html.access.vslist(DataSource.find.query().setFirstRow((page - 1) * 10).setMaxRows(10).findList().asScala, Group.find.query().findList().asScala, User.find.query().findList().asScala, count, page, 10, userProvider))
+          // Delete entries that are not present in the receivedDataSources
+          val dataSourceToDelete = existingDataSources.filterNot(receivedDataSources.contains)
+          dataSourceToDelete.foreach(_.delete())
+
+          Ok(views.html.access.vslist(
+            DataSource.find.query().setFirstRow((page - 1) * 10).setMaxRows(10).findList().asScala,
+            Group.find.query().findList().asScala,
+            User.find.query().findList().asScala,
+            count,
+            page,
+            10,
+            userProvider
+          ))
         }(ec)
       }
 
       resultFuture
     }
-
 
     def addgroup(page:Int) = deadbolt.Restrict(roleGroups = allOfGroup(Application.USER_ROLE))() { implicit request => Future {
      Context.current.set(JavaHelpers.createJavaContext(request,JavaHelpers.createContextComponents()))
