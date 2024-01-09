@@ -1,44 +1,38 @@
-package ch.epfl.gsn.delivery;
+package ch.epfl.gsn.delivery.datarequest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Properties;
-
-import javax.naming.OperationNotSupportedException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import ch.epfl.gsn.Main;
 import ch.epfl.gsn.Mappings;
 import ch.epfl.gsn.VirtualSensor;
-import ch.epfl.gsn.VirtualSensorInitializationFailedException;
 import ch.epfl.gsn.beans.AddressBean;
 import ch.epfl.gsn.beans.DataField;
 import ch.epfl.gsn.beans.DataTypes;
 import ch.epfl.gsn.beans.StreamElement;
+import ch.epfl.gsn.beans.StreamSource;
 import ch.epfl.gsn.beans.VSensorConfig;
 import ch.epfl.gsn.storage.StorageManager;
 import ch.epfl.gsn.storage.StorageManagerFactory;
-import ch.epfl.gsn.utils.KeyValueImp;
-import ch.epfl.gsn.vsensor.AbstractVirtualSensor;
-import thredds.inventory.bdb.MetadataManager.KeyValue;
+import org.apache.commons.collections.KeyValue;
 
-@Ignore
-public class LocalDeliveryWrapperTest {
 
+public class DownloadDataTest {
+    
     private static StorageManager sm;
     private VSensorConfig testVsensorConfig;
 
@@ -72,6 +66,7 @@ public class LocalDeliveryWrapperTest {
 		testVsensorConfig.setFileName(someFile.getAbsolutePath());
         testVsensorConfig.setOutputStructure(fields);
         KeyValue[] emptyAddressingArray = new KeyValue[0];
+        testVsensorConfig.setAddressing(emptyAddressingArray);
         VirtualSensor pool = new VirtualSensor(testVsensorConfig);
         Mappings.addVSensorInstance(pool);
 
@@ -114,31 +109,61 @@ public class LocalDeliveryWrapperTest {
 	}
 
     @Test
-    public void testToString() throws SQLException, IOException, OperationNotSupportedException{
-        LocalDeliveryWrapper localwrapper= new LocalDeliveryWrapper();
-        ArrayList < KeyValueImp > predicates = new ArrayList < KeyValueImp >( );
-		predicates.add( new KeyValueImp( "name" ,"testvsname" ) );
-        predicates.add( new KeyValueImp( "start-time" ,"continue" ) );
-        AddressBean addressbean= new AddressBean("Local-wrapper",predicates.toArray(new KeyValueImp[] {}));
-        addressbean.setVirtualSensorName("testvsname");
-        localwrapper.setActiveAddressBean(addressbean);
-        
+    public void testOutputResultWithCSV() throws DataRequestException, IOException {
+        Map<String, String[]> requestParameters = new HashMap<>();
+        requestParameters.put("vsname", new String[]{"testvsname"});
+        requestParameters.put("outputtype", new String[]{"csv"});
+        requestParameters.put("delimiter", new String[]{"semicolon"});
+        DownloadData downloadData = new DownloadData(requestParameters);
+        assertNotNull(downloadData.getQueryBuilder());
+        downloadData.process();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        downloadData.outputResult(outputStream);
+        String result = outputStream.toString();
+        assertTrue(result.contains("# vsname:testvsname"));
+        assertTrue(result.contains("# query:select timed"));
+        outputStream.close();
 
-        localwrapper.writeStructure(new DataField[] {new DataField("data","int")});
-        assertNotNull(localwrapper.getOutputFormat());
-        assertTrue(localwrapper.writeKeepAliveStreamElement());
-        assertTrue(localwrapper.writeStreamElement(new StreamElement(new DataField[] {},new Serializable[] {},System.currentTimeMillis())));
-        assertNotNull(localwrapper.initialize());
-        assertEquals("Local-wrapper", localwrapper.getWrapperName());
-        assertFalse(localwrapper.isClosed());
-        assertTrue(localwrapper.toString().contains("LocalDistributionReq"));
-        //has to return false
-        assertFalse(localwrapper.sendToWrapper(null, null, null));
-        assertNotNull(localwrapper.getVSensorConfig());
-        localwrapper.close();
-        assertTrue(localwrapper.isClosed());
+    }
+
+    @Test
+    public void testOutputResultWithCSV1() throws DataRequestException, IOException {
+        Map<String, String[]> requestParameters = new HashMap<>();
+        requestParameters.put("vsname", new String[]{"testvsname"});
+        requestParameters.put("outputtype", new String[]{"csv"});
+        requestParameters.put("delimiter", new String[]{"semicolon"});
+        requestParameters.put("sample", new String[]{"true"});
+        requestParameters.put("sampling_percentage", new String[]{"50"});
+        DownloadData downloadData = new DownloadData(requestParameters);
+        assertNotNull(downloadData.getQueryBuilder());
+        downloadData.process();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        downloadData.outputResult(outputStream);
+        String result = outputStream.toString();
+        assertTrue(result.contains("# vsname:testvsname"));
+        assertTrue(result.contains("# query:select timed"));
+
+
     }
 
 
-}
+     
+    @Test
+    public void testOutputResultWithXML() throws DataRequestException, IOException {
+        Map<String, String[]> requestParameters = new HashMap<>();
+        requestParameters.put("vsname", new String[]{"testvsname"});
+        requestParameters.put("outputtype", new String[]{"xml"});
+        DownloadData downloadData = new DownloadData(requestParameters);
+        assertNotNull(downloadData.getQueryBuilder());
+        downloadData.process();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        downloadData.outputResult(outputStream);
+        String result = outputStream.toString();
+        assertTrue(result.contains("<result>"));
+        assertTrue(result.contains("<!-- select timed from testvsname order by timed desc  -->"));
+        assertTrue(result.contains("</result>"));
 
+
+    }
+
+}

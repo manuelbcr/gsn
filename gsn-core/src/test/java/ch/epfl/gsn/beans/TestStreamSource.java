@@ -280,7 +280,7 @@ public class TestStreamSource {
 		assertTrue(dm.hasMoreElements());
 		dm.nextElement();
 		assertFalse(dm.hasMoreElements());
-		sm.executeInsert(ss.getWrapper().getDBAliasInStr(),ss.getWrapper().getOutputFormat(), new StreamElement(new DataField[] {},new Serializable[] {},System.currentTimeMillis()) );
+		sm.executeInsert(ss.getWrapper().getDBAliasInStr(),ss.getWrapper().getOutputFormat(), new StreamElement(new DataField[] {},new Serializable[] {},System.currentTimeMillis()+1) );
 		dm = sm.executeQuery(query, true);
 		assertTrue(dm.hasMoreElements());
 		dm.nextElement();

@@ -54,5 +54,25 @@ public class OutputInputStreamTest {
 
         assertEquals(4, available);
     }
+    
+    @Test
+    public void testReadAndWrite() throws IOException {
+        OutputInputStream ois = new OutputInputStream(4);
+        OutputStream os = ois.getOutputStream();
+
+        os.write("ABCD".getBytes());
+        os.close();
+
+        InputStream is = ois.getInputStream();
+        assertEquals('A', is.read());
+        assertEquals('B', is.read());
+        assertEquals('C', is.read());
+        assertEquals('D', is.read());
+
+        assertEquals(-1, is.read());
+        is.close();
+        ois.close();
+    }
+
 
 }

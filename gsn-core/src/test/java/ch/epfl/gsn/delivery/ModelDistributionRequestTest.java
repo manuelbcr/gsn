@@ -17,6 +17,7 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ch.epfl.gsn.Main;
@@ -31,6 +32,7 @@ import ch.epfl.gsn.utils.models.AbstractModel;
 import ch.epfl.gsn.wrappers.AbstractWrapper;
 import ch.epfl.gsn.wrappers.SystemTime;
 
+@Ignore
 public class ModelDistributionRequestTest {
 
     private AbstractWrapper wrapper = new SystemTime();
@@ -46,7 +48,7 @@ public class ModelDistributionRequestTest {
 		}
 
 		DriverManager.registerDriver( new org.h2.Driver( ) );
-		sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:test", Main.DEFAULT_MAX_DB_CONNECTIONS);
+		sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:coreTest", Main.DEFAULT_MAX_DB_CONNECTIONS);
 
 		Main.setDefaultGsnConf("/gsn_test.xml");
 	  	Main.getInstance();

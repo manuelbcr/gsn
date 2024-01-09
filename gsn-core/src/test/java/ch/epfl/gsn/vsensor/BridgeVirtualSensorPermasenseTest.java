@@ -1,8 +1,7 @@
-package ch.epfl.gsn.delivery;
+package ch.epfl.gsn.vsensor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -10,35 +9,25 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Properties;
 
-import javax.naming.OperationNotSupportedException;
-
+import org.apache.commons.collections.KeyValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import ch.epfl.gsn.Main;
 import ch.epfl.gsn.Mappings;
 import ch.epfl.gsn.VirtualSensor;
-import ch.epfl.gsn.VirtualSensorInitializationFailedException;
-import ch.epfl.gsn.beans.AddressBean;
 import ch.epfl.gsn.beans.DataField;
 import ch.epfl.gsn.beans.DataTypes;
 import ch.epfl.gsn.beans.StreamElement;
 import ch.epfl.gsn.beans.VSensorConfig;
 import ch.epfl.gsn.storage.StorageManager;
 import ch.epfl.gsn.storage.StorageManagerFactory;
-import ch.epfl.gsn.utils.KeyValueImp;
-import ch.epfl.gsn.vsensor.AbstractVirtualSensor;
-import thredds.inventory.bdb.MetadataManager.KeyValue;
 
-@Ignore
-public class LocalDeliveryWrapperTest {
-
+public class BridgeVirtualSensorPermasenseTest {
+    
     private static StorageManager sm;
     private VSensorConfig testVsensorConfig;
 
@@ -72,6 +61,7 @@ public class LocalDeliveryWrapperTest {
 		testVsensorConfig.setFileName(someFile.getAbsolutePath());
         testVsensorConfig.setOutputStructure(fields);
         KeyValue[] emptyAddressingArray = new KeyValue[0];
+        testVsensorConfig.setAddressing(emptyAddressingArray);
         VirtualSensor pool = new VirtualSensor(testVsensorConfig);
         Mappings.addVSensorInstance(pool);
 
@@ -113,32 +103,36 @@ public class LocalDeliveryWrapperTest {
 		sm.executeDropTable("testvsname");
 	}
 
-    @Test
-    public void testToString() throws SQLException, IOException, OperationNotSupportedException{
-        LocalDeliveryWrapper localwrapper= new LocalDeliveryWrapper();
-        ArrayList < KeyValueImp > predicates = new ArrayList < KeyValueImp >( );
-		predicates.add( new KeyValueImp( "name" ,"testvsname" ) );
-        predicates.add( new KeyValueImp( "start-time" ,"continue" ) );
-        AddressBean addressbean= new AddressBean("Local-wrapper",predicates.toArray(new KeyValueImp[] {}));
-        addressbean.setVirtualSensorName("testvsname");
-        localwrapper.setActiveAddressBean(addressbean);
-        
 
-        localwrapper.writeStructure(new DataField[] {new DataField("data","int")});
-        assertNotNull(localwrapper.getOutputFormat());
-        assertTrue(localwrapper.writeKeepAliveStreamElement());
-        assertTrue(localwrapper.writeStreamElement(new StreamElement(new DataField[] {},new Serializable[] {},System.currentTimeMillis())));
-        assertNotNull(localwrapper.initialize());
-        assertEquals("Local-wrapper", localwrapper.getWrapperName());
-        assertFalse(localwrapper.isClosed());
-        assertTrue(localwrapper.toString().contains("LocalDistributionReq"));
-        //has to return false
-        assertFalse(localwrapper.sendToWrapper(null, null, null));
-        assertNotNull(localwrapper.getVSensorConfig());
-        localwrapper.close();
-        assertTrue(localwrapper.isClosed());
+    @Test
+    public void testInitialize() {
+         StreamElement streamElement1 = new StreamElement(
+            new String[]{"name", "value"},
+            new Byte[]{DataTypes.VARCHAR, DataTypes.DOUBLE},
+            new Serializable[]{"xy", 45.5},
+            System.currentTimeMillis());
+
+        BridgeVirtualSensorPermasense sensor = new BridgeVirtualSensorPermasense();
+        sensor.setVirtualSensorConfiguration(testVsensorConfig);
+
+        assertTrue(sensor.initialize());
+        sensor.dataAvailable("inputStream", streamElement1);
     }
 
 
-}
+    @Test
+    public void testDataAvailableAllfieldsNull(){
+        StreamElement streamElement1 = new StreamElement(
+            new String[]{"name", "value"},
+            new Byte[]{DataTypes.VARCHAR, DataTypes.DOUBLE},
+            new Serializable[]{"xy", 45.5},
+            System.currentTimeMillis());
 
+        BridgeVirtualSensor sensor = new BridgeVirtualSensor();
+        sensor.setVirtualSensorConfiguration(testVsensorConfig);
+
+        assertTrue(sensor.initialize());
+        sensor.dataAvailable("inputStream", streamElement1);
+        assertFalse(sensor.areAllFieldsNull(streamElement1));
+    }
+}
