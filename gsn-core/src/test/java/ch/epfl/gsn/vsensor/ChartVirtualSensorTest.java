@@ -34,7 +34,6 @@ public class ChartVirtualSensorTest {
 
     private static StorageManager sm;
     private VSensorConfig testVsensorConfig;
-    private VirtualSensor pool;
     ArrayList < KeyValue > params;
 
     @BeforeClass
@@ -153,7 +152,7 @@ public class ChartVirtualSensorTest {
         vs.setVirtualSensorConfiguration(testVsensorConfig);
         assertTrue(vs.initialize());
         vs.dataAvailable("testchart", new StreamElement(new String[]{"value", "value1"},new Byte[]{DataTypes.INTEGER, DataTypes.INTEGER},new Serializable[]{1,2},System.currentTimeMillis()+200));
-
+        vs.dispose();
     }
 
     @Test

@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import org.junit.Test;
 import ch.epfl.gsn.Main;
 import ch.epfl.gsn.beans.DataField;
 import ch.epfl.gsn.beans.DataTypes;
+import ch.epfl.gsn.beans.StreamElement;
 import ch.epfl.gsn.beans.VSensorConfig;
 import ch.epfl.gsn.storage.StorageManager;
 import ch.epfl.gsn.storage.StorageManagerFactory;
@@ -48,7 +50,7 @@ public class SensorScope2VSTest {
     @Before
 	public void setup() throws SQLException, IOException {
         DataField[] fields = new DataField[]{
-            new DataField("field1", DataTypes.VARCHAR),
+            new DataField("field1", DataTypes.DOUBLE),
         };
 
         testVsensorConfig = new VSensorConfig();
@@ -75,6 +77,35 @@ public class SensorScope2VSTest {
         SensorScope2VS vs = new SensorScope2VS();
         vs.setVirtualSensorConfiguration(testVsensorConfig);
         assertTrue(vs.initialize());
+        vs.dataAvailable("input", new StreamElement(
+                new String[]{""},
+                new Byte[]{DataTypes.DOUBLE},
+                new Serializable[]{null},
+                System.currentTimeMillis()+200
+        ));
+        StreamElement streamElement1 = new StreamElement(
+                new String[]{"field1"},
+                new Byte[]{DataTypes.DOUBLE},
+                new Serializable[]{1.5},
+                System.currentTimeMillis()+200);
+        vs.dataAvailable("input", streamElement1);
+        vs.dispose();
+    }
+
+    @Test
+    public void testInitialize1() {
+        ArrayList < KeyValue > params = new ArrayList < KeyValue >( );
+        params.add( new KeyValueImp( "allow-nulls" , "false" ) );
+        testVsensorConfig.setMainClassInitialParams( params );
+        SensorScope2VS vs = new SensorScope2VS();
+        vs.setVirtualSensorConfiguration(testVsensorConfig);
+        assertTrue(vs.initialize());
+        StreamElement streamElement1 = new StreamElement(
+                new String[]{"field1"},
+                new Byte[]{DataTypes.DOUBLE},
+                new Serializable[]{1.5},
+                System.currentTimeMillis()+200);
+        vs.dataAvailable("input", streamElement1);
         vs.dispose();
     }
 }

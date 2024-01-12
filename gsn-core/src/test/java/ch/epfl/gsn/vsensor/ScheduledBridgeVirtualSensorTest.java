@@ -35,11 +35,18 @@ public class ScheduledBridgeVirtualSensorTest {
     }
 
     @Test
-    public void testInitialization() {
+    public void testInitialization() throws InterruptedException {
         vs = new ScheduledBridgeVirtualSensor();
         vs.setVirtualSensorConfiguration(testVsensorConfig);
 
         assertTrue(vs.initialize());
+        StreamElement streamElement1 = new StreamElement(
+            new String[]{"message", "phonenumber","receiver"},
+            new Byte[]{DataTypes.VARCHAR, DataTypes.VARCHAR,DataTypes.VARCHAR},
+            new Serializable[]{null,null,null},
+            System.currentTimeMillis()+20000);
+        vs.dataAvailable("input", streamElement1);
+        Thread.sleep(1000);
         vs.dispose();
 
     }

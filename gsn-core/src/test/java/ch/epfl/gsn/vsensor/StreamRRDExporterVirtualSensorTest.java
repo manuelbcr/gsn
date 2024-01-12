@@ -1,5 +1,6 @@
 package ch.epfl.gsn.vsensor;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -25,16 +26,14 @@ import ch.epfl.gsn.storage.StorageManager;
 import ch.epfl.gsn.storage.StorageManagerFactory;
 import ch.epfl.gsn.utils.KeyValueImp;
 
-public class SMACleanerTest {
+public class StreamRRDExporterVirtualSensorTest {
     
     private static StorageManager sm;
     private VSensorConfig testVsensorConfig;
-
+    ArrayList < KeyValue > params;
 
     @BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		
-		// Setup current working directory
         String currentWorkingDir = System.getProperty("user.dir");
 		if (!currentWorkingDir.endsWith("/gsn-core/")) {
 			String newDirectory = currentWorkingDir + "/gsn-core/";
@@ -51,42 +50,51 @@ public class SMACleanerTest {
     @Before
 	public void setup() throws SQLException, IOException {
         DataField[] fields = new DataField[]{
-            new DataField("field1", DataTypes.VARCHAR),
+            new DataField("value", DataTypes.INTEGER),
+            new DataField("value1", DataTypes.INTEGER)
         };
 
         testVsensorConfig = new VSensorConfig();
-		testVsensorConfig.setName("testsma");
-        File someFile = File.createTempFile("testsma", ".xml");
-		testVsensorConfig.setMainClass("ch.epfl.gsn.vsensor.SMACleaner");
+		testVsensorConfig.setName("teststreamrrdexporter");
+        File someFile = File.createTempFile("teststreamrrdexporter", ".xml");
+		testVsensorConfig.setMainClass("ch.epfl.gsn.vsensor.StreamExporterVirtualSensor");
         testVsensorConfig.setFileName(someFile.getAbsolutePath());
         testVsensorConfig.setOutputStructure(fields);
-        ArrayList < KeyValue > params = new ArrayList < KeyValue >( );
-        params.add( new KeyValueImp( "size" , "4" ) );
-        params.add( new KeyValueImp( "error-threshold", "0.5" ) );
-        testVsensorConfig.setMainClassInitialParams( params );
 
+        sm.executeCreateTable("teststreamrrdexporter", fields, true);
         
-        sm.executeCreateTable("testsma", fields, true);
+
+    
+       
     }
 
     @After
 	public void teardown() throws SQLException {
-		sm.executeDropTable("testsma");
+		sm.executeDropTable("teststreamrrdexporter");
 	}
 
     @Test
-    public void testInitialize(){
-        SMACleaner vs = new SMACleaner();
+    public void testInitialize() {
+        StreamRRDExporterVirtualSensor vs= new StreamRRDExporterVirtualSensor();
         vs.setVirtualSensorConfiguration(testVsensorConfig);
-        assertTrue(vs.initialize());
-        String[] fieldnames = {"field1"};
-        StreamElement streamElement1 = new StreamElement(fieldnames, new Byte[]{DataTypes.DOUBLE},new Serializable[]{23.23});
+        assertFalse(vs.initialize());
+    }
 
-        vs.dataAvailable("input", streamElement1);
-        vs.dataAvailable("input", streamElement1);
-        vs.dataAvailable("input", streamElement1);
-        vs.dataAvailable("input", streamElement1);
-        vs.dataAvailable("input", streamElement1);
+    @Test
+    public void testInitialize2() {
+        StreamRRDExporterVirtualSensor vs= new StreamRRDExporterVirtualSensor();
+        params = new ArrayList < KeyValue >( );
+        params.add( new KeyValueImp( "rrdfile" , "sa" ) );
+        params.add( new KeyValueImp( "field", "" ) );
+        testVsensorConfig.setMainClassInitialParams( params );
+        vs.setVirtualSensorConfiguration(testVsensorConfig);
+        assertFalse(vs.initialize());
+        StreamElement streamElement1 = new StreamElement(
+            new String[]{"value", "value1"},
+            new Byte[]{DataTypes.INTEGER, DataTypes.INTEGER},
+            new Serializable[]{1,2},
+            System.currentTimeMillis()+200);
+        vs.dataAvailable("inputStream", streamElement1);
         vs.dispose();
     }
 }

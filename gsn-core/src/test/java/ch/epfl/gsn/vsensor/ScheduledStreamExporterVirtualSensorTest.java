@@ -1,9 +1,13 @@
 package ch.epfl.gsn.vsensor;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.apache.commons.collections.KeyValue;
@@ -21,9 +25,10 @@ import ch.epfl.gsn.beans.VSensorConfig;
 import ch.epfl.gsn.storage.StorageManager;
 import ch.epfl.gsn.storage.StorageManagerFactory;
 import ch.epfl.gsn.utils.KeyValueImp;
+import scala.slick.direct.AnnotationMapper.table;
 
 public class ScheduledStreamExporterVirtualSensorTest {
-        private static StorageManager sm;
+    private static StorageManager sm;
     private VSensorConfig testVsensorConfig;
     private VirtualSensor pool;
     ArrayList < KeyValue > params;
@@ -101,10 +106,81 @@ public class ScheduledStreamExporterVirtualSensorTest {
 	public void teardown() throws Exception {
 		sm.executeDropTable("scheduledstreamexporter");
 	}
+
     @Test
-    public void testInitialize() {
+    public void testInitialize1() {
         ScheduledStreamExporterVirtualSensor vs = new ScheduledStreamExporterVirtualSensor();
         vs.setVirtualSensorConfiguration(testVsensorConfig);
-        System.out.println(vs.initialize());
+        assertFalse(vs.initialize());
+    }
+    @Test
+    public void testInitializeTrue() throws SQLException, InterruptedException {
+        params = new ArrayList < KeyValue >( );
+        params.add( new KeyValueImp("user" ,"sa" ) );
+        params.add( new KeyValueImp("url", "jdbc:h2:mem:coreTest") );
+        params.add( new KeyValueImp("driver", "org.h2.Driver") );
+        params.add( new KeyValueImp("password", "") );
+        params.add( new KeyValueImp("table", "initialscheduledstreamexporterTable") );
+        params.add( new KeyValueImp("start-time", "2024-01-10T12:30:45.123+0300") );
+        params.add( new KeyValueImp("rate", "10") );
+        
+        testVsensorConfig.setMainClassInitialParams( params );
+        ScheduledStreamExporterVirtualSensor vs = new ScheduledStreamExporterVirtualSensor();
+        vs.setVirtualSensorConfiguration(testVsensorConfig);
+        assertTrue(vs.initialize());
+        StreamElement streamElement1 = new StreamElement(
+                new String[]{"value", "value1"},
+                new Byte[]{DataTypes.INTEGER, DataTypes.INTEGER},
+                new Serializable[]{1,2},
+                System.currentTimeMillis()+200);
+        vs.dataAvailable("inputstream",streamElement1);
+        Thread.sleep(1000);
+        sm.executeDropTable("initialscheduledstreamexporterTable");
+        StreamElement streamElement2 = new StreamElement(
+                new String[]{"value", "value1"},
+                new Byte[]{DataTypes.INTEGER, DataTypes.INTEGER},
+                new Serializable[]{1,2},
+                System.currentTimeMillis()+200);
+        vs.dataAvailable("inputstream",streamElement2);
+        Thread.sleep(1000);
+        vs.dispose();
+    }
+
+    @Test
+    public void testInitializeFalse() throws SQLException {
+        params = new ArrayList < KeyValue >( );
+        params.add( new KeyValueImp("user" ,"sa" ) );
+        params.add( new KeyValueImp("url", "jdbc:h2:mem:coreTest") );
+        params.add( new KeyValueImp("driver", "wrong") );
+        params.add( new KeyValueImp("password", "") );
+        params.add( new KeyValueImp("table", "initialscheduledstreamexporterTable") );
+        params.add( new KeyValueImp("start-time", "2024-01-10T12:30:45.123+0300") );
+        params.add( new KeyValueImp("rate", "10") );
+        
+        testVsensorConfig.setMainClassInitialParams( params );
+        ScheduledStreamExporterVirtualSensor vs = new ScheduledStreamExporterVirtualSensor();
+        vs.setVirtualSensorConfiguration(testVsensorConfig);
+        assertFalse(vs.initialize());
+    }
+
+    @Test
+    public void testInitializeFalse1() throws SQLException {
+        params = new ArrayList < KeyValue >( );
+        params.add( new KeyValueImp("user" ,"sa" ) );
+        params.add( new KeyValueImp("url", "jdbc:h2:mem:coreTest") );
+        params.add( new KeyValueImp("driver", "org.h2.Driver") );
+        params.add( new KeyValueImp("password", "") );
+        params.add( new KeyValueImp("table", "scheduledstreamexporter") );
+        params.add( new KeyValueImp("start-time", "2024-01-10T12:30:45.123+0300") );
+        params.add( new KeyValueImp("rate", "10") );
+        DataField[] fields = new DataField[]{
+            new DataField("value", DataTypes.INTEGER),
+            new DataField("value1", DataTypes.VARCHAR)
+        };
+        testVsensorConfig.setOutputStructure(fields);
+        testVsensorConfig.setMainClassInitialParams( params );
+        ScheduledStreamExporterVirtualSensor vs = new ScheduledStreamExporterVirtualSensor();
+        vs.setVirtualSensorConfiguration(testVsensorConfig);
+        assertFalse(vs.initialize());
     }
 }

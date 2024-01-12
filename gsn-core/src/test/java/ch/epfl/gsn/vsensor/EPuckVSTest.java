@@ -14,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.fail;
 
 import ch.epfl.gsn.Main;
 import ch.epfl.gsn.Mappings;
@@ -30,6 +31,7 @@ import ch.epfl.gsn.storage.StorageManagerFactory;
 import ch.epfl.gsn.utils.KeyValueImp;
 import ch.epfl.gsn.wrappers.AbstractWrapper;
 import ch.epfl.gsn.wrappers.SystemTime;
+import ch.epfl.gsn.wrappers.general.SerialWrapper;
 
 public class EPuckVSTest {
 
@@ -94,7 +96,23 @@ public class EPuckVSTest {
     public void testInitialize() {
         EPuckVS vs = new EPuckVS();
         vs.setVirtualSensorConfiguration(testVsensorConfig);
-        vs.initialize();
+        assertTrue(vs.initialize());
+        StreamElement streamElement1 = new StreamElement(
+            new String[]{"raw_packet"},
+            new Byte[]{DataTypes.BINARY},
+            new Serializable[]{new byte[] {1, 2, 3}},
+            System.currentTimeMillis()+200);
+        try{
+            vs.dataAvailable("input1", streamElement1);
+            fail("exception expected");
+        } catch(Exception e){
+            
+        }
+        try{
+            vs.dataAvailable("input1", streamElement1);
+            fail("exception expected");
+        } catch(Exception e){
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 package ch.epfl.gsn.vsensor;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -26,12 +27,14 @@ import ch.epfl.gsn.storage.StorageManager;
 import ch.epfl.gsn.storage.StorageManagerFactory;
 import ch.epfl.gsn.utils.KeyValueImp;
 import ch.epfl.gsn.vsensor.StreamMergingVirtualSensor.StreamElementContainer;
+import ch.epfl.gsn.vsensor.StreamMergingVirtualSensor.StreamElementInputStreamNameTuple;
 
 public class StreamMergingVirtualSensorTest {
      private static StorageManager sm;
     private VSensorConfig testVsensorConfig;
     private ArrayList < KeyValue > params;
-
+    private StreamElementContainer container;
+    private StreamElementInputStreamNameTuple tuple;
 
     @BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -468,7 +471,58 @@ public class StreamMergingVirtualSensorTest {
         vs.dispose();
     }
 
-   
+   @Test
+    public void testStreamElementContainer() throws Exception {
+        params = new ArrayList < KeyValue >( );
+        params.add(new KeyValueImp("maximum_buffered_stream_age_in_days", "10"));
+        params.add(new KeyValueImp("streams_needed_to_merge", "5"));
+        params.add(new KeyValueImp("timeline", "field4"));
+        params.add(new KeyValueImp("merge_bucket_size_in_minutes", "120"));
+        params.add(new KeyValueImp("merge_bucket_edge_type", "dynamic"));
+        params.add(new KeyValueImp("matching_field1", "field1"));
+        params.add(new KeyValueImp("matching_field2", "field2"));
+        params.add(new KeyValueImp("default_merge_operator", "new"));
+        params.add(new KeyValueImp("filter_duplicates", "true"));
+        params.add(new KeyValueImp("filter_data_points_from_same_source", "true"));
+        params.add(new KeyValueImp("duplicates_ignore_field", "field3"));
+        params.add(new KeyValueImp("foo", "add"));
+        params.add(new KeyValueImp("foo1", "add"));
+        params.add(new KeyValueImp("foo2", "add"));
+        params.add(new KeyValueImp("foo3", "add"));
+        params.add(new KeyValueImp("foo4", "add"));
+        params.add(new KeyValueImp("foo5", "add"));
+        params.add(new KeyValueImp("foo6", "add"));
+        testVsensorConfig.setMainClassInitialParams( params );
+
+        String[] fieldnames = { "field1", "field2", "field3", "field4" };
+        StreamElement streamElement1 = new StreamElement(
+                fieldnames,
+                new Byte[] { DataTypes.INTEGER, DataTypes.INTEGER, DataTypes.INTEGER, DataTypes.BIGINT },
+                new Serializable[] { 1, 2, 3, 1657752584L },
+                System.currentTimeMillis() + 10);
+        StreamElement streamElement2 = new StreamElement(
+                fieldnames,
+                new Byte[] { DataTypes.INTEGER, DataTypes.INTEGER, DataTypes.INTEGER, DataTypes.BIGINT },
+                new Serializable[] { 4, 5, 6, 1657852584L },
+                System.currentTimeMillis() + 20);
+        StreamMergingVirtualSensor vs = new StreamMergingVirtualSensor();
+        vs.setVirtualSensorConfiguration(testVsensorConfig);
+        assertTrue(vs.initialize());
+
+        container = vs.new StreamElementContainer("testStream", streamElement1);
+        container.putStreamElement("testStream2", streamElement2);
+        assertEquals(2, container.getNumberOfStreams());
+        long expected = 1657852584L;
+        assertEquals(expected, container.getNewestTimestamp().longValue());
+        StreamElement merged = container.getMergedStreamElement();
+        assertEquals(4, merged.getData()[0]);
+        assertEquals(5, merged.getData()[1]); 
+        assertEquals(6, merged.getData()[2]);
+        assertEquals(1657852584L, merged.getData()[3]);
+
+        
+    }
+
 
 
 }
