@@ -45,7 +45,8 @@ public class CounterVSTest {
 		Main.setDefaultGsnConf("/gsn_test.xml");
 		Main.getInstance();
 	}
-        @Before
+    
+    @Before
 	public void setup() throws SQLException, IOException {
         DataField[] fields = new DataField[]{
             new DataField("field1", DataTypes.DOUBLE),
