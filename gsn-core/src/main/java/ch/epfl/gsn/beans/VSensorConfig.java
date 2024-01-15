@@ -121,11 +121,10 @@ public class VSensorConfig implements Serializable {
 
 	public String[][] getRPCFriendlyAddressing() {
 		String[][] toReturn = new String[this.addressing.length][2] ;
-		for(int i=0;i<toReturn.length;i++)
-			for (KeyValue val : this.addressing) {
-				toReturn[i][0] = ( String ) val.getKey( );
-				toReturn[i][1] = ( String ) val.getValue( );
-			}
+		for(int i=0;i<toReturn.length;i++){
+			toReturn[i][0] = ( String ) this.addressing[i].getKey( );
+			toReturn[i][1] = ( String ) this.addressing[i].getValue( );
+		}
 		return toReturn;
 	}
 
