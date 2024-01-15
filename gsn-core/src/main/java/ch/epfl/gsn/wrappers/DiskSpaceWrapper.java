@@ -58,10 +58,36 @@ public class DiskSpaceWrapper extends AbstractWrapper{
     public boolean initialize() {
         logger.info("Initializing DiskSpaceWrapper Class");
         String javaVersion = System.getProperty("java.version");
-        if(!javaVersion.startsWith("1.6")){
+        if(!isJavaVersionAtLeast("1.6")){
             logger.error("Error in initializing DiskSpaceWrapper because of incompatible jdk version: " + javaVersion + " (should be 1.6.x)");
             return false;
         }
+        return true;
+    }
+
+    private static boolean isJavaVersionAtLeast(String targetVersion) {
+        String[] versionComponents = System.getProperty("java.version").split("\\.");
+        String[] targetComponents = targetVersion.split("\\.");
+
+        // Compare major version
+        int majorVersionComparison = Integer.compare(Integer.parseInt(versionComponents[0]), Integer.parseInt(targetComponents[0]));
+        if (majorVersionComparison < 0) {
+            return false;
+        } else if (majorVersionComparison > 0) {
+            return true;
+        }
+
+        // Compare minor version (if available)
+        if (versionComponents.length > 1 && targetComponents.length > 1) {
+            int minorVersionComparison = Integer.compare(Integer.parseInt(versionComponents[1]), Integer.parseInt(targetComponents[1]));
+            if (minorVersionComparison < 0) {
+                return false;
+            } else if (minorVersionComparison > 0) {
+                return true;
+            }
+        }
+
+        // If major and minor versions are equal, consider it equal or greater
         return true;
     }
     
