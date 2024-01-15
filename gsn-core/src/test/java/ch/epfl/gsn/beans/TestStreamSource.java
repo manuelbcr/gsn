@@ -89,6 +89,7 @@ public class TestStreamSource {
 		wrapper.setActiveAddressBean(new AddressBean("system-time"));
 		assertTrue(wrapper.initialize());
 	}
+	
 	@After
 	public void teardown() throws SQLException {
 		sm.executeDropTable(wrapper.getDBAliasInStr());
@@ -262,7 +263,7 @@ public class TestStreamSource {
 	@Test
 	public void testTimeBasedWindow() throws SQLException{
 		InputStream is = new InputStream();
-	  StreamSource ss = new StreamSource().setAlias("my-stream").setAddressing(addressing).setSqlQuery("select * from wrapper").setRawHistorySize("1  s").setInputStream(is);
+	 	StreamSource ss = new StreamSource().setAlias("my-stream").setAddressing(addressing).setSqlQuery("select * from wrapper").setRawHistorySize("1  s").setInputStream(is);
 		ss.setSamplingRate(1);
 		ss.setWrapper(wrapper );
 		assertTrue(ss.validate());
@@ -280,7 +281,7 @@ public class TestStreamSource {
 		assertTrue(dm.hasMoreElements());
 		dm.nextElement();
 		assertFalse(dm.hasMoreElements());
-		sm.executeInsert(ss.getWrapper().getDBAliasInStr(),ss.getWrapper().getOutputFormat(), new StreamElement(new DataField[] {},new Serializable[] {},System.currentTimeMillis()+1) );
+		sm.executeInsert(ss.getWrapper().getDBAliasInStr(),ss.getWrapper().getOutputFormat(), new StreamElement(new DataField[] {},new Serializable[] {},System.currentTimeMillis()) );
 		dm = sm.executeQuery(query, true);
 		assertTrue(dm.hasMoreElements());
 		dm.nextElement();
