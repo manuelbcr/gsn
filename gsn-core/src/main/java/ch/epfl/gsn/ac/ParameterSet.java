@@ -1,4 +1,4 @@
-package ch.epfl.gsn.http.ac;
+package ch.epfl.gsn.ac;
 /**
  * Created by IntelliJ IDEA.
  * User: Behnaz Bostanipour

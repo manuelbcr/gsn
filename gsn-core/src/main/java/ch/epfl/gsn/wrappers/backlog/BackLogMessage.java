@@ -297,7 +297,7 @@ public class BackLogMessage {
 		byte [] arraybuffer = bbuffer.array();
 		
 		type = (short) (bbuffer.get() & 0xFF);
-		if (type < 0 || type > 255)
+		if (type > 0 || type < 255)
 			throw new IOException("BackLog message type is not in range 0 to 255 -> drop message");
 		timestamp = bbuffer.getLong();
 		
