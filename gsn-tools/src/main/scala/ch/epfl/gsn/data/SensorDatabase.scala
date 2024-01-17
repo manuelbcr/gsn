@@ -47,6 +47,8 @@ import com.typesafe.config.ConfigFactory
 
 object SensorDatabase { 
   val log=LoggerFactory.getLogger(SensorDatabase.getClass)
+
+  /*
   def latestValues(sensor:Sensor, timeFormat:Option[String]=None)
     (implicit ds:Option[String]) ={
     val timeframe=ConfigFactory.load.getInt("gsn.data.timeframe")
@@ -91,6 +93,61 @@ object SensorDatabase {
       case Success(d) => d
     }
   }
+  */
+
+  def latestValues(sensor: Sensor, timeFormat: Option[String] = None)(implicit ds: Option[String]): Seq[Series] = {
+    val timeframe = ConfigFactory.load.getInt("gsn.data.timeframe")
+    val vsName = sensor.name.toLowerCase
+    val fields = sensor.fields
+    val fieldNames = fields.map(f => f.fieldName).filterNot(_.equals("grid")) ++ Seq("timed")
+
+    val query = sensor.properties.get("partitionField") match {
+      case Some(partitionField) =>
+        s"""SELECT ${fieldNames.mkString(",")} FROM $vsName WHERE pk IN (SELECT MAX(pk) FROM $vsName WHERE timed > (SELECT MAX(timed) FROM $vsName) - $timeframe GROUP BY $partitionField)"""
+      case _ =>
+        s"""SELECT ${fieldNames.mkString(",")} FROM $vsName WHERE pk = (SELECT MAX(pk) FROM $vsName)"""
+    }
+
+    Try {
+      if (tableExists(vsName, ds)) {
+        vsDB(ds).withSession { implicit session =>
+          val stmt = session.conn.createStatement
+          val rs = stmt.executeQuery(query)
+          val data = fields.map(f => new ArrayBuffer[Any])
+          val time = new ArrayBuffer[Any]
+          while (rs.next) {
+            time += formatTime(rs.getLong("timed"))(timeFormat)
+            for (i <- fields.indices) {
+              if (fields(i).dataType == BinaryType)
+                data(i) += "binary"
+              else
+                data(i) += (rs.getObject(fields(i).fieldName))
+            }
+          }
+          rs.close
+          stmt.close
+
+          val ts =
+            Seq(Series(timeOutput(sensor.name), time)) ++
+              fields.indices.map { i =>
+                Series(fields(i),data(i).toSeq)
+              }
+          log.debug(s"Computed latest values for $vsName")
+          ts
+        }
+      } else {
+        //log.warn(s"Table $vsName does not exist.")
+        Seq.empty
+      }
+    } match {
+      case Failure(f) =>
+        log.error(s"Error ${f.getMessage}")
+        f.printStackTrace()
+        Seq.empty
+      case Success(d) => d
+    }
+  }
+
     
   def asSensorData(s:Sensor)=
     SensorData(s.fields.map(f=>Series(f,Seq())),s )
@@ -317,6 +374,7 @@ object SensorDatabase {
     Output("timestamp",sensorname,DataUnit("ms"),TimeType)
   }
 
+/*
   def stats(sensor:Sensor,timeFormat:Option[String]=None)
     (implicit ds:Option[String]) ={
     //val sensor=sensorConf.sensor 
@@ -368,6 +426,70 @@ object SensorDatabase {
       case Success(d) => d
     }
 //}
+  }
+
+  */
+
+
+  def stats(sensor: Sensor, timeFormat: Option[String] = None)(implicit ds: Option[String]): SensorStats = {
+    val vsName = sensor.name.toLowerCase
+    val queryMinMax = s"SELECT MAX(timed), MIN(timed) FROM $vsName"
+    val queryRate = s"SELECT timed FROM $vsName LIMIT 100"
+    var min: Option[Long] = None
+    var max: Option[Long] = None
+    var rate: Option[Double] = None
+
+    Try {
+      if (tableExists(vsName, ds)) {
+        vsDB(ds).withSession { implicit session =>
+          val stmt = session.conn.createStatement
+          val rs = stmt.executeQuery(queryMinMax)
+          while (rs.next) {
+            min = Some(rs.getLong(2))
+            max = Some(rs.getLong(1))
+          }
+          log.debug(s"Computed max/min for $vsName")
+          stmt.close
+        }
+
+        vsDB(ds).withSession { implicit session =>
+          val conn2 = session.conn
+          val times = new ArrayBuffer[Long]()
+          val stmt2 = conn2.createStatement
+          val rs2 = stmt2.executeQuery(queryRate)
+          var t1, t2 = 0L
+          while (rs2.next) {
+            t2 = rs2.getLong(1)
+            if (!rs2.isFirst)
+              times += t2 - t1
+            t1 = t2
+          }
+          rate = if (times.isEmpty) Some(0) else Some(times.sum / times.size)
+          log.debug(s"Computed rate for $vsName")
+          stmt2.close
+          conn2.close
+        }
+      } else {
+        //log.warn(s"Table $vsName does not exist.")
+      }
+      SensorStats(rate, min, max, latestValues(sensor, timeFormat))
+    } match {
+      case Failure(f) =>
+        log.error(s"Error ${f.getMessage}")
+        f.printStackTrace()
+        SensorStats(rate, min, max, Seq())
+      case Success(d) => d
+    }
+  }
+
+  // Function to check if the table exists
+  def tableExists(tableName: String, ds: Option[String]): Boolean = {
+    val query = s"SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '$tableName')"
+    vsDB(ds).withSession { implicit session =>
+      val stmt = session.conn.createStatement
+      val rs = stmt.executeQuery(query)
+      rs.next() && rs.getBoolean(1)
+    }
   }
 
   private def vsDs(dsName:String)={
