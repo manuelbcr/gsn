@@ -70,10 +70,6 @@ lazy val core = (project in file("gsn-core")).
   settings(commonSettings: _*).
   enablePlugins(JavaServerAppPackaging, DebianPlugin)
 
-//lazy val extra = (project in file("gsn-extra")).
-//  dependsOn(core).
-//  settings(commonSettings: _*)
-
 lazy val services = (project in file("gsn-services")).
   dependsOn(tools, core).
   settings(

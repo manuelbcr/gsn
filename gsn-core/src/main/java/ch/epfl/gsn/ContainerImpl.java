@@ -30,10 +30,6 @@ package ch.epfl.gsn;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-
-import ch.epfl.gsn.ContainerImpl;
-import ch.epfl.gsn.Main;
-import ch.epfl.gsn.VirtualSensorDataListener;
 import ch.epfl.gsn.beans.StreamElement;
 import ch.epfl.gsn.storage.StorageManager;
 import ch.epfl.gsn.vsensor.AbstractVirtualSensor;

@@ -41,10 +41,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.LoggerFactory;
 
-import ch.epfl.gsn.DataDistributer;
-import ch.epfl.gsn.Main;
-import ch.epfl.gsn.VSensorStateChangeListener;
-import ch.epfl.gsn.VirtualSensorDataListener;
 import ch.epfl.gsn.beans.StreamElement;
 import ch.epfl.gsn.beans.VSensorConfig;
 import ch.epfl.gsn.delivery.DefaultDistributionRequest;
@@ -99,14 +95,17 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
 
     public static DataDistributer getInstance(Class<? extends DeliverySystem> c) {
         DataDistributer toReturn = singletonMap.get(c);
-        if (toReturn == null)
+        if (toReturn == null){
             singletonMap.put(c, (toReturn = new DataDistributer()));
+        }
+            
         return toReturn;
     }
 
     public static int getKeepAlivePeriod() {
-        if (keepAlivePeriod == -1)
+        if (keepAlivePeriod == -1){
             keepAlivePeriod = System.getProperty("remoteKeepAlivePeriod") == null ? KEEP_ALIVE_PERIOD : Integer.parseInt(System.getProperty("remoteKeepAlivePeriod"));
+        }           
         return keepAlivePeriod;
     }
 
@@ -126,10 +125,12 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
                 logger.info("Adding a listener to Distributer:" + listener.toString());
                 boolean needsAnd = SQLValidator.removeSingleQuotes(SQLValidator.removeQuotes(listener.getQuery())).indexOf(" where ") > 0;
                 String query = SQLValidator.addPkField(listener.getQuery());
-                if (needsAnd)
+                if (needsAnd){
                     query += " AND ";
-                else
+                } else{
                     query += " WHERE ";
+                }
+                    
                 query += " timed > ? and pk > ? order by pk asc "; //both have to be parameters to force the optimizer of Postgres < 9.2 to not scan on timed index
                 PreparedStatement prepareStatement = null;
                 try {
@@ -251,8 +252,9 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
 
             for (Entry<DistributionRequest, DataEnumerator> item : candidateListeners.entrySet()) {
                 boolean success = flushStreamElement(item.getValue(), item.getKey());
-                if (success == false)
+                if (success == false){
                     removeListener(item.getKey());
+                }    
                 else {
                     if (!item.getValue().hasMoreElements()) {
                         removeListenerFromCandidates(item.getKey());
@@ -286,8 +288,9 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
             logger.debug("Distributer unloading: " + listeners.size());
             ArrayList<DistributionRequest> toRemove = new ArrayList<DistributionRequest>();
             for (DistributionRequest listener : listeners) {
-                if (listener.getVSensorConfig() == config)
+                if (listener.getVSensorConfig() == config){
                     toRemove.add(listener);
+                }          
             }
             for (DistributionRequest listener : toRemove) {
                 try {
@@ -319,8 +322,10 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
 
     public void release() {
         synchronized (listeners) {
-            while (!listeners.isEmpty())
+            while (!listeners.isEmpty()){
                 removeListener(listeners.get(0));
+            }
+                
         }
         if (keepAliveTimer != null)
             keepAliveTimer.stop();

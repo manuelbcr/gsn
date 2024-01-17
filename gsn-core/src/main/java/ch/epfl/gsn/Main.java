@@ -64,7 +64,6 @@ import org.zeromq.ZContext;
 
 // import ch.epfl.gsn.ContainerImpl;
 // import ch.epfl.gsn.DataDistributer;
-import ch.epfl.gsn.Main;
 // import ch.epfl.gsn.Mappings;
 // import ch.epfl.gsn.VSensorLoader;
 import ch.epfl.gsn.beans.BeansInitializer;
@@ -185,8 +184,9 @@ public final class Main {
 	}
 
 	private static void closeSplashIfneeded() {
-		if (isHeadless())
+		if (isHeadless()){
 			return;
+		}
 		SplashScreen splash = SplashScreen.getSplashScreen();
 		//Check if we have specified any splash screen
 		if (splash == null) {
