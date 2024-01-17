@@ -42,22 +42,26 @@ libraryDependencies ++= Seq(
   //"ch.epfl.gsn" % "gsn-core" % "2.0.3" exclude("org.apache.logging.log4j", "log4j-slf4j-impl") exclude("org.scala-lang.modules", "scala-xml_2.11")
 )
 
-//libraryDependencies := libraryDependencies.value.map(_.exclude("ch.qos.logback", "logback-classic").exclude("ch.qos.logback", "logback-core"))
-
+// Exclued dependencies to prevent confilcts with gsn-core
 excludeDependencies ++= Seq(
-  SbtExclusionRule("org.apache.logging.log4j", "log4j-slf4j-impl"),
-  SbtExclusionRule("org.hibernate", "hibernate-core")
+  ExclusionRule("org.apache.logging.log4j", "log4j-slf4j-impl"),
+  ExclusionRule("org.hibernate", "hibernate-core")
 )
 
-NativePackagerKeys.packageSummary in com.typesafe.sbt.SbtNativePackager.Linux := "GSN Services"
-
+// Define package summary, description, and maintainer
+NativePackagerKeys.packageSummary in Linux := "GSN Services"
+NativePackagerKeys.packageSummary in Windows := "GSN Services"
 NativePackagerKeys.packageDescription := "Global Sensor Networks Services"
-
-NativePackagerKeys.maintainer in com.typesafe.sbt.SbtNativePackager.Linux := "LSIR EPFL <gsn@epfl.ch>"
+NativePackagerKeys.maintainer in Linux := "LSIR EPFL <gsn@epfl.ch>"
+NativePackagerKeys.maintainer in Windows := "LSIR EPFL <gsn@epfl.ch>"
 
 debianPackageDependencies in Debian += "java11-runtime"
 
 debianPackageRecommends in Debian ++= Seq("postgresql", "gsn-core", "nginx")
+
+// Define Debian package dependencies
+DebianPlugin.autoImport.debianPackageDependencies in Debian += "java11-runtime"
+DebianPlugin.autoImport.debianPackageRecommends in Debian ++= Seq("postgresql", "gsn-core", "nginx")
 
 serverLoading in Debian := Some(ServerLoader.Systemd)
 

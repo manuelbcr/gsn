@@ -1,11 +1,3 @@
-import NativePackagerHelper._
-
-import com.typesafe.sbt.packager.archetypes.systemloader.ServerLoader
-
-import com.typesafe.sbt.packager.archetypes.TemplateWriter
-
-import com.typesafe.sbt.packager.linux._
-
 name := "gsn-core"
 
 Revolver.settings
@@ -56,61 +48,44 @@ libraryDependencies ++= Seq(
 )
 
 
-mainClass := Some("ch.epfl.gsn.Main")
+mainClass in Compile := Some("ch.epfl.gsn.Main")
 
-NativePackagerKeys.packageSummary in com.typesafe.sbt.SbtNativePackager.Linux := "GSN Server"
+enablePlugins(JavaServerAppPackaging)
 
-NativePackagerKeys.packageSummary in com.typesafe.sbt.SbtNativePackager.Windows := "GSN Server"
-
+// Define package summary, description, and maintainer
+NativePackagerKeys.packageSummary in Linux := "GSN Server"
+NativePackagerKeys.packageSummary in Windows := "GSN Server"
 NativePackagerKeys.packageDescription := "Global Sensor Networks Core"
+NativePackagerKeys.maintainer in Linux := "LSIR EPFL <gsn@epfl.ch>"
+NativePackagerKeys.maintainer in Windows := "LSIR EPFL <gsn@epfl.ch>"
 
-NativePackagerKeys.maintainer in com.typesafe.sbt.SbtNativePackager.Windows := "LSIR EPFL <gsn@epfl.ch>"
+// Define Debian package dependencies
+DebianPlugin.autoImport.debianPackageDependencies in Debian += "java11-runtime"
+DebianPlugin.autoImport.debianPackageRecommends in Debian ++= Seq("postgresql", "munin-node", "gsn-services")
 
-NativePackagerKeys.maintainer in com.typesafe.sbt.SbtNativePackager.Linux := "LSIR EPFL <gsn@epfl.ch>"
+// Define daemon user for Linux
+LinuxPlugin.autoImport.daemonUser in Linux := "gsn"
 
-debianPackageDependencies in Debian += "java11-runtime"
+// Define mappings for Universal package
+mappings in Universal ++= Seq(
+  (sourceDirectory.value / "templates" / "gsn-core") -> "bin/gsn-core",
+  (sourceDirectory.value / "main" / "resources" / "log4j2.xml") -> "conf/log4j2.xml",
+  (baseDirectory.value / ".." / "conf" / "gsn.xml") -> "conf/gsn.xml",
+  (sourceDirectory.value / "main" / "resources" / "wrappers.properties") -> "conf/wrappers.properties"
+)
 
-debianPackageRecommends in Debian ++= Seq("postgresql", "munin-node", "gsn-services")
-
-serverLoading in Debian := Some(ServerLoader.Systemd)
-
-daemonUser in Linux := "gsn"
-
-mappings in Universal += (sourceDirectory.value / "templates" / "gsn-core") -> "bin/gsn-core"
-
-mappings in Universal += (sourceDirectory.value / "main" / "resources" / "log4j2.xml") -> "conf/log4j2.xml"
-
-mappings in Universal += (baseDirectory.value / ".." / "conf" / "gsn.xml") -> "conf/gsn.xml"
-
-mappings in Universal += (sourceDirectory.value / "main" / "resources" / "wrappers.properties") -> "conf/wrappers.properties"
-
-linuxPackageMappings in Debian += packageMapping(
+// Define additional Linux package mappings for Debian for virtual sensors
+LinuxPlugin.autoImport.linuxPackageMappings in Debian += packageMapping(
   (baseDirectory.value / ".." / "virtual-sensors" / "packaged") -> "/usr/share/gsn-core/conf/virtual-sensors"
 ) withUser "gsn" withGroup "root" withPerms "0775" withContents()
 
-mappings in Universal ++= ((baseDirectory.value / ".." / "virtual-sensors" / "samples").***).pair(file => Some("virtual-sensors-samples/" + file.name))
-
-
-linuxPackageMappings := {
-    val mappings = linuxPackageMappings.value
-    mappings map { 
-        case linuxPackage if linuxPackage.fileData.config equals "true" =>
-            val newFileData = linuxPackage.fileData.copy(
-                user = "gsn"
-            )
-            linuxPackage.copy(
-                fileData = newFileData
-            )
-        case linuxPackage => linuxPackage
-    }
+// Define your mappings for Universal package
+mappings in Universal ++= {
+  val sampleFiles = (baseDirectory.value / ".." / "virtual-sensors" / "samples" * "").get
+  sampleFiles.map(file => file -> ("virtual-sensors-samples/" + file.getName))
 }
-enablePlugins(SystemdPlugin)
 
-scalacOptions += "-deprecation"
-
-EclipseKeys.projectFlavor := EclipseProjectFlavor.Java
-
-mainClass in Revolver.reStart := Some("ch.epfl.gsn.Main")
-
-Revolver.reStartArgs := Seq("../conf", "../virtual-sensors")
+// Set reStart arguments using sbt-revolver
+mainClass in reStart := Some("ch.epfl.gsn.Main")
+reStartArgs := Seq("../conf", "../virtual-sensors")
 
