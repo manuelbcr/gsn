@@ -1,9 +1,8 @@
-
 lazy val commonSettings = Seq(
   organization := "ch.epfl.gsn",
   version := "2.0.3",
   scalaVersion := "2.12.4",
-  javacOptions in (Compile, compile) ++= Seq("-source", "11", "-target", "11"),
+  Compile / compile / javacOptions ++= Seq("-source", "11", "-target", "11"),
   resolvers ++= Seq(
     DefaultMavenRepository,
     "Typesafe Repository" at "https://repo.maven.apache.org/maven2/",
@@ -13,24 +12,12 @@ lazy val commonSettings = Seq(
     "Local ivy Repository" at ""+Path.userHome.asFile.toURI.toURL+"/.ivy2/local",
     "Local cache" at ""+file(".").toURI.toURL+"lib/cache"
   ),
-    publishTo := Some("snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"),
-   //   publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
-/*
-publishTo &lt;&lt;= version { v: String =&gt;
-  val nexus = "https://oss.sonatype.org/"
-  if (v.trim.endsWith("SNAPSHOT"))
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-}*/
 
-  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-sonatype"),
-  publishMavenStyle := true,
-  publishArtifact in (Compile) := false,
-  publishArtifact in (Test) := false,
-  publishArtifact in (Compile, packageBin) := true,
-  publishArtifact in (Compile, packageSrc) := true,
-  publishArtifact in (Compile, packageDoc) := false,
+  Compile / publishArtifact := false,
+  Compile / packageBin / publishArtifact := true,
+  Compile / packageSrc / publishArtifact := true,
+  Compile / packageDoc / publishArtifact := false,
+  Test / publishArtifact := false,
   pomIncludeRepository := { x => false },
   pomExtra := (
   <url>http://gsn.epfl.ch</url>
@@ -54,15 +41,15 @@ publishTo &lt;&lt;= version { v: String =&gt;
   </developers>
 ),
   crossPaths := false,
-  useGpg := true,
-  parallelExecution in Test := false,
-  EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
+//  useGpg := true,
+  Test / parallelExecution := false,
+  EclipseKeys.createSrc := EclipseCreateSrc.Default
 )
 
 usePgpKeyHex("DC900B5F")
 
-lazy val root = (project in file(".")).
-  aggregate(core, tools,services)
+lazy val gsn2 = (project in file(".")).
+  aggregate(core, tools, services)
 
 
 lazy val core = (project in file("gsn-core")).
@@ -89,8 +76,7 @@ lazy val tools = (project in file("gsn-tools")).
 lazy val webui = (project in file("gsn-webui")).
   enablePlugins(JavaServerAppPackaging, DebianPlugin)
 
-
-lazy val startAll = taskKey[Unit]("Start all the GSN modules")
+// lazy val startAll = taskKey[Unit]("Start all the GSN modules")
 
 
 //startAll := {

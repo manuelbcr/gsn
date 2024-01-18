@@ -23,3 +23,5 @@ csv-check-points/
 .DS_Store
 .vscode/settings.json
 .gitignore
+.bsp/sbt.json
+.idea/libraries

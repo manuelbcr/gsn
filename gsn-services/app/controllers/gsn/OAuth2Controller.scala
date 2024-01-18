@@ -28,7 +28,9 @@ import scalaoauth2.provider._
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.mvc._
 import play.utils.UriEncoding
-import models.gsn.auth.{User, Client, OAuthCode}
+import models.gsn.auth.OAuthCode
+import models.gsn.auth.User
+import models.gsn.auth.Client
 import com.feth.play.module.pa.PlayAuthenticate
 import be.objectify.deadbolt.scala.DeadboltActions
 import security.gsn.GSNScalaDeadboltHandler
@@ -36,7 +38,6 @@ import play.mvc.Http
 import play.core.j.JavaHelpers
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
-import views.html._
 import controllers.gsn.auth.Application
 import play.mvc.Http.Context
 import play.api.data._
@@ -48,6 +49,7 @@ import com.feth.play.module.pa.PlayAuthenticate
 import javax.inject.Inject
 import service.gsn.UserProvider
 import be.objectify.deadbolt.scala.{DeadboltActions, anyOf, allOf, allOfGroup}
+import views.html._
 
 class OAuth2Controller @Inject()(playAuth: PlayAuthenticate, deadbolt: DeadboltActions,userProvider: UserProvider) extends InjectedController with OAuth2Provider {
   

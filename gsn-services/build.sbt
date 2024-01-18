@@ -1,14 +1,20 @@
-//import com.typesafe.sbt.packager.archetypes.ServerLoader
-
 name := "gsn-services"
 
+import NativePackagerHelper._
+import com.typesafe.sbt.packager.archetypes.systemloader.ServerLoader
+import com.typesafe.sbt.packager.archetypes.TemplateWriter
+import com.typesafe.sbt.packager.linux._
+import spray.revolver.RevolverPlugin._
+
+Revolver.settings
 
 val buildSettings = Seq(
    javaOptions += "-Xmx128m",
    javaOptions += "-Xms64m"
 )
 
-sources in (Compile,doc) := Seq.empty
+Compile / sources := Seq.empty
+doc / sources := Seq.empty
 
 libraryDependencies ++= Seq(
   "be.objectify"  %% "deadbolt-java"     % "2.6.4",
@@ -35,36 +41,40 @@ libraryDependencies ++= Seq(
   "javax.xml.bind" % "jaxb-api" % "2.3.1",
   "org.glassfish.jaxb" % "jaxb-runtime" % "2.3.1",
   "com.esotericsoftware.kryo" % "kryo" % "2.23.0",
-  "com.nulab-inc" %% "scala-oauth2-core" % "1.3.0",
-  "com.nulab-inc" %% "play2-oauth2-provider" % "1.3.0",
+  "com.nulab-inc" %% "scala-oauth2-core" % "1.5.0",
+  "com.nulab-inc" %% "play2-oauth2-provider" % "1.5.0",
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.3" % "test",
   "org.seleniumhq.selenium" % "selenium-java" % "3.141.59" % "test"
   //"ch.epfl.gsn" % "gsn-core" % "2.0.3" exclude("org.apache.logging.log4j", "log4j-slf4j-impl") exclude("org.scala-lang.modules", "scala-xml_2.11")
 )
 
-//libraryDependencies := libraryDependencies.value.map(_.exclude("ch.qos.logback", "logback-classic").exclude("ch.qos.logback", "logback-core"))
+libraryDependencies := libraryDependencies.value.map(_.exclude("ch.qos.logback", "logback-classic").exclude("ch.qos.logback", "logback-core"))
 
-excludeDependencies ++= Seq(
-  SbtExclusionRule("org.apache.logging.log4j", "log4j-slf4j-impl"),
-  SbtExclusionRule("org.hibernate", "hibernate-core")
-)
+//excludeDependencies ++= Seq(
+//  SbtExclusionRule("org.apache.logging.log4j", "log4j-slf4j-impl"),
+//  SbtExclusionRule("org.hibernate", "hibernate-core")
+//)
 
-NativePackagerKeys.packageSummary in com.typesafe.sbt.SbtNativePackager.Linux := "GSN Services"
-
-NativePackagerKeys.packageDescription := "Global Sensor Networks Services"
-
-NativePackagerKeys.maintainer in com.typesafe.sbt.SbtNativePackager.Linux := "LSIR EPFL <gsn@epfl.ch>"
-
-debianPackageDependencies in Debian += "java11-runtime"
-
-debianPackageRecommends in Debian ++= Seq("postgresql", "gsn-core", "nginx")
-
-serverLoading in Debian := Some(ServerLoader.Systemd)
+//NativePackagerKeys.packageSummary in com.typesafe.sbt.SbtNativePackager.Linux := "GSN Services"
+//NativePackagerKeys.packageDescription := "Global Sensor Networks Services"
+//NativePackagerKeys.maintainer in com.typesafe.sbt.SbtNativePackager.Linux := "LSIR EPFL <gsn@epfl.ch>"
+//debianPackageDependencies in Debian += "java11-runtime"
+//debianPackageRecommends in Debian ++= Seq("postgresql", "gsn-core", "nginx")
+//serverLoading in Debian := Some(ServerLoader.Systemd)
+//daemonUser in Linux := "gsn"
 
 enablePlugins(DebianPlugin)
-
 enablePlugins(SystemdPlugin)
 
-daemonUser in Linux := "gsn"
+name := "gsn-services"
 
-javaOptions in Test += "-Dconfig.file=conf/test.conf"
+com.typesafe.sbt.SbtNativePackager.Linux / NativePackagerKeys.packageSummary := "GSN Services"
+com.typesafe.sbt.SbtNativePackager.Linux / NativePackagerKeys.packageDescription := "Global Sensor Networks Services"
+com.typesafe.sbt.SbtNativePackager.Linux / NativePackagerKeys.maintainer := "LSIR EPFL <gsn@epfl.ch>"
+
+Debian / debianPackageDependencies += "java11-runtime"
+Debian / debianPackageRecommends ++= Seq("mysql", "postgresql", "gsn-core", "nginx")
+
+Linux / daemonUser := "views/gsn"
+
+Test / javaOptions += "-Dconfig.file=conf/test.conf"
