@@ -58,8 +58,10 @@ public class SQLValidator implements VSensorStateChangeListener {
 	private static SQLValidator validator ;
 
 	public synchronized static SQLValidator getInstance() throws SQLException {
-		if (validator==null)
+		if (validator==null){
 			validator = new SQLValidator();
+		}
+			
 		return validator  ;
 	}
 
@@ -107,10 +109,12 @@ public class SQLValidator implements VSensorStateChangeListener {
 
 	private static boolean isValid(String query) {
 		String simplified = removeSingleQuotes(removeQuotes(query)).toLowerCase().trim();
-		if (simplified.lastIndexOf("select") != simplified.indexOf("select"))
+		if (simplified.lastIndexOf("select") != simplified.indexOf("select")){
 			return false;
-		if (simplified.indexOf("order by") >0 || simplified.indexOf("group by") >0 || simplified.indexOf("having") >0 || simplified.indexOf("limit") >0 || simplified.indexOf(";") >0)
+		}
+		if (simplified.indexOf("order by") >0 || simplified.indexOf("group by") >0 || simplified.indexOf("having") >0 || simplified.indexOf("limit") >0 || simplified.indexOf(";") >0){
 			return false;
+		}
 		return true;
 	}
 
@@ -125,17 +129,23 @@ public class SQLValidator implements VSensorStateChangeListener {
 	 */
 	public  String validateQuery(String query) {
 		Select select = queryToSelect(query);
-		if (select ==null)
+		if (select ==null){
 			return null;
-		if ((select.getTables().size() != 1) || (select.getTopFilters().size()!=1) || select.isQuickAggregateQuery() ) 
+		}
+			
+		if ((select.getTables().size() != 1) || (select.getTopFilters().size()!=1) || select.isQuickAggregateQuery() ) {
 			return null;
+		}
+			
 		return select.getTables().iterator().next().getName();
 	}
 
 	public  DataField[] extractSelectColumns(String query, VSensorConfig vSensorConfig) {
 		Select select = queryToSelect(query);
-		if (select ==null)
+		if (select ==null) {
 			return new DataField[0];
+		}
+			
 		
 		return getFields(select,vSensorConfig.getOutputStructure());
 	}
@@ -143,8 +153,10 @@ public class SQLValidator implements VSensorStateChangeListener {
 	//to allow the use of queries over models and not only VS
 	public  DataField[] extractSelectColumns(String query, DataField[] datafields) {
 		Select select = queryToSelect(query);
-		if (select ==null)
+		if (select ==null){
 			return new DataField[0];
+		}
+			
 		
 		return getFields(select,datafields);
 	}
@@ -169,8 +181,9 @@ public class SQLValidator implements VSensorStateChangeListener {
 		try {
 			for (int i=0;i<select.getColumnCount();i++) {
 				String name = select.queryMeta().getColumnName(i);
-				if (name.equalsIgnoreCase("timed") || name.equalsIgnoreCase("pk") )
+				if (name.equalsIgnoreCase("timed") || name.equalsIgnoreCase("pk") ){
 					continue;
+				}
 				String gsnType = null;
 				for (int j=0;j<fields.length;j++) {
 					if (fields[j].getName().equalsIgnoreCase(name)) {	
@@ -189,14 +202,18 @@ public class SQLValidator implements VSensorStateChangeListener {
 	}
 	private Select queryToSelect(String query) {
 		Select select  = null;
-		if (!isValid(query))
+		if (!isValid(query)){
 			return null;
+		}
+			
 		Parser parser = new Parser(session);
 		Prepared somePrepared;
 		//try {
 			somePrepared = parser.prepare(query);
-			if (somePrepared instanceof Select && somePrepared.isQuery()) 
+			if (somePrepared instanceof Select && somePrepared.isQuery()){
 				select = (Select) somePrepared;
+			} 
+				
 		/*} catch (SQLException e) {
 			logger.debug(e.getMessage(),e);
 		}*/
@@ -208,8 +225,9 @@ public class SQLValidator implements VSensorStateChangeListener {
         try {
             SQLValidator sv = getInstance();
             Select select = sv.queryToSelect(query);
-            if (select == null)
-                return query;
+            if (select == null){
+				return query;
+			}
             boolean hasPk = false;
             boolean hasWildCard = false;
             for (int i=0;i<select.getColumnCount();i++) {
@@ -239,8 +257,10 @@ public class SQLValidator implements VSensorStateChangeListener {
     }
 
 	public void release() throws Exception {
-		if(connection !=null && !connection.isClosed())
+		if(connection !=null && !connection.isClosed()){
 			connection.close();
+		}
+			
 		
 	}
 

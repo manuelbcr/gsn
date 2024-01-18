@@ -9,15 +9,18 @@ public class Thermistor44006 implements Converter {
 	
 	
 	public String convert(Serializable signal_name, String value, Serializable input) {
-		if (signal_name == null)
+		if (signal_name == null){
 			return null;
+		}
+			
 		
 		String result = null;
 		int v = ((Integer) signal_name).intValue();
 		if (v < 64000 && v != 0) {
 			double cal = 0.0;
-			if (value != null)
+			if (value != null){
 				cal = Double.parseDouble(value);
+			}
 			double ln_res = Math.log(27000.0 / ((64000.0 / v) - 1.0));
 			//Math.pow(v, 3.0) needs more CPU instructions than (v * v * v)
 			//double steinhart_eq = 0.00103348 + 0.000238465 * ln_res + 0.000000158948 * Math.pow(ln_res, 3);

@@ -121,11 +121,13 @@ public class VSensorConfig implements Serializable {
 
 	public String[][] getRPCFriendlyAddressing() {
 		String[][] toReturn = new String[this.addressing.length][2] ;
-		for(int i=0;i<toReturn.length;i++)
+		for(int i=0;i<toReturn.length;i++){
 			for (KeyValue val : this.addressing) {
 				toReturn[i][0] = ( String ) val.getKey( );
 				toReturn[i][1] = ( String ) val.getValue( );
 			}
+		}
+
 		return toReturn;
 	}
 
@@ -170,7 +172,7 @@ public class VSensorConfig implements Serializable {
 	 * @return Returns the mainClass.
 	 */
 	public String getProcessingClass ( ) {
-		if ( this.mainClass == null ) this.mainClass = "ch.epfl.gsn.vsensor.BridgeVirtualSensor";
+		if ( this.mainClass == null ){ this.mainClass = "ch.epfl.gsn.vsensor.BridgeVirtualSensor";}
 		return this.mainClass;
 	}
 
@@ -294,16 +296,20 @@ public class VSensorConfig implements Serializable {
 	public String [ ] getAddressingKeys ( ) {
 		final String result[] = new String [ this.getAddressing( ).length ];
 		int counter = 0;
-		for ( final KeyValue predicate : this.getAddressing( ) )
+		for ( final KeyValue predicate : this.getAddressing( ) ){
 			result[ counter++ ] = ( String ) predicate.getKey( );
+		}
+
 		return result;
 	}
 
 	public String [ ] getAddressingValues ( ) {
 		final String result[] = new String [ this.getAddressing( ).length ];
 		int counter = 0;
-		for ( final KeyValue predicate : this.getAddressing( ) )
+		for ( final KeyValue predicate : this.getAddressing( ) ){
 			result[ counter++ ] = ( String ) predicate.getValue( );
+		}
+
 		return result;
 	}
 
@@ -350,17 +356,20 @@ public class VSensorConfig implements Serializable {
 	 */
 	public String getStorageHistorySize ( ) {
         if (storageHistorySize == null) {
-		    if ( storage == null || storage.getStorageSize() == null || storage.getStorageSize().trim( ).equals( "" ) )
+		    if ( storage == null || storage.getStorageSize() == null || storage.getStorageSize().trim( ).equals( "" ) ){
                 storageHistorySize = ""+STORAGE_SIZE_NOT_SET;
-            else
-                storageHistorySize = storage.getStorageSize();
+			} else {
+				storageHistorySize = storage.getStorageSize();
+			}
+               
         }
 		return storageHistorySize;
 	}
 
 	public boolean validate ( ) {
-		for ( final InputStream inputStream : this.inputStreams )
+		for ( final InputStream inputStream : this.inputStreams ){
 			this.inputStreamNameToInputStreamObjectMapping.put( inputStream.getInputStreamName( ) , inputStream );
+		}
 		try {
 			Pair<Boolean,Long> p = Utils.parseWindowSize(this.getStorageHistorySize( ));
 			this.parsedStorageSize = p.getSecond();
@@ -408,18 +417,22 @@ public class VSensorConfig implements Serializable {
 			builder.append( "Input-Stream-Name" ).append( inputStream.getInputStreamName( ) );
 			builder.append( "Input-Stream-Query" ).append( inputStream.getQuery( ) );
 			builder.append( " Stream-Sources ( " );
-			if ( inputStream.getSources( ) == null )
+			if ( inputStream.getSources( ) == null ){
 				builder.append( "null" );
-			else
+			} else{
 				for ( final StreamSource ss : inputStream.getSources( ) ) {
 					builder.append( "Stream-Source Alias : " ).append( ss.getAlias( ) );
 					for ( final AddressBean addressing : ss.getAddressing( ) ) {
 						builder.append( "Stream-Source-wrapper >" ).append( addressing.getWrapper( ) ).append( "< with addressign predicates : " );
-						for ( final KeyValue keyValue : addressing.getPredicates( ) )
+						for ( final KeyValue keyValue : addressing.getPredicates( ) ){
 							builder.append( "Key=" ).append( keyValue.getKey( ) ).append( "Value=" ).append( keyValue.getValue( ) );
+						}
+							
 					}
 					builder.append( " , " );
 				}
+			}
+
 			builder.append( ")" );
 		}
 		builder.append( "]" );
@@ -450,9 +463,9 @@ public class VSensorConfig implements Serializable {
     // time zone
 
     public SimpleDateFormat getSDF() {
-        if (timeZone == null)
+        if (timeZone == null){
             return null;
-        else {
+		} else {
             if (sdf == null) {
                 sdf = new SimpleDateFormat (Main.getContainerConfig().getTimeFormat());
                 sdf.setTimeZone(TimeZone.getTimeZone(timeZone));
@@ -467,10 +480,12 @@ public class VSensorConfig implements Serializable {
 	 */
 	public boolean isProducingStatistics() {
 		if (stats == null) {
-			if (statistics==null)
+			if (statistics==null){
 				stats = DEFAULT_STATISTICS;
-			else
+			} else{
 				stats = Boolean.parseBoolean(statistics.trim());
+			}
+				
 		}
 		return stats;
 	}
@@ -495,8 +510,10 @@ public class VSensorConfig implements Serializable {
 	}
 
 	public boolean getPublishToSensorMap() {
-		if (sensorMap==null)
+		if (sensorMap==null){
 			return false;
+		}
+
 		return Boolean.parseBoolean(sensorMap.toString());
 	}
 
@@ -512,13 +529,17 @@ public class VSensorConfig implements Serializable {
 
 	public void preprocess_addressing() {
 		if (!addressing_processed) {
-			for (KeyValue kv:getAddressing())
-				if (kv.getKey().toString().equalsIgnoreCase("altitude"))
+			for (KeyValue kv:getAddressing()){
+				if (kv.getKey().toString().equalsIgnoreCase("altitude")){
 					cached_altitude=Double.parseDouble(kv.getValue().toString());
-				else if (kv.getKey().toString().equalsIgnoreCase("longitude"))
+				} else if (kv.getKey().toString().equalsIgnoreCase("longitude")){
 					cached_longitude=Double.parseDouble(kv.getValue().toString());
-				else if (kv.getKey().toString().equalsIgnoreCase("latitude"))
+				} else if (kv.getKey().toString().equalsIgnoreCase("latitude")){
 					cached_latitude=Double.parseDouble(kv.getValue().toString());
+				}
+					
+			}
+				
 			addressing_processed=true;
 		}
 	}

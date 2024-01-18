@@ -64,18 +64,22 @@ public class StreamRRDExporterVirtualSensor extends AbstractVirtualSensor {
 			Entry entry = (Entry) it.next();
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
-			if(key.equals(PARAM_RRDFILE))
+			if(key.equals(PARAM_RRDFILE)){
 				this.rrdfile=value;
-			else if (key.equals(PARAM_FIELD))
+			} else if (key.equals(PARAM_FIELD)){
 				this.fields.add(value);
+			}	
 		}
 		if ( rrdfile == null) {
 			logger.debug("Initialization Parameter "+PARAM_RRDFILE+" is missing!" );
 			return false;
 		}
 		logger.debug( "rrdfile=" + this.rrdfile);
-		if (ensureFileExistence(rrdfile)) return true;
-		else return createRRDFile();
+		if (ensureFileExistence(rrdfile)) {
+			return true;
+		} else{
+			return createRRDFile();
+		} 
 	}
 
 	private boolean createRRDFile() {
@@ -125,8 +129,9 @@ public class StreamRRDExporterVirtualSensor extends AbstractVirtualSensor {
 	 */
 	private boolean ensureFileExistence ( String filename ) {
 		File file = new File(rrdfile);
-		if (file.exists()) return true;
-		else {
+		if (file.exists()) {
+			return true;
+		} else {
 			logger.error("rrdfile "+rrdfile+" does not exist!");
 			return false;
 		}
@@ -146,7 +151,7 @@ public class StreamRRDExporterVirtualSensor extends AbstractVirtualSensor {
 		for(int i=0;i<stream.length;i++){
 			field = stream[i].toString();
 			// if the field is empty we have to add an U for unknown to the rrdfile
-			if(field==null || field.equals("")) field = "U";
+			if(field==null || field.equals("")) {field = "U";}
 			command = command+":"+field;
 		}
 		Runtime runtime = Runtime.getRuntime();

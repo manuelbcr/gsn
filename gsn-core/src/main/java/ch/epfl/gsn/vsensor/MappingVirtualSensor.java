@@ -47,8 +47,9 @@ public class MappingVirtualSensor extends BridgeVirtualSensorPermasense {
 		ArrayList<StreamElement> latestvalues=new ArrayList<StreamElement>() ;
 		try {
 	      DataEnumerator result = Main.getStorage(getVirtualSensorConfiguration()).executeQuery( query , false );
-	      while ( result.hasMoreElements( ) ) 
-	    	  latestvalues.add(result.nextElement());
+	      while ( result.hasMoreElements( ) ) {
+			latestvalues.add(result.nextElement());
+		  }
 	    } catch (Exception e) {
 	      logger.error("ERROR IN EXECUTING, query: "+query);
 	      logger.error(e.getMessage(),e);
@@ -61,12 +62,16 @@ public class MappingVirtualSensor extends BridgeVirtualSensorPermasense {
 					bfact = BindingDirectory.getFactory(DeviceMappings.class);
 					IUnmarshallingContext uctx = bfact.createUnmarshallingContext();		
 					DeviceMappings lastMapping = (DeviceMappings) uctx.unmarshalDocument(new ByteArrayInputStream((byte[])s), "UTF-8");
-					for (PositionMappings posMap: lastMapping.positionMappings)
+					for (PositionMappings posMap: lastMapping.positionMappings){
 						positionMappings.put(posMap.position, posMap);
-					for (SensorMappings sensorMap: lastMapping.sensorMappings)
+					}
+					for (SensorMappings sensorMap: lastMapping.sensorMappings){
 						sensorMappings.put(sensorMap.position, sensorMap);
-					for (GeoMapping geoMap: lastMapping.geoMappings)
+					}
+					for (GeoMapping geoMap: lastMapping.geoMappings){
 						geoMappings.add(geoMap);
+					}
+						
 					logger.info("successfully imported last mappings.");
 				}
 				else {
@@ -106,8 +111,9 @@ public class MappingVirtualSensor extends BridgeVirtualSensorPermasense {
 			Iterator<GeoMapping> iter = geoMappings.iterator();
 			while (iter.hasNext()) {
 				GeoMapping map = iter.next();
-				if (map.position.compareTo(geoMap.position) == 0)
+				if (map.position.compareTo(geoMap.position) == 0){
 					iter.remove();
+				}
 			}
 			
 			geoMappings.add(geoMap);

@@ -217,10 +217,11 @@ public class GridTools {
                 results.absolute(row + 1);                // Go to the specified row
                 for (int col = 0; col < numCols; col++) {
                     Object o = results.getObject(col + 1); // Get value of the column
-                    if (o == null)
+                    if (o == null){
                         s = "null";
-                    else
+                    } else {
                         s = o.toString();
+                    }  
                     if (typ[col] == DataTypes.BINARY) {
                         byte[] bin = (byte[]) o;
                         sb.append(GridTools.deSerializeToString(bin));
@@ -234,12 +235,13 @@ public class GridTools {
         	logger.warn("SQLException: " + e.getMessage());
             sb.append("ERROR in execution of query: " + e.getMessage());
         } finally {
-            if (results != null)
+            if (results != null){
                 try {
                     results.close();
                 } catch (SQLException e) {
                     logger.warn(e.getMessage(), e);
                 }
+            }
             Main.getStorage(sensor).close(connection);
         }
 
@@ -286,10 +288,11 @@ public class GridTools {
                 results.absolute(row + 1);                // Go to the specified row
                 for (int col = 0; col < numCols; col++) {
                     Object o = results.getObject(col + 1); // Get value of the column
-                    if (o == null)
+                    if (o == null){
                         s = "null";
-                    else
+                    } else{
                         s = o.toString();
+                    }
                     if (columnLabel[col].equalsIgnoreCase("timed")) {
                         timed = Long.valueOf(s);
                         continue;
@@ -308,12 +311,14 @@ public class GridTools {
         	logger.warn("SQLException: " + e.getMessage());
             sb.append("ERROR in execution of query: " + e.getMessage());
         } finally {
-            if (results != null)
+            if (results != null){
                 try {
                     results.close();
                 } catch (SQLException e) {
                     logger.warn(e.getMessage(), e);
                 }
+            }
+
             Main.getStorage(sensor).close(connection);
         }
 
@@ -361,12 +366,16 @@ public class GridTools {
                 results.absolute(row + 1);                // Go to the specified row
                 for (int col = 0; col < numCols; col++) {
                     Object o = results.getObject(col + 1); // Get value of the column
-                    if (o == null)
+                    if (o == null){
                         s = "null";
-                    else
+                    } else {
                         s = o.toString();
-                    if (columnLabel[col].equalsIgnoreCase("pk"))
+                    }
+                        
+                    if (columnLabel[col].equalsIgnoreCase("pk")){
                         continue; // skip PK field
+                    }
+                        
                     if (columnLabel[col].equalsIgnoreCase("timed")) {
                         timed = Long.valueOf(s);
                         continue;
@@ -396,12 +405,13 @@ public class GridTools {
         	logger.warn("SQLException: " + e.getMessage());
             sb.append("ERROR in execution of query: " + e.getMessage());
         } finally {
-            if (results != null)
+            if (results != null){
                 try {
                     results.close();
                 } catch (SQLException e) {
                     logger.warn(e.getMessage(), e);
                 }
+            }
             Main.getStorage(sensor).close(connection);
         }
 
@@ -449,12 +459,14 @@ public class GridTools {
                 results.absolute(row + 1);                // Go to the specified row
                 for (int col = 0; col < numCols; col++) {
                     Object o = results.getObject(col + 1); // Get value of the column
-                    if (o == null)
+                    if (o == null){
                         s = "null";
-                    else
+                    } else {
                         s = o.toString();
-                    if (columnLabel[col].equalsIgnoreCase("pk"))
+                    }
+                    if (columnLabel[col].equalsIgnoreCase("pk")){
                         continue; // skip PK field
+                    }
                     if (columnLabel[col].equalsIgnoreCase("timed")) {
                         timed = Long.valueOf(s);
                         continue;
@@ -478,12 +490,14 @@ public class GridTools {
             sb.append("ERROR in execution of query: " + e.getMessage());
             logger.warn("SQLException: " + e.getMessage());
         } finally {
-            if (results != null)
+            if (results != null){
                 try {
                     results.close();
                 } catch (SQLException e) {
                     logger.warn(e.getMessage(), e);
                 }
+            }
+
             Main.getStorage(sensor).close(connection);
         }
    

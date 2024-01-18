@@ -170,8 +170,9 @@ public class JDBCWrapper extends AbstractWrapper {
                 if (getLatestTimeStampFromCheckPoint() != 0) {
                     latest_timed = getLatestTimeStampFromCheckPoint();
                     logger.warn("latest ts => " + latest_timed);
-                } else
+                } else {
                     logger.warn("wrong value for latest ts (" + getLatestTimeStampFromCheckPoint() + "), ignored");
+                }
             } catch (IOException e) {
                 logger.warn("Checkpoints couldn't be used due to IO exception.");
                 logger.warn(e.getMessage(), e);
@@ -209,8 +210,9 @@ public class JDBCWrapper extends AbstractWrapper {
     public long getLatestTimeStampFromCheckPoint() throws IOException {
         String val = FileUtils.readFileToString(new File(checkPointFile), "UTF-8");
         long lastItem = 0;
-        if (val != null && val.trim().length() > 0)
+        if (val != null && val.trim().length() > 0){
             lastItem = Long.parseLong(val.trim());
+        }
         return lastItem;
     }
 
@@ -319,8 +321,9 @@ public class JDBCWrapper extends AbstractWrapper {
 
             while (data.hasMoreElements()) {
                 StreamElement se = data.nextElement();
-                if (se.getData("max(timed)") != null)
+                if (se.getData("max(timed)") != null){
                     latest = (Long) se.getData("max(timed)");
+                }
                 logger.warn(" MAX ts = " + latest);
                 logger.warn(se.toString());
 
@@ -343,8 +346,9 @@ public class JDBCWrapper extends AbstractWrapper {
         if (matcher.find()) {
             logger.debug(">>>>>    ISO FORMAT");
             return true;
-        } else
+        } else {
             return false;
+        }  
     }
 
     public boolean isLong(String time) {
@@ -356,7 +360,8 @@ public class JDBCWrapper extends AbstractWrapper {
         if (matcher.find()) {
             logger.debug(">>>>>    LONG number");
             return true;
-        } else
+        } else {
             return false;
+        }  
     }
 }

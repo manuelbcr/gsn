@@ -45,7 +45,9 @@ public class LimitCriterion extends AbstractCriterion{
 		
 		String[] crits = inlinecrits.split(":");
 
-		if (crits.length != 2) throw new DataRequestException (GENERAL_ERROR_MSG + " >" + inlinecrits + "<.") ;
+		if (crits.length != 2){
+			throw new DataRequestException (GENERAL_ERROR_MSG + " >" + inlinecrits + "<.") ;
+		} 
 
 		offset	= Integer.parseInt(crits[0]);
 		size	= Integer.parseInt(crits[1]);

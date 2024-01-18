@@ -34,7 +34,6 @@ import java.io.Serializable;
 import org.apache.commons.collections.KeyValue;
 
 import ch.epfl.gsn.beans.AddressBean;
-import ch.epfl.gsn.beans.DataField;
 
 public final class AddressBean implements Serializable{
 
@@ -59,10 +58,12 @@ public final class AddressBean implements Serializable{
 
 	public AddressBean ( final String wrapper , KeyValue... newPredicates ) {
 		this.wrapper = wrapper;
-		if (newPredicates == null)
+		if (newPredicates == null){
 			this.predicates=EMPTY_PREDICATES;
-		else
+		} else{
 			this.predicates = newPredicates;
+		}
+			
 	}
 
 	public AddressBean(final String wrapper) {
@@ -92,8 +93,10 @@ public final class AddressBean implements Serializable{
 		for (  KeyValue predicate : this.predicates ) {
 			if ( predicate.getKey( ).toString( ).trim( ).equalsIgnoreCase( key ) ) {
 				final String value = ( String ) predicate.getValue( );
-				if (value.trim().length()>0)
-					return ( value);
+				if (value.trim().length()>0){
+					return value;
+				}
+					
 			}
 		}
 		throw new RuntimeException("The required parameter: >"+key+"<+ is missing.from the virtual sensor configuration file.");
@@ -110,7 +113,7 @@ public final class AddressBean implements Serializable{
 	public String getPredicateValue ( String key ) {
 		key = key.trim( );
 		for (  KeyValue predicate : this.predicates ) {
-			if ( predicate.getKey( ).toString( ).trim( ).equalsIgnoreCase( key ) ) return ( ( String ) predicate.getValue( ));
+			if ( predicate.getKey( ).toString( ).trim( ).equalsIgnoreCase( key ) ){ return ( ( String ) predicate.getValue( ));}
 		}
 		return null;
 	}
@@ -124,10 +127,10 @@ public final class AddressBean implements Serializable{
 	 */
 	public String getPredicateValueWithDefault(String key, String defaultValue) {
 		String value = getPredicateValue(key);
-		if (value==null|| value.trim().length()==0)
+		if (value==null|| value.trim().length()==0){
 			return defaultValue;
-		else
-			return value;
+		} 
+		return value;
 	}
 
 	/**
@@ -139,8 +142,10 @@ public final class AddressBean implements Serializable{
 	 */
 	public int getPredicateValueAsInt(String key, int defaultValue) {
 		String value = getPredicateValue(key);
-		if (value==null|| value.trim().length()==0)
+		if (value==null|| value.trim().length()==0){
 			return defaultValue;
+		}
+			
 		try { 
 			return Integer.parseInt(value);
 		}catch (Exception e) {
@@ -150,8 +155,9 @@ public final class AddressBean implements Serializable{
 
 	public int getPredicateValueAsIntWithException ( String key ) {
 		String value = getPredicateValue(key);
-		if (value==null|| value.trim().length()==0)
+		if (value==null|| value.trim().length()==0){
 			throw new RuntimeException("The required parameter: >"+key+"<+ is missing.from the virtual sensor configuration file.");
+		}
 		try { 
 			return Integer.parseInt(value);
 		}catch (Exception e) {
@@ -171,16 +177,24 @@ public final class AddressBean implements Serializable{
 	}
 
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj){
 			return true;
-		if (obj == null)
+		}
+			
+		if (obj == null){
 			return false;
-		if (getClass() != obj.getClass())
+		}
+			
+		if (getClass() != obj.getClass()){
 			return false;
+		}
+			
 		AddressBean other = (AddressBean) obj;
 		if (Double.doubleToLongBits(random) != Double
-				.doubleToLongBits(other.random))
-			return false;
+				.doubleToLongBits(other.random)){
+					return false;
+				}
+			
 		return true;
 	}
 

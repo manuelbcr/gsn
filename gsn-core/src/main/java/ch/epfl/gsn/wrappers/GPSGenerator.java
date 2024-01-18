@@ -93,8 +93,9 @@ public class GPSGenerator extends AbstractWrapper {
             BufferedInputStream fis = new BufferedInputStream( new FileInputStream( pictureF ) );
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
             byte [ ] buffer = new byte [ 4 * 1024 ];
-            while ( fis.available( ) > 0 )
+            while ( fis.available( ) > 0 ){
                outputStream.write( buffer , 0 , fis.read( buffer )  );
+            }
             fis.close( );
             this.picture = outputStream.toByteArray( );
             outputStream.close( );
@@ -110,8 +111,9 @@ public class GPSGenerator extends AbstractWrapper {
          return false;
       }
       ArrayList<DataField > output = new ArrayList < DataField >();
-      for ( int i = 0 ; i < FIELD_NAMES.length ; i++ )
+      for ( int i = 0 ; i < FIELD_NAMES.length ; i++ ){
          output.add( new DataField( FIELD_NAMES[ i ] , FIELD_TYPES_STRING[ i ] , FIELD_DESCRIPTION[ i ] ) );
+      }
       outputStrcture = output.toArray( new DataField[] {} );
       return true;
    }

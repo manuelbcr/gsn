@@ -61,7 +61,9 @@ public class AggregationCriterion extends AbstractCriterion {
 
 		String[] crits = inlinecrits.split(":");
 
-		if (crits.length != 2) throw new DataRequestException (GENERAL_ERROR_MSG + " >" + inlinecrits + "<.") ;
+		if (crits.length != 2){
+			throw new DataRequestException (GENERAL_ERROR_MSG + " >" + inlinecrits + "<.") ;
+		} 
 
 		critTimeRange		= crits[0];
 		critGroupOperator	= getCriterion(crits[1], allowedGroupOperator);

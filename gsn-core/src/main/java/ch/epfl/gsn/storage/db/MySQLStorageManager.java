@@ -61,10 +61,11 @@ public class MySQLStorageManager extends StorageManager {
             case DataTypes.VARCHAR:
                 // Because the parameter for the varchar is not
                 // optional.
-                if (gsnType.getType().trim().equalsIgnoreCase("string"))
+                if (gsnType.getType().trim().equalsIgnoreCase("string")){
                     convertedType = "TEXT";
-                else
+                }else{
                     convertedType = gsnType.getType();
+                }   
                 break;
             case DataTypes.BINARY:
                 convertedType = "LONGBLOB";
@@ -169,14 +170,14 @@ public class MySQLStorageManager extends StorageManager {
         StringBuilder result = new StringBuilder("CREATE TABLE ").append(tableName);
         result.append(" (PK BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT, timed BIGINT NOT NULL, ");
         for (DataField field : structure) {
-            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) continue;
+            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")){ continue;}
             result.append(field.getName().toUpperCase()).append(' ');
             result.append(convertGSNTypeToLocalType(field));
             result.append(" ,");
         }
         result.delete(result.length() - 2, result.length());
         result.append(")");
-        if (tableName.contains("_")) logger.warn(result.toString());
+        if (tableName.contains("_")) {logger.warn(result.toString());}
         return result;
     }
 
@@ -224,10 +225,15 @@ public class MySQLStorageManager extends StorageManager {
         try {
             c = getConnection();
             ResultSet rs = executeQueryWithResultSet(new StringBuilder("show tables"), c);
-            if (rs != null)
-                while (rs.next())
-                    if (rs.getString(1).startsWith("_"))
+            if (rs != null){
+                while (rs.next()){
+                    if (rs.getString(1).startsWith("_")){
                         toReturn.add(rs.getString(1));
+                    }
+                }
+
+            }
+               
         } finally {
             close(c);
         }

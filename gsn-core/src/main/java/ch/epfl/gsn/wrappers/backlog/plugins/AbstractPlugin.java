@@ -50,10 +50,11 @@ public abstract class AbstractPlugin extends Thread implements BackLogMessageLis
 	public boolean initialize ( BackLogWrapper backLogWrapper, String coreStationName, String deploymentName ) {
 		activeBackLogWrapper = backLogWrapper;
 		String p = getActiveAddressBean().getPredicateValue("priority");
-		if (p == null)
+		if (p == null){
 			priority = null;
-		else
+		} else {
 			priority = Integer.valueOf(p);
+		}
 		registerListener();
 		return true;
 	}
@@ -251,10 +252,11 @@ public abstract class AbstractPlugin extends Thread implements BackLogMessageLis
 	 * @throws IOException if the message length exceeds MAX_PAYLOAD_SIZE+9
 	 */
 	public boolean sendRemote(long timestamp, Serializable[] data, Integer priority) throws IOException {
-		if (priority == null)
+		if (priority == null){
 			return activeBackLogWrapper.getBLMessageMultiplexer().sendMessage(new BackLogMessage(getMessageType(), timestamp, data), null, DEFAULT_PACKET_SEND_PRIORITY);
-		else
+		} else {
 			return activeBackLogWrapper.getBLMessageMultiplexer().sendMessage(new BackLogMessage(getMessageType(), timestamp, data), null, priority);
+		}	
 	}
 
 
@@ -288,10 +290,12 @@ public abstract class AbstractPlugin extends Thread implements BackLogMessageLis
 	 * 			or the DeviceId is not connected or does not exist.
 	 */
 	public boolean sendRemote(long timestamp, Serializable[] data, Integer id, Integer priority) throws IOException {
-		if (priority == null)
+		if (priority == null){
 			return activeBackLogWrapper.getBLMessageMultiplexer().sendMessage(new BackLogMessage(getMessageType(), timestamp, data), id, DEFAULT_PACKET_SEND_PRIORITY);
-		else
+		} else {
 			return activeBackLogWrapper.getBLMessageMultiplexer().sendMessage(new BackLogMessage(getMessageType(), timestamp, data), id, priority);
+		}
+
 	}
 
 
@@ -319,10 +323,12 @@ public abstract class AbstractPlugin extends Thread implements BackLogMessageLis
 	 *          used.
 	 */
 	public void ackMessage(long timestamp, Integer priority) {
-		if (priority == null)
+		if (priority == null){
 			activeBackLogWrapper.getBLMessageMultiplexer().sendAck(timestamp, getMessageType(), DEFAULT_ACK_PRIORITY);
-		else
+		} else {
 			activeBackLogWrapper.getBLMessageMultiplexer().sendAck(timestamp, getMessageType(), priority);
+		}
+			
 	}
 
 
@@ -395,8 +401,10 @@ public abstract class AbstractPlugin extends Thread implements BackLogMessageLis
 	 *          
 	 */
 	protected static Serializable[] checkAndCastData(Serializable[] data, int dataoffset, DataField[] datafields, int datafieldoffset) throws Exception {
-		if (data.length-dataoffset != datafields.length-datafieldoffset)
+		if (data.length-dataoffset != datafields.length-datafieldoffset){
 			throw new Exception("data length does not correspond with the datafield length");
+		}
+			
 		
 		Serializable [] ret = new Serializable [data.length-dataoffset];
 		for (int i=dataoffset; i<data.length; i++) {
@@ -440,62 +448,70 @@ public abstract class AbstractPlugin extends Thread implements BackLogMessageLis
 	
 	
 	protected static <T> Long toLong(T value) throws Exception {
-		if (value == null)
+		if (value == null){
 			return null;
-		else if (value instanceof Byte)
+		} else if (value instanceof Byte) {
 			return new Long((Byte)value);
-		else if (value instanceof Short)
+		} else if (value instanceof Short) {
 			return new Long((Short)value);
-		else if (value instanceof Integer)
+		} else if (value instanceof Integer) {
 			return new Long((Integer)value);
-		else if (value instanceof Long)
+		} else if (value instanceof Long) {
 			return (Long) value;
-		else
+		} else {
 			throw new Exception("value can not be cast to Long.");
+		}
+			
 	}
 	
 	
 	protected static <T> Double toDouble(T value) throws Exception {
-		if (value == null)
+		if (value == null){
 			return null;
-		else if (value instanceof Byte)
+		} else if (value instanceof Byte) {
 			return new Double((Byte)value);
-		else if (value instanceof Short)
+		} else if (value instanceof Short) {
 			return new Double((Short)value);
-		else if (value instanceof Integer)
+		} else if (value instanceof Integer) {
 			return new Double((Integer)value);
-		else if (value instanceof Long)
+		} else if (value instanceof Long) {
 			return new Double((Long)value);
-		else if (value instanceof Double)
+		} else if (value instanceof Double) {
 			return (Double) value;
-		else
+		} else {
 			throw new Exception("value can not be cast to Double.");
+		}
+			
 	}
 	
 	
 	protected static <T> Integer toInteger(T value) throws Exception {
-		if (value == null)
+		if (value == null){
 			return null;
-		else if (value instanceof Byte)
+		} else if (value instanceof Byte) {
 			return new Integer((Byte)value);
-		else if (value instanceof Short)
+		} else if (value instanceof Short) {
 			return new Integer((Short)value);
-		else if (value instanceof Integer)
+		} else if (value instanceof Integer) {
 			return (Integer) value;
-		else
+		} else {
 			throw new Exception("value (type=" + value.getClass().getName() + ", value=" + value + ") can not be cast to Integer.");
+		}
+			
 	}
 	
 	
 	protected static <T> Short toShort(T value) throws Exception {
-		if (value == null)
+		if (value == null){
 			return null;
-		else if (value instanceof Byte)
+		} else if (value instanceof Byte) {
 			return new Short((Byte)value);
-		else if (value instanceof Short)
+		} else if (value instanceof Short) {
 			return (Short) value;
-		else
+		} else {
 			throw new Exception("value can not be cast to Short.");
+		}
+			
 	}
 }
 

@@ -24,48 +24,58 @@ public class StatisticsMain {
 	
 	
 	public synchronized static DeploymentStatistics getDeploymentStatsInstance(String deploymentName, BackLogStatsWrapper statswrapper) {
-		if (singletonObject == null)
+		if (singletonObject == null){
 			singletonObject = new StatisticsMain();
+		}
 		
-		if (!deploymentToDeploymentStatsList.containsKey(deploymentName))
+		if (!deploymentToDeploymentStatsList.containsKey(deploymentName)){
 			deploymentToDeploymentStatsList.put(deploymentName, new DeploymentStatistics(statswrapper));
-		else
+		} else {
 			deploymentToDeploymentStatsList.get(deploymentName).setStatsWrapper(statswrapper);
-		
+		}
+
 		return deploymentToDeploymentStatsList.get(deploymentName);
 	}
 
 
 	public synchronized static CoreStationStatistics getCoreStationStatsInstance(String deploymentName, String coreStationAddress) throws IOException {
-		if (singletonObject == null)
+		if (singletonObject == null){
 			singletonObject = new StatisticsMain();
-		
-		if (!deploymentToDeploymentStatsList.containsKey(deploymentName))
+		}
+
+		if (!deploymentToDeploymentStatsList.containsKey(deploymentName)){
 			deploymentToDeploymentStatsList.put(deploymentName, new DeploymentStatistics(null));
-		
+		}
+
 		return deploymentToDeploymentStatsList.get(deploymentName).newStatisticsClass(coreStationAddress);
 	}
 	
 	
 	public static void connectionStatusChanged(String deploymentName, int deviceId) throws IOException {
-		if (singletonObject == null)
+		if (singletonObject == null){
 			singletonObject = new StatisticsMain();
-		
-		if (!deploymentToDeploymentStatsList.containsKey(deploymentName))
+		}
+
+		if (!deploymentToDeploymentStatsList.containsKey(deploymentName)){
 			throw new IOException("deployment " + deploymentName + " does not exist in the statistics");
-		
+		}
+
 		BackLogStatsWrapper deplstats = deploymentToDeploymentStatsList.get(deploymentName).getStatsWrapper();
-		if (deplstats != null)
+		if (deplstats != null){
 			deplstats.connectionStatusChanged(deviceId);
+		}
+
 	}
 
 
 	public synchronized static void removeCoreStationStatsInstance(String deploymentName, String coreStationAddress) throws IOException {
-		if (singletonObject == null)
+		if (singletonObject == null){
 			singletonObject = new StatisticsMain();
-		
-		if (!deploymentToDeploymentStatsList.containsKey(deploymentName))
+		}
+
+		if (!deploymentToDeploymentStatsList.containsKey(deploymentName)){
 			throw new IOException("deployment " + deploymentName + " does not exist in the statistics");
+		}
 		
 		deploymentToDeploymentStatsList.get(deploymentName).removeCoreStationStatsInstance(coreStationAddress);
 	}

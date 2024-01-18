@@ -49,8 +49,10 @@ public class Anomaly {
         this.time = this.parseTime(timeStr);
         this.groupByField = groupByField;
         
-        if (groupByField != null)
+        if (groupByField != null){
             this.groupBy = true;
+        }
+            
     }
 
     public Anomaly ( String function, DataField field, String timeStr, DataField groupByField ,String value) {
@@ -70,9 +72,9 @@ public class Anomaly {
         
         timeStr = timeStr.trim();
         
-        if (timeStr.equals("-1"))    //timeStr == -1 means anomaly has to be detected over all the historical data
+        if (timeStr.equals("-1")){    //timeStr == -1 means anomaly has to be detected over all the historical data
             return -1;
-        
+        }
         long toReturn = 0;
         
         // timeSpecifer could be m (minutes) , h (hours) or d (days)
@@ -121,13 +123,16 @@ public class Anomaly {
         
         sb.append("anomaly." + this.function + "." + this.field.getName() + "=");
 
-        if (this.timeStr != null)
+        if (this.timeStr != null){
             sb.append(this.timeStr);
-        if (this.value!= null)
+        }  
+        if (this.value!= null){
             sb.append("," + this.value);
-
-        if (this.isGroupBy())
-           sb.append(",["+ this.groupByField.getName() + "]"); 
+        }
+        if (this.isGroupBy()){
+            sb.append(",["+ this.groupByField.getName() + "]"); 
+        }
+           
         return sb.toString();
     }
 }

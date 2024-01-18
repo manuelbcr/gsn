@@ -6,17 +6,6 @@ import java.util.ArrayList;
 import org.apache.commons.collections.KeyValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ch.epfl.gsn.beans.AddressBean;
-import ch.epfl.gsn.beans.BeansInitializer;
-import ch.epfl.gsn.beans.ContainerConfig;
-import ch.epfl.gsn.beans.DataField;
-import ch.epfl.gsn.beans.InputStream;
-import ch.epfl.gsn.beans.SlidingConfig;
-import ch.epfl.gsn.beans.StorageConfig;
-import ch.epfl.gsn.beans.StreamSource;
-import ch.epfl.gsn.beans.VSensorConfig;
-import ch.epfl.gsn.beans.WebInput;
 import ch.epfl.gsn.utils.KeyValueImp;
 import scala.collection.JavaConversions;
 import scala.collection.Map;
@@ -28,9 +17,11 @@ public class BeansInitializer {
 
   public static ContainerConfig container(GsnConf gsn){
 	  SlidingConfig sliding = new SlidingConfig();
-	  if (gsn.slidingConf().isDefined())
-		  sliding.setStorage(storage(gsn.slidingConf().get()));
-	  else sliding=null;
+	  if (gsn.slidingConf().isDefined()){
+		sliding.setStorage(storage(gsn.slidingConf().get()));
+	  } else {
+		sliding=null;
+	  }
 	 ContainerConfig con=new ContainerConfig(			 
 			 gsn.monitorPort(),gsn.timeFormat(),			 
 			 gsn.zmqConf().enabled(),gsn.zmqConf().proxyPort(),gsn.zmqConf().metaPort(),
@@ -40,9 +31,11 @@ public class BeansInitializer {
   }
   public static StorageConfig storage(StorageConf st){
 	 StorageConfig con=new StorageConfig();
-	 if (st.identifier().isDefined())
-	   con.setIdentifier(st.identifier().get());
-	 else con.setIdentifier(null);
+	 if (st.identifier().isDefined()){
+		con.setIdentifier(st.identifier().get());
+	 } else{
+		con.setIdentifier(null);
+	 } 
 	 con.setJdbcDriver(st.driver());
 	 con.setJdbcURL(st.url());
 	 con.setJdbcUsername(st.user());
@@ -55,12 +48,15 @@ public class BeansInitializer {
 	  f.setName(fc.name().toLowerCase());
 	  f.setType(fc.dataType());
 	  f.setDescription(fc.description());
-	  if(fc.index().isDefined())
+	  if(fc.index().isDefined()){
 		f.setIndex(fc.index().get());
-	  else f.setIndex("false");
-	  if (fc.unit().isDefined())
-	    f.setUnit(fc.unit().get());
-	  else f.setUnit(null);
+	  } else{
+		f.setIndex("false");
+	  } 
+	  if (fc.unit().isDefined()){
+		f.setUnit(fc.unit().get());
+	  }
+	  else {f.setUnit(null);}
 	  return f;
   }
   
@@ -79,14 +75,22 @@ public class BeansInitializer {
 	  StreamSource s = new StreamSource();
 	  s.setAlias(sc.alias());
 	  s.setSqlQuery(sc.query());
-	  if (sc.slide().isDefined())
-		  s.setRawSlideValue(sc.slide().get());
-	  if (sc.samplingRate().isDefined())
-		  s.setSamplingRate(((Double)sc.samplingRate().get()).floatValue());
-	  if (sc.disconnectBufferSize().isDefined())
-		  s.setDisconnectedBufferSize(((Integer)sc.disconnectBufferSize().get()));
-	  if (sc.storageSize().isDefined())
-		  s.setRawHistorySize(sc.storageSize().get());
+	  if (sc.slide().isDefined()){
+		s.setRawSlideValue(sc.slide().get());
+	  }
+		  
+	  if (sc.samplingRate().isDefined()){
+		s.setSamplingRate(((Double)sc.samplingRate().get()).floatValue());
+	  }
+		  
+	  if (sc.disconnectBufferSize().isDefined()){
+		s.setDisconnectedBufferSize(((Integer)sc.disconnectBufferSize().get()));
+	  }
+		  
+	  if (sc.storageSize().isDefined()){
+		s.setRawHistorySize(sc.storageSize().get());
+	  }
+		  
 	  AddressBean[] add=new AddressBean[sc.wrappers().size()];
 	  int i=0;
 	  for (WrapperConf w:JavaConversions.asJavaIterable(sc.wrappers())){
@@ -107,7 +111,7 @@ public class BeansInitializer {
 	  }
       AddressBean a = new AddressBean(w.wrapper(),p);
       if(w.partialKey().isDefined()){
-      a.setPartialOrderKey(w.partialKey().get());
+      	a.setPartialOrderKey(w.partialKey().get());
       }
       DataField [] out=new DataField[(w.output().size())];
 	  for (int j=0;j<out.length;j++){
@@ -137,10 +141,14 @@ public class BeansInitializer {
 	  v.setDescription(vs.description());
 	  v.setName(vs.name());
 	  v.setIsTimeStampUnique(vs.processing().uniqueTimestamp());
-	  if (vs.poolSize().isDefined())
-	    v.setLifeCyclePoolSize(((Integer)vs.poolSize().get()));
-	  if (vs.processing().rate().isDefined())
-	    v.setOutputStreamRate(((Integer)vs.processing().rate().get()));
+	  if (vs.poolSize().isDefined()){
+		v.setLifeCyclePoolSize(((Integer)vs.poolSize().get()));
+	  }
+	    
+	  if (vs.processing().rate().isDefined()){
+		v.setOutputStreamRate(((Integer)vs.processing().rate().get()));
+	  }
+	    
 	  v.setPriority(vs.priority());
 	  v.setInitPriority(vs.initPriority());
 	  KeyValueImp [] addr=new KeyValueImp[vs.address().size()];
@@ -180,19 +188,22 @@ public class BeansInitializer {
 	  v.setMainClassInitialParams(ini);
 	  
 	  StorageConfig st=new StorageConfig();
-	  if (vs.storageSize().isDefined())
-		  st.setStorageSize(vs.storageSize().get());
+	  if (vs.storageSize().isDefined()){
+		st.setStorageSize(vs.storageSize().get());
+	  } 
 	  if (vs.storage().isDefined()){
 		StorageConf sc=vs.storage().get();
-		if (sc.identifier().isDefined())
-		  st.setIdentifier(sc.identifier().get());
+		if (sc.identifier().isDefined()){
+			st.setIdentifier(sc.identifier().get());
+		}
 		st.setJdbcDriver(sc.driver());
 		st.setJdbcURL(sc.url());
 		st.setJdbcUsername(sc.user());
 		st.setJdbcPassword(sc.pass());		
 	  }
-	  if (st.getStorageSize()!=null || st.getJdbcURL()!=null)
+	  if (st.getStorageSize()!=null || st.getJdbcURL()!=null){
 		v.setStorage(st);
+	  }	
 	  return v;
   }
   

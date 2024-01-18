@@ -95,11 +95,11 @@ public final class DataField implements Serializable {
    }
    
    public boolean equals ( final Object o ) {
-      if ( this == o ) return true;
-      if ( !( o instanceof DataField ) ) return false;
+      if ( this == o ){ return true;}
+      if ( !( o instanceof DataField ) ){ return false;}
       
       final DataField dataField = ( DataField ) o;
-      if ( this.name != null ? !this.name.equals( dataField.name ) : dataField.name != null ) return false;
+      if ( this.name != null ? !this.name.equals( dataField.name ) : dataField.name != null ){ return false;}
       return true;
    }
    
@@ -107,7 +107,7 @@ public final class DataField implements Serializable {
     * @return Returns the dataTypeID.
     */
    public byte getDataTypeID ( ) {
-      if ( this.dataTypeID == -1 ) this.dataTypeID = DataTypes.convertTypeNameToGSNTypeID( this.type );
+      if ( this.dataTypeID == -1 ){ this.dataTypeID = DataTypes.convertTypeNameToGSNTypeID( this.type );}
       return this.dataTypeID;
    }
    
@@ -149,10 +149,12 @@ public final class DataField implements Serializable {
     }
 
    public void setIndex(String index) {
-	   if (index.compareToIgnoreCase("true")==0)
-		   this.index = true;
-	   else
-		   this.index = false;
+	   if (index.compareToIgnoreCase("true")==0){
+         this.index = true;
+      }else{
+         this.index = false;
+      }
+		   
    }
    
    public void setIndex(boolean index) {

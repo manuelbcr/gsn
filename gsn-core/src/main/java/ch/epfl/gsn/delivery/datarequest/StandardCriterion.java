@@ -85,7 +85,7 @@ public class StandardCriterion extends AbstractCriterion {
 
 		String[] crits = inlinecrits.split(":");
 
-		if (crits.length != 6) throw new DataRequestException (GENERAL_ERROR_MSG + " >" + inlinecrits + "<.") ;
+		if (crits.length != 6){ throw new DataRequestException (GENERAL_ERROR_MSG + " >" + inlinecrits + "<.") ;}
 
 		critJoin 		= getCriterion(crits[0], allowedJoin);
 		critNeg			= getCriterion(crits[1], allowedNeg);
@@ -133,16 +133,16 @@ public class StandardCriterion extends AbstractCriterion {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o){ return true;}
+        if (o == null || getClass() != o.getClass()){ return false;}
 
         StandardCriterion that = (StandardCriterion) o;
 
-        if (critField != null ? !critField.equals(that.critField) : that.critField != null) return false;
-        if (critJoin != null ? !critJoin.equals(that.critJoin) : that.critJoin != null) return false;
-        if (critNeg != null ? !critNeg.equals(that.critNeg) : that.critNeg != null) return false;
-        if (critOperator != null ? !critOperator.equals(that.critOperator) : that.critOperator != null) return false;
-        if (critVsname != null ? !critVsname.equals(that.critVsname) : that.critVsname != null) return false;
+        if (critField != null ? !critField.equals(that.critField) : that.critField != null){ return false;}
+        if (critJoin != null ? !critJoin.equals(that.critJoin) : that.critJoin != null) {return false;}
+        if (critNeg != null ? !critNeg.equals(that.critNeg) : that.critNeg != null) {return false;}
+        if (critOperator != null ? !critOperator.equals(that.critOperator) : that.critOperator != null){ return false;}
+        if (critVsname != null ? !critVsname.equals(that.critVsname) : that.critVsname != null){ return false;}
 
         return true;
     }

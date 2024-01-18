@@ -26,8 +26,9 @@ public class InputInfo {
 	public boolean hasAtLeastOneSuccess() {
 		Iterator<ProducerInfo> iter = infoList.iterator();
 		while (iter.hasNext()) {
-			if (iter.next().success)
+			if (iter.next().success){
 				return true;
+			}
 		}
 		return false;
 	}

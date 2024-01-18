@@ -78,9 +78,9 @@ public class DemoVSensor extends AbstractVirtualSensor {
 			 * 
 			 */
 			String moteId = ( String ) data.getData( "ID" );
-			if ( moteId.toLowerCase( ).indexOf( "mica" ) < 0 ) return;
-			if ( action.toLowerCase( ).indexOf( "add" ) >= 0 ) counter++;
-			if ( action.toLowerCase( ).indexOf( "remove" ) >= 0 ) counter--;
+			if ( moteId.toLowerCase( ).indexOf( "mica" ) < 0 ) {return;}
+			if ( action.toLowerCase( ).indexOf( "add" ) >= 0 ) {counter++;}
+			if ( action.toLowerCase( ).indexOf( "remove" ) >= 0 ) {counter--;}
 		}
 		if ( inputStreamName.equalsIgnoreCase( "CSTREAM" ) ) {
 
@@ -97,7 +97,7 @@ public class DemoVSensor extends AbstractVirtualSensor {
 			int size = 30;
 			int locX = 0;
 			int locY = 0;
-			if ( counter < 0 ) counter = 0;
+			if ( counter < 0 ) {counter = 0;}
 			switch ( counter ) {
 			case 0 :
 				graphics.setColor( Color.RED );
@@ -132,8 +132,9 @@ public class DemoVSensor extends AbstractVirtualSensor {
 	}
 
 	public boolean initialize ( ) {
-		for ( DataField field : getVirtualSensorConfiguration( ).getOutputStructure( ) )
+		for ( DataField field : getVirtualSensorConfiguration( ).getOutputStructure( ) ){
 			fields.add( field.getName( ) );
+		}
 		return true;
 	}
 

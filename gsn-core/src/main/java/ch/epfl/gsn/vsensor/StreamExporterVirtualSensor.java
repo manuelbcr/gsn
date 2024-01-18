@@ -76,11 +76,12 @@ public class StreamExporterVirtualSensor extends AbstractVirtualSensor {
 		VSensorConfig vsensor = getVirtualSensorConfiguration( );
 		TreeMap < String , String > params = vsensor.getMainClassInitialParams();
 
-		for (String param : OBLIGATORY_PARAMS)
+		for (String param : OBLIGATORY_PARAMS){
 			if ( params.get( param ) == null || params.get(param).trim().length()==0) {
 				logger.warn("Initialization Failed, The "+param+ " initialization parameter is missing");
 				return false;
 			}
+		}
 		table_name = params.get( TABLE_NAME );
 		user = params.get(PARAM_USER);
 		password = params.get(PARAM_PASSWD);
@@ -92,8 +93,9 @@ public class StreamExporterVirtualSensor extends AbstractVirtualSensor {
 			Class.forName(params.get(PARAM_DRIVER));
 			connection = getConnection();
 			logger.debug( "jdbc connection established." );
-			if (!Main.getStorage(table_name.toString()).tableExists(table_name,getVirtualSensorConfiguration().getOutputStructure() , connection))
+			if (!Main.getStorage(table_name.toString()).tableExists(table_name,getVirtualSensorConfiguration().getOutputStructure() , connection)){
 				Main.getStorage(table_name.toString()).executeCreateTable(table_name, getVirtualSensorConfiguration().getOutputStructure(), false,connection);
+			}
 		} catch (ClassNotFoundException e) {
 			logger.error(e.getMessage(),e);
 			logger.error("Initialization of the Stream Exporter VS failed !");
@@ -137,8 +139,9 @@ public class StreamExporterVirtualSensor extends AbstractVirtualSensor {
 
 
 	public Connection getConnection() throws SQLException {
-		if (this.connection==null || this.connection.isClosed())
+		if (this.connection==null || this.connection.isClosed()){
 			this.connection=DriverManager.getConnection(url,user,password);
+		}
 		return connection;
 	}
 

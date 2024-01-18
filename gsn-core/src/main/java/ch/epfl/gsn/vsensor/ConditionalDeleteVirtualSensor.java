@@ -59,8 +59,9 @@ public class ConditionalDeleteVirtualSensor extends BridgeVirtualSensorPermasens
 		while (true) {
 			String field = params.get("field" + index);
 			if (field == null) {
-				if (index == 1)
+				if (index == 1){
 					logger.error("no field1 parameter available");
+				}
 				break;
 			}
 			boolean fieldExists = false;
@@ -86,10 +87,9 @@ public class ConditionalDeleteVirtualSensor extends BridgeVirtualSensorPermasens
 					return false;
 				}
 				conditional += " " + join + " " + field + " " + operation + " ?";
-			}
-			else
+			} else{
 				conditional = "DELETE FROM " + vsensor.getName() + " WHERE " + field + " " + operation + " ?";
-			
+			}
 			fieldList.add(field);
 			index++;
 		}
@@ -99,9 +99,9 @@ public class ConditionalDeleteVirtualSensor extends BridgeVirtualSensorPermasens
 			logger.error(e.getMessage());
 		}
 		
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("prepared delete statement: " + conditional);
-		
+		}
 		return ret;
 	}
 	
@@ -160,8 +160,9 @@ public class ConditionalDeleteVirtualSensor extends BridgeVirtualSensorPermasens
 			}
 		}
 
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("delete execution time: " + (System.currentTimeMillis()-time) + "ms");
+		}
 		
 		super.dataAvailable(inputStreamName, data);
 	}

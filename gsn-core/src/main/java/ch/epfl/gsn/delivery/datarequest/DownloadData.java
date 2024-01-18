@@ -133,9 +133,9 @@ public class DownloadData extends AbstractDataRequest {
                 DataField[] dataFieldArray = sensorConfig.getOutputStructure();
                 for (DataField df: dataFieldArray){
                     String unit = df.getUnit();
-                    if (unit == null || unit.trim().length() == 0)
+                    if (unit == null || unit.trim().length() == 0){
                         unit = "";
-
+                    }
                     fieldToUnitMap.put(df.getName().toLowerCase(), unit);
                 }
 
@@ -222,8 +222,10 @@ public class DownloadData extends AbstractDataRequest {
                 }
 
 
-                if (ot == AllowedOutputType.xml)
+                if (ot == AllowedOutputType.xml){
                     respond.println("\t</data>");
+                }
+                    
             }
             if (ot == AllowedOutputType.xml) {
                 respond.println("</result>");
@@ -233,8 +235,10 @@ public class DownloadData extends AbstractDataRequest {
             logger.debug(e.getMessage());
         } finally {
             respond.flush();
-            if (de != null)
+            if (de != null){
                 de.close();
+            }
+                
         }
     }
 
@@ -257,8 +261,10 @@ public class DownloadData extends AbstractDataRequest {
         if (firstLine) {
             //names of vs fields (first line)
             respond.print("# ");
-            if (wantTimed)
+            if (wantTimed){
                 respond.print("time");
+            }
+                
             for (int i = 0; i < se.getData().length; i++) {
                 respond.print(cvsDelimiter);
                 respond.print(se.getFieldNames()[i]);
@@ -267,8 +273,10 @@ public class DownloadData extends AbstractDataRequest {
 
             //units (second line)
             respond.print("# ");
-            if (wantTimed)
+            if (wantTimed){
                 respond.print("");
+            }
+                
             for (int i = 0; i < se.getData().length; i++) {
                 respond.print(cvsDelimiter);
                 respond.print(fieldToUnitMap.get(se.getFieldNames()[i].toLowerCase()));
@@ -288,8 +296,9 @@ public class DownloadData extends AbstractDataRequest {
     private void formatXMLElement(PrintWriter respond, StreamElement se, boolean wantTimed, boolean firstLine, HashMap<String, String> fieldToUnitMap) {
         if (firstLine) {
             respond.println("\t\t<header>");
-            if (wantTimed)
+            if (wantTimed){
                 respond.println("\t\t\t<field unit=\"\">time</field>");
+            } 
             for (int i = 0; i < se.getData().length; i++) {
                 respond.print("\t\t\t<field unit=\"" + fieldToUnitMap.get(se.getFieldNames()[i].toLowerCase()));
                 respond.println("\">"+se.getFieldNames()[i]+"</field>");
@@ -297,8 +306,10 @@ public class DownloadData extends AbstractDataRequest {
             respond.println("\t\t</header>");
         }
         respond.println("\t\t<tuple>");
-        if (wantTimed)
+        if (wantTimed){
             respond.println("\t\t\t<field>" + (qbuilder.getSdf() == null ? se.getTimeStamp() : qbuilder.getSdf().format(new Date(se.getTimeStamp()))) + "</field>");
+        }
+            
         for (int i = 0; i < se.getData().length; i++) {
             respond.println("\t\t\t<field>" + se.getData()[i] + "</field>");
         }

@@ -37,10 +37,10 @@ import org.joda.time.format.ISODateTimeFormat;
 public class Helpers {
 
 	public static String formatTimePeriod (long timestamp) {
-		if (timestamp < 1000) return timestamp + " ms";
-		if (timestamp < 60 * 1000) return (timestamp / 1000) + " sec";
-		if (timestamp < 60 * 60 * 1000) return (timestamp / (1000 * 60)) + " min";
-		if (timestamp < 24 * 60 * 60 * 1000) return (timestamp / (1000 * 60 * 60)) + " h";
+		if (timestamp < 1000) {return timestamp + " ms";}
+		if (timestamp < 60 * 1000){ return (timestamp / 1000) + " sec";}
+		if (timestamp < 60 * 60 * 1000) {return (timestamp / (1000 * 60)) + " min";}
+		if (timestamp < 24 * 60 * 60 * 1000) {return (timestamp / (1000 * 60 * 60)) + " h";}
 		return (timestamp / (24 * 1000 * 60 * 60)) + " day";
 	}
 	public static long convertTimeFromIsoToLong(String time) throws Exception {
@@ -119,8 +119,9 @@ public class Helpers {
 	public static double convertGPSTimeToUnixTime(double gpsSec, short gpsWeek) {
 		double gpsTime = (double)(gpsWeek*604800 + gpsSec);
 		
-		if ( gpsTime < 0)
+		if ( gpsTime < 0){
 			return gpsTime + GPS_OFFSET;
+		}
 		
 		double fpart = gpsTime % 1;
 		long ipart = (long) Math.floor(gpsTime);
@@ -128,13 +129,13 @@ public class Helpers {
 		long leap = countleaps(ipart, false);
 		double unixTime = (double)(ipart + GPS_OFFSET - leap);
 		
-		if (isleap(ipart + 1))
+		if (isleap(ipart + 1)){
 			unixTime = unixTime + fpart / 2;
-		else if (isleap(ipart))
+		} else if (isleap(ipart)) {
 			unixTime = unixTime + (fpart + 1) / 2;
-		else
+		} else {
 			unixTime = unixTime + fpart;
-		
+		}
 		return unixTime;
 	}
 	
@@ -154,14 +155,18 @@ public class Helpers {
 		long nleaps = 0;
 		
 		if (accum_leaps) {
-			for (int i = 0; i < leaps.length; i++)
-				if (gpsTime + i >= leaps[i])
+			for (int i = 0; i < leaps.length; i++){
+				if (gpsTime + i >= leaps[i]){
 					nleaps++;
+				}
+			}	
 		}
 		else {
-			for (int i = 0; i < leaps.length; i++)
-				if (gpsTime >= leaps[i])
+			for (int i = 0; i < leaps.length; i++){
+				if (gpsTime >= leaps[i]){
 					nleaps++;
+				}
+			}
 		}
 		
 		return nleaps;

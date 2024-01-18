@@ -40,12 +40,7 @@ import java.util.Iterator;
 
 import org.slf4j.LoggerFactory;
 
-import ch.epfl.gsn.Main;
-import ch.epfl.gsn.Mappings;
 import ch.epfl.gsn.VSensorLoader;
-import ch.epfl.gsn.VSensorStateChangeListener;
-import ch.epfl.gsn.VirtualSensor;
-import ch.epfl.gsn.VirtualSensorInitializationFailedException;
 import ch.epfl.gsn.beans.AddressBean;
 import ch.epfl.gsn.beans.DataField;
 import ch.epfl.gsn.beans.InputStream;
@@ -76,8 +71,9 @@ public class VSensorLoader extends Thread {
     
 
 	public void addVSensorStateChangeListener(VSensorStateChangeListener listener) {
-		if (!changeListeners.contains(listener))
+		if (!changeListeners.contains(listener)){
 			changeListeners.add(listener);
+		}	
 	}
 
 	public void removeVSensorStateChangeListener(VSensorStateChangeListener listener) {
@@ -85,18 +81,22 @@ public class VSensorLoader extends Thread {
 	}
 	
 	public boolean fireVSensorLoading(VSensorConfig config) {
-		for (VSensorStateChangeListener listener : changeListeners)
-			if (!listener.vsLoading(config))
+		for (VSensorStateChangeListener listener : changeListeners){
+			if (!listener.vsLoading(config)){
 				return false;
+			}	
+		}
+
 		return true;
 	}
 	
 	public boolean fireVSensorUnLoading(VSensorConfig config) {
-		for (VSensorStateChangeListener listener : changeListeners)
+		for (VSensorStateChangeListener listener : changeListeners){
 			if (!listener.vsUnLoading(config)) {
 				logger.error("Unloading failed !",new RuntimeException("Unloading : "+config.getName()+" is failed."));
 				return false;
 			}
+		}
 		return true;
 	}
 
@@ -107,8 +107,10 @@ public class VSensorLoader extends Thread {
 	}
 
     public static VSensorLoader getInstance(String path) {
-        if (singleton == null)
-            singleton = new VSensorLoader(path);
+        if (singleton == null){
+			singleton = new VSensorLoader(path);
+		}
+            
         return singleton;
     }
 	
@@ -154,7 +156,7 @@ public class VSensorLoader extends Thread {
             }
             catch (Exception e) {
                 logger.warn(e.getMessage(), e);
-                if (file.exists()) file.delete();
+                if (file.exists()){ file.delete();}
                 throw e;
             }
         } else {
@@ -212,18 +214,21 @@ public class VSensorLoader extends Thread {
                 break;
             }
         }
-        if (!found)
-            return false;
-        else
-            return loadPlugin(addIt.get(0));
+        if (!found){
+			return false;
+		} else{
+			return loadPlugin(addIt.get(0));
+		}
+            
     }
 
 
     private synchronized boolean loadPlugin(VSensorConfig vs) throws SQLException {
 
-        if (!isVirtualSensorValid(vs))
-            return false;
-
+        if (!isVirtualSensorValid(vs)){
+			return false;
+		}
+            
         VirtualSensor pool = new VirtualSensor(vs);
         try {
             if (createInputStreams(pool) == false) {
@@ -236,10 +241,12 @@ public class VSensorLoader extends Thread {
             logger.error(e2.getMessage(), e2);
         }
         try {
-            if (!Main.getStorage(vs).tableExists(vs.getName(), vs.getOutputStructure()))
-                Main.getStorage(vs).executeCreateTable(vs.getName(), vs.getOutputStructure(), pool.getConfig().getIsTimeStampUnique());
-            else
-                logger.info("Reusing the existing " + vs.getName() + " table.");
+            if (!Main.getStorage(vs).tableExists(vs.getName(), vs.getOutputStructure())){
+				Main.getStorage(vs).executeCreateTable(vs.getName(), vs.getOutputStructure(), pool.getConfig().getIsTimeStampUnique());
+			} else{
+				logger.info("Reusing the existing " + vs.getName() + " table.");
+			}
+                
         } catch (Exception e) {
         	removeAllVSResources(pool);
             if (e.getMessage().toLowerCase().contains("table already exists")) {
@@ -307,8 +314,9 @@ public class VSensorLoader extends Thread {
 	static protected boolean isValidJavaIdentifier(final String name) {
 		boolean valid = false;
 		while (true) {
-			if (false == Character.isJavaIdentifierStart(name.charAt(0))) 
+			if (false == Character.isJavaIdentifierStart(name.charAt(0))){
 				break;
+			} 	
 			valid = true;
 			final int count = name.length();
 			for (int i = 1; i < count; i++) {
@@ -328,8 +336,9 @@ public class VSensorLoader extends Thread {
 		final String vsensorName = config.getName ( );
 		logger.info ("Releasing previously used resources used by [" + vsensorName + "].");
 		for ( InputStream inputStream : config.getInputStreams ( ) ) {
-			for ( StreamSource streamSource : inputStream.getSources ( ) ) 
+			for ( StreamSource streamSource : inputStream.getSources ( ) ){
 				releaseStreamSource(streamSource);
+			} 
 			inputStream.release();
 		}
 		logger.debug("Total change Listeners:"+changeListeners.size());
@@ -358,7 +367,7 @@ public class VSensorLoader extends Thread {
 
             FileFilter filter = new FileFilter ( ) {
                 public boolean accept ( File file ) {
-                    if ( !file.isDirectory ( ) && file.getName ( ).endsWith ( ".xml" ) && !file.getName ( ).startsWith ( "." ) ) return true;
+                    if ( !file.isDirectory ( ) && file.getName ( ).endsWith ( ".xml" ) && !file.getName ( ).startsWith ( "." ) ){ return true;}
                     return false;
                 }
             };
@@ -376,9 +385,11 @@ public class VSensorLoader extends Thread {
             // or modified.
             main:
             for (String pre : previous) {
-                for (File curr : files)
-                    if (pre.equals(curr.getAbsolutePath()) && (Mappings.getLastModifiedTime(pre) == curr.lastModified()))
-                        continue main;
+                for (File curr : files){
+                    if (pre.equals(curr.getAbsolutePath()) && (Mappings.getLastModifiedTime(pre) == curr.lastModified())){
+						continue main;
+					}    
+				}
                 remove.add(pre);
             }
             // ---adding the new files to the Add List a new file should added if
@@ -388,9 +399,11 @@ public class VSensorLoader extends Thread {
 
             main:
             for (File cur : files) {
-                for (String pre : previous)
-                    if (cur.getAbsolutePath().equals(pre) && (cur.lastModified() == Mappings.getLastModifiedTime(pre)))
-                        continue main;
+                for (String pre : previous){
+                    if (cur.getAbsolutePath().equals(pre) && (cur.lastModified() == Mappings.getLastModifiedTime(pre))){
+						continue main;
+					}    
+				}
                 add.add(cur.getAbsolutePath());
             }
             Modifications result = new Modifications(add, remove);
@@ -407,7 +420,7 @@ public class VSensorLoader extends Thread {
 	 */
 	public boolean createInputStreams ( VirtualSensor pool ) throws InstantiationException, IllegalAccessException {
 		logger.debug ( new StringBuilder ( ).append ( "Preparing input streams for: " ).append ( pool.getConfig().getName ( ) ).toString ( ) );
-		if ( pool.getConfig().getInputStreams ( ).size ( ) == 0 ) logger.warn ( new StringBuilder ( "There is no input streams defined for *" ).append ( pool.getConfig().getName ( ) ).append ( "*" ).toString ( ) );
+		if ( pool.getConfig().getInputStreams ( ).size ( ) == 0 ){ logger.warn ( new StringBuilder ( "There is no input streams defined for *" ).append ( pool.getConfig().getName ( ) ).append ( "*" ).toString ( ) );}
 		ArrayList<StreamSource> sources = new ArrayList<StreamSource>();
 		ArrayList<InputStream> streams = new ArrayList<InputStream>();
 		for ( Iterator < InputStream > inputStreamIterator = pool.getConfig().getInputStreams ( ).iterator ( ) ; inputStreamIterator.hasNext ( ) ; ) {
@@ -447,12 +460,14 @@ public class VSensorLoader extends Thread {
 			AbstractWrapper wrapper = ( AbstractWrapper ) Main.getWrapperClass ( addressBean.getWrapper ( ) ).newInstance ( );
 			wrapper.setActiveAddressBean ( addressBean );
 			boolean initializationResult = wrapper.initialize_wrapper (  );
-			if ( initializationResult == false )
+			if ( initializationResult == false ){
 				return null;
+			}	
 			try {
 				logger.debug("Wrapper name: "+wrapper.getWrapperName()+ " -- view name "+ wrapper.getDBAliasInStr());
-				if (!Main.getWindowStorage().tableExists(wrapper.getDBAliasInStr(),wrapper.getOutputFormat()))
+				if (!Main.getWindowStorage().tableExists(wrapper.getDBAliasInStr(),wrapper.getOutputFormat())){
 					Main.getWindowStorage().executeCreateTable ( wrapper.getDBAliasInStr ( ) , wrapper.getOutputFormat ( ),wrapper.isTimeStampUnique() );
+				}
 			} catch ( Exception e ) {
 				try{
 				wrapper.releaseResources();  //releasing resources
@@ -474,13 +489,15 @@ public class VSensorLoader extends Thread {
 			addressBean.setVirtualSensorConfig(vsensorConfig);
 			wrapper = createWrapper(addressBean);
 			try {
-				if (wrapper!=null && prepareStreamSource( streamSource,wrapper.getOutputFormat(),wrapper)) 
+				if (wrapper!=null && prepareStreamSource( streamSource,wrapper.getOutputFormat(),wrapper)){
 					break;
-				else
+				} else {
 					if (wrapper!=null){
 						wrapper.releaseResources();
 					}
 					wrapper=null;
+				}
+
 			} catch (Exception e) {
 				if (wrapper!=null){
 					try{

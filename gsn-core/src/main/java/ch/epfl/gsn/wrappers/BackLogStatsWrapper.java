@@ -115,15 +115,16 @@ public class BackLogStatsWrapper extends AbstractWrapper implements StatisticLis
 		output[0] = timestamp;
 		output[1] = deviceid;
 		
-		if (connectedList.get(deviceid))
+		if (connectedList.get(deviceid)){
 			output[2] = (byte)1;
-		else
+		} else {
 			output[2] = (byte)0;
+		}
 		
 		int counter = 3;
-		for (Iterator<Map<Integer, Long>> it = getStatsList().iterator(); it.hasNext();)
+		for (Iterator<Map<Integer, Long>> it = getStatsList().iterator(); it.hasNext();){
 			output[counter++] = it.next().get(deviceid);
-		
+		}
 		postStreamElement(new StreamElement(outputStructure, output));
 	}
 	

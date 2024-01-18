@@ -127,8 +127,10 @@ public class DataEnumerator implements DataEnumeratorIF {
 			String tableName = null;
             int problematicColumn = -1;
             for ( int i = 1 ; i <= resultSet.getMetaData( ).getColumnCount( ) ; i++ ) {
-				if (i == 1)
-                    tableName = resultSet.getMetaData().getTableName(1);
+				if (i == 1){
+					tableName = resultSet.getMetaData().getTableName(1);
+				}
+                    
                 String colName = resultSet.getMetaData( ).getColumnLabel( i );
 				int colTypeInJDBCFormat = resultSet.getMetaData( ).getColumnType( i );
 				int colScale=resultSet.getMetaData().getScale(i);
@@ -153,19 +155,19 @@ public class DataEnumerator implements DataEnumeratorIF {
             if (problematicColumn != -1){
                 while(true){
                     logger.warn("Values of the column: " + resultSet.getObject(problematicColumn));
-                    if (resultSet.isLast()) break;
+                    if (resultSet.isLast()) {break;}
                     resultSet.next();
                 }
             }
 			dataFieldNames = fieldNames.toArray( new String [ ] {} );
 			dataFieldTypes = fieldTypes.toArray( new Byte [ ] {} );
-			if ( indexofPK == -1 && linkBinaryData ) throw new RuntimeException( "The specified query can't be used with binaryLinked paramter set to true." );
+			if ( indexofPK == -1 && linkBinaryData ) {throw new RuntimeException( "The specified query can't be used with binaryLinked paramter set to true." );}
 		} catch ( Exception e ) {
 			logger.error("Trying to create DataEnumerator with:\n"+preparedStatement.toString());
             logger.error( e.getMessage( ) , e );
 			hasNext = false;
 		}finally {
-			if (hasNext==false) close();
+			if (hasNext==false) {close();}
 		}
 	}
 
@@ -180,19 +182,19 @@ public class DataEnumerator implements DataEnumeratorIF {
 	 * resultset doesn't have anymore elements or closed.")<
 	 */
 	public StreamElement nextElement ( ) throws RuntimeException {
-		if ( hasNext == false ) throw new IndexOutOfBoundsException( "The resultset doesn't have anymore elements or closed." );
+		if ( hasNext == false ) {throw new IndexOutOfBoundsException( "The resultset doesn't have anymore elements or closed." );}
 		long timestamp = -1;
 		long pkValue = -1;
 		try {
-			if ( indexofPK != -1 ) pkValue = resultSet.getLong( indexofPK );
+			if ( indexofPK != -1 ) {pkValue = resultSet.getLong( indexofPK );}
 			Serializable [ ] output = new Serializable [ dataFieldNames.length ];
 			for ( int actualColIndex = 1 , innerIndex = 0 ; actualColIndex <= resultSet.getMetaData( ).getColumnCount( ) ; actualColIndex++ ) {
 				if ( actualColIndex == indexOfTimedField ) {
 					timestamp = resultSet.getLong( actualColIndex );
 					continue;
-				} else if ( actualColIndex == indexofPK )
+				} else if ( actualColIndex == indexofPK ){
 					continue;
-				else {
+				} else {
 					switch ( dataFieldTypes[ innerIndex ] ) {
 					case DataTypes.VARCHAR :
 					case DataTypes.CHAR :
@@ -220,21 +222,25 @@ public class DataEnumerator implements DataEnumeratorIF {
 						if ( linkBinaryData ) {
 							output[ innerIndex ] = "field?vs=" + resultSet.getMetaData( ).getTableName( actualColIndex ) + "&amp;field=" + resultSet.getMetaData( ).getColumnLabel( actualColIndex ) + "&amp;pk=" + pkValue;
                             resultSet.getBytes( actualColIndex );
-                        }
-						else
+                        }else{
 							output[ innerIndex ] = resultSet.getBytes( actualColIndex );
+						}
 						break;
 					}
-					if (resultSet.wasNull())
+					if (resultSet.wasNull()){
 						output[innerIndex]=null;
+					}
+						
 					innerIndex++;
 				}
 			}
 			streamElement = new StreamElement( dataFieldNames , dataFieldTypes , output , indexOfTimedField == -1 ? System.currentTimeMillis( ) : timestamp );
-			if ( indexofPK != -1 ) streamElement.setInternalPrimayKey( pkValue );
+			if ( indexofPK != -1 ){ streamElement.setInternalPrimayKey( pkValue );}
 			hasNext = resultSet.next( );
-			if ( hasNext == false )
+			if ( hasNext == false ){
 				close( );
+			}
+
 		} catch ( SQLException e ) {
 			logger.error( e.getMessage( ) , e );
 			close();
@@ -244,8 +250,10 @@ public class DataEnumerator implements DataEnumeratorIF {
 
 	public void close ( ) {
 		this.hasNext = false;
-		if(resultSet == null)
+		if(resultSet == null){
 			return;
+		}
+
 		try {
 			if (!manualCloseConnection && resultSet.getStatement() != null) {
                 java.sql.Statement s = resultSet.getStatement();

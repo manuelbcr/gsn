@@ -184,7 +184,7 @@ public class RemoteRestAPIWrapper extends AbstractWrapper {
 			DataField[] df = new DataField[jn.get("fields").size()-1];
 			int i = 0;
 			for(JsonNode f : jn.get("fields")){
-				if (f.get("name").asText().equals("timestamp")) continue; 
+				if (f.get("name").asText().equals("timestamp")) {continue;} 
 				df[i] = new DataField(f.get("name").asText(),f.get("type").asText());
 				i++;
 			}
@@ -241,8 +241,9 @@ public class RemoteRestAPIWrapper extends AbstractWrapper {
 			// If the stream element was inserted succesfully, we wait for the next,
 			// otherwise, we return false.
 			boolean status = postStreamElement(se);
-			if (status)
+			if (status){
 				lastReceivedTimestamp = se.getTimeStamp();
+			}
 			return status;
 		}
 		catch (SQLException e) {

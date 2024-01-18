@@ -145,8 +145,9 @@ public class ProtocolManager {
 	 * @return
 	 */
 	public String getProtocolName() {
-		if(protocol != null)
+		if(protocol != null){
 			return protocol.getName();
+		}
 		return null;
 	}
 
@@ -155,8 +156,9 @@ public class ProtocolManager {
 	 * @return
 	 */
 	public AbstractHCIQuery getQuery(String string) {
-		if(protocol != null)
+		if(protocol != null){
 			return protocol.getQuery(string);
+		}
 		return null;
 	}
 
@@ -164,8 +166,9 @@ public class ProtocolManager {
 	 * @return
 	 */
 	public Collection<AbstractHCIQuery> getQueries() {
-		if(protocol != null)
+		if(protocol != null){
 			return protocol.getQueries();
+		}
 		return null;
 	}
 }

@@ -144,7 +144,7 @@ public class SQLServerStorageManager extends StorageManager {
         StringBuilder result = new StringBuilder("CREATE TABLE ").append(tableName);
         result.append(" (PK BIGINT NOT NULL IDENTITY, timed BIGINT NOT NULL, ");
         for (DataField field : structure) {
-            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) continue;
+            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) {continue;}
             result.append(field.getName().toUpperCase()).append(' ');
             result.append(convertGSNTypeToLocalType(field));
             result.append(" ,");

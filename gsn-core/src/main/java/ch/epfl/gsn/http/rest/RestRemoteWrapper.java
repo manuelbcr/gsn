@@ -98,8 +98,10 @@ public class RestRemoteWrapper extends AbstractWrapper {
             httpclient.getConnectionManager().getSchemeRegistry().register(plainsch);
             //
             lastReceivedTimestamp = initParams.getStartTime();
-			if (logger.isDebugEnabled())
-				logger.debug("lastReceivedTimestamp=" + String.valueOf(lastReceivedTimestamp));
+			if (logger.isDebugEnabled()){
+                logger.debug("lastReceivedTimestamp=" + String.valueOf(lastReceivedTimestamp));
+            }
+				
 
             structure = connectToRemote();
         } catch (Exception e) {
@@ -152,11 +154,11 @@ public class RestRemoteWrapper extends AbstractWrapper {
                     logger.warn("Connection established for: " + initParams.getRemoteContactPoint());
                     break;
                 } else {
-                    if (sc == HttpStatus.SC_UNAUTHORIZED)
+                    if (sc == HttpStatus.SC_UNAUTHORIZED){
                         authState = (AuthState) localContext.getAttribute(ClientContext.TARGET_AUTH_STATE); // Target host authentication required
-                    else if (sc == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED)
+                    } else if (sc == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED){
                         authState = (AuthState) localContext.getAttribute(ClientContext.PROXY_AUTH_STATE); // Proxy authentication required
-                    else {
+                    } else {
                         logger.error(new StringBuilder()
                                 .append("Unexpected GET status code returned: ")
                                 .append(sc)
@@ -193,8 +195,9 @@ public class RestRemoteWrapper extends AbstractWrapper {
             }
         }
 
-        if (structure == null)
+        if (structure == null){
             throw new RuntimeException("Cannot connect to the remote host: " + initParams.getRemoteContactPoint());
+        }    
 
         return structure;
     }
@@ -214,8 +217,10 @@ public class RestRemoteWrapper extends AbstractWrapper {
                 while (isActive() && (se = (StreamElement4Rest) inputStream.readObject()) != null) {
                     StreamElement streamElement = se.toStreamElement();
                     //TODO: get actual size of transmitted input stream not of stream element
-                    if (getActiveAddressBean().getVirtualSensorConfig().isProducingStatistics())
-                    	inputEvent(initParams.getRemoteContactPoint(), streamElement.getVolume());
+                    if (getActiveAddressBean().getVirtualSensorConfig().isProducingStatistics()){
+                        inputEvent(initParams.getRemoteContactPoint(), streamElement.getVolume());
+                    }
+                    	
                     if ( ! (streamElement.getFieldNames().length == 1 && streamElement.getFieldNames()[0].equals("keepalive"))) {
                         boolean status = manualDataInsertion(streamElement);
                         if (!status && inputStream != null) {
@@ -223,9 +228,10 @@ public class RestRemoteWrapper extends AbstractWrapper {
                             inputStream.close();
                             inputStream = null;
                         }
-                    }
-                    else
+                    } else {
                         logger.debug("Received a keep alive message.");
+                    }
+                        
                 }
             }
             catch (Exception e) {
@@ -254,8 +260,9 @@ public class RestRemoteWrapper extends AbstractWrapper {
             // If the stream element was inserted succesfully, we wait for the next,
             // otherwise, we return false.
             boolean status = postStreamElement(se);
-            if (status)
+            if (status){
                 lastReceivedTimestamp = se.getTimeStamp();
+            }
             return status;
         }
         catch (SQLException e) {

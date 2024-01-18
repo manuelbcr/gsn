@@ -90,7 +90,7 @@ public class QueriesBuilder {
 
 		String[] vsnamesParameters = requestParameters.get(PARAM_VSNAMES_AND_FIELDS);
 
-		if (vsnamesParameters == null) throw new DataRequestException ("You must specify at least one >" + PARAM_VSNAMES_AND_FIELDS + "< parameter.") ; 
+		if (vsnamesParameters == null){ throw new DataRequestException ("You must specify at least one >" + PARAM_VSNAMES_AND_FIELDS + "< parameter.") ; }
 
 		vsnamesAndStreams = new HashMap<String, FieldsCollection> () ;
 		String name;
@@ -121,7 +121,7 @@ public class QueriesBuilder {
 		}
 
 		String lm = getParameter(requestParameters, PARAM_MAX_NB);
-		if (lm != null) limitCriterion = new LimitCriterion (lm);
+		if (lm != null){ limitCriterion = new LimitCriterion (lm);}
 		
 		String timeformat = getParameter(requestParameters, PARAM_TIME_FORMAT);
 		if (timeformat != null && allowedTimeFormats.containsKey(timeformat)) {

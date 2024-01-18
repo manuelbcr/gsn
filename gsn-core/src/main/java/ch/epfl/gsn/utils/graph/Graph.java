@@ -70,8 +70,9 @@ public class Graph<T> implements Serializable{
 	}
 
 	private void rdfs(Node<T> node, ArrayList<Node<T>> list) {
-		if (node == null)
+		if (node == null){
 			return;
+		}
 		node.setVisited(true);
 		for (Edge<T> edge : node.getInputEdges()) {
 			if (edge.getStartNode().isVisited() == false) {
@@ -94,19 +95,22 @@ public class Graph<T> implements Serializable{
 	public boolean hasCycle() {
 		resetVisitingStatus();
 		for (Node<T> node : rootNodes) {
-			if (isNodeInCycle(node))
+			if (isNodeInCycle(node)){
 				return true;
+			}
 		}
 		return false;
 	}
 
 	private boolean isNodeInCycle(Node<T> node) {
-		if (node.isVisited())
+		if (node.isVisited()){
 			return true;
+		}
 		node.setVisited(true);
 		for (Edge<T> edge : node.getOutputEdges()) {
-			if (isNodeInCycle(edge.getEndNode()))
+			if (isNodeInCycle(edge.getEndNode())){
 				return true;
+			}
 		}
 		node.setVisited(false);
 		return false;
@@ -125,15 +129,18 @@ public class Graph<T> implements Serializable{
 	public void addEdge(T startObject, T endObject)
 			throws NodeNotExistsExeption {
 		Node<T> startNode = findNode(startObject);
-		if (startNode == null)
+		if (startNode == null) {
 			throw new NodeNotExistsExeption(startObject == null ? "null" : startObject.toString());
+		}			
 		Node<T> endNode = findNode(endObject);
-		if (endNode == null)
+		if (endNode == null){
 			throw new NodeNotExistsExeption(endObject == null ? "null" : endObject.toString());
+		}
 		try {
 			startNode.addEdge(endNode);
-			if(!endNode.equals(findRootNode(startNode)))
+			if(!endNode.equals(findRootNode(startNode))){
 				rootNodes.remove(endNode);
+			}	
 		} catch (EdgeExistsException e) {
 			// TODO Auto-generated catch block
 		}
@@ -142,8 +149,9 @@ public class Graph<T> implements Serializable{
 	public Node<T> findRootNode(Node<T> startNode) {
 		List<Node<T>> ascendingNodes = getAscendingNodes(startNode);
 		for (Node<T> node : ascendingNodes) {
-			if(rootNodes.contains(node))
+			if(rootNodes.contains(node)){
 				return node;
+			}
 		}
 		return null;
 	}
@@ -158,9 +166,10 @@ public class Graph<T> implements Serializable{
 	 */
 	public boolean removeNode(T object) throws NodeNotExistsExeption {
 		Node<T> node = findNode(object);
-		if (node == null)
+		if (node == null){
 			throw new NodeNotExistsExeption(object == null ? "null" : object.toString());
-
+		}
+			
 		List<Node<T>> ascendingNodes = getAscendingNodes(node);
 		for (Node<T> ascendingNode : ascendingNodes) {
 			ArrayList<Edge<T>> outputEdges = ascendingNode.getOutputEdges();
@@ -181,29 +190,35 @@ public class Graph<T> implements Serializable{
 
 		for (Node<T> remainedNode : nodes) {
 			if (remainedNode.getInputEdges().isEmpty()
-					&& rootNodes.contains(remainedNode) == false)
-				rootNodes.add(remainedNode);
+					&& rootNodes.contains(remainedNode) == false){
+						rootNodes.add(remainedNode);
+					}
 		}
 		return true;
 	}
 
 	public Node<T> findNode(T object) {
 		for (Node<T> node : nodes) {
-			if (node.getObject() == null && object == null)
+			if (node.getObject() == null && object == null){
 				return null;
+			}
 
-			if (node.getObject() != null && node.getObject().equals(object))
+			if (node.getObject() != null && node.getObject().equals(object)){
 				return node;
+			}
 		}
 		return null;
 	}
 
 	private void dfs(Node<T> node, List<Node<T>> list) {
-		if (node == null)
+		if (node == null){
 			return;
+		}
 		for (Edge<T> edge : node.getOutputEdges()) {
-			if (edge.getEndNode().isVisited() == false)
+			if (edge.getEndNode().isVisited() == false){
 				dfs(edge.getEndNode(), list);
+			}
+				
 		}
 		if (node.isRoot() == false) {
 			list.add(node);
@@ -229,8 +244,9 @@ public class Graph<T> implements Serializable{
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder("[Graph]\n");
 		for (Node<T> node : nodes) {
-			if (node.getOutputEdges().isEmpty() && rootNodes.contains(node))
+			if (node.getOutputEdges().isEmpty() && rootNodes.contains(node)){
 				stringBuilder.append("\t").append(node).append("\n");
+			}
 			for (Edge<T> edge : node.getOutputEdges()) {
 				stringBuilder.append("\t").append(node).append(" -- > ")
 						.append(edge.getEndNode()).append("\n");

@@ -59,10 +59,12 @@ public class Formatter {
         hex_sb_2.append("(").append(String.format("%2d", to - from + 1)).append(")");
         dec_sb_2.append("(").append(String.format("%2d", to - from + 1)).append(")");
 
-        if (hexFormat)
+        if (hexFormat){
             return hex_sb_2.toString();
-        else
+        } else {
             return dec_sb_2.toString();
+        }
+            
     }
 
     public static String listArray(byte[] a, int from, int to) {
@@ -88,10 +90,11 @@ public class Formatter {
         hex_sb_2.append("(").append(String.format("%2d", to - from + 1)).append(")");
         dec_sb_2.append("(").append(String.format("%2d", to - from + 1)).append(")");
 
-        if (hexFormat)
+        if (hexFormat){
             return hex_sb_2.toString();
-        else
+        } else {
             return dec_sb_2.toString();
+        }    
     }
 
     public static String listArray(UnsignedByte[] a, int from, int to) {
@@ -117,10 +120,11 @@ public class Formatter {
         hex_sb_2.append("(").append(String.format("%2d", to - from + 1)).append(")");
         dec_sb_2.append("(").append(String.format("%2d", to - from + 1)).append(")");
 
-        if (hexFormat)
+        if (hexFormat){
             return hex_sb_2.toString();
-        else
+        } else {
             return dec_sb_2.toString();
+        }
     }
 
     public static String listUnsignedByteList(List<UnsignedByte> a) {
@@ -138,10 +142,11 @@ public class Formatter {
         hex_sb_2.append("(").append(String.format("%2d", a.size())).append(")");
         dec_sb_2.append("(").append(String.format("%2d", a.size())).append(")");
 
-        if (hexFormat)
+        if (hexFormat){
             return hex_sb_2.toString();
-        else
+        } else {
             return dec_sb_2.toString();
+        }
     }
 
 }

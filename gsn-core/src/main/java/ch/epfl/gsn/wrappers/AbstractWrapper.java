@@ -103,14 +103,16 @@ public abstract class AbstractWrapper extends Thread implements Monitorable {
 				addSlidingHandler(timeBasedSlidingHandler);
 			}
 		} else {
-			if (tupleBasedSlidingHandler == null)
+			if (tupleBasedSlidingHandler == null){
 				tupleBasedSlidingHandler = new TupleBasedSlidingHandler(this);
+			}
 			addSlidingHandler(tupleBasedSlidingHandler);
 		}
 
 		for (SlidingHandler slidingHandler : slidingHandlers.values()) {
-			if (slidingHandler.isInterestedIn(ss))
+			if (slidingHandler.isInterestedIn(ss)){
 				slidingHandler.addStreamSource(ss);
+			}	
 		}
 
 		listeners.add(ss);
@@ -130,8 +132,9 @@ public abstract class AbstractWrapper extends Thread implements Monitorable {
 		listeners.remove(ss);
 		// getStorageManager( ).executeDropView( ss.getUIDStr() );
 		for (SlidingHandler slidingHandler : slidingHandlers.values()) {
-			if (slidingHandler.isInterestedIn(ss))
+			if (slidingHandler.isInterestedIn(ss)){
 				slidingHandler.removeStreamSource(ss);
+			}	
 		}
 		if (listeners.size() == 0) {
 			releaseResources();
@@ -245,10 +248,12 @@ public abstract class AbstractWrapper extends Thread implements Monitorable {
 			return false;
 		}
 		try {
-			if (!isActive() || listeners.size() == 0)
+			if (!isActive() || listeners.size() == 0){
 				return false;
-			if (!insertIntoWrapperTable(streamElement))
+			}
+			if (!insertIntoWrapperTable(streamElement)){
 				return false;
+			}
 			boolean toReturn = false;
 
 			logger.debug("Size of the listeners to be evaluated - "+ listeners.size());
@@ -281,9 +286,9 @@ public abstract class AbstractWrapper extends Thread implements Monitorable {
 	 * @throws SQLException
 	 */
 	public boolean insertIntoWrapperTable(StreamElement se) throws SQLException {
-		if (listeners.size() == 0)
+		if (listeners.size() == 0){
 			return false;
-
+		}
 		Connection conn = null;
 		try {
             if (isOutOfOrder(se)) {
@@ -306,8 +311,10 @@ public abstract class AbstractWrapper extends Thread implements Monitorable {
 	}
 
     public boolean isOutOfOrder(StreamElement se) throws SQLException {
-        if (listeners.size() == 0)
+        if (listeners.size() == 0){
 			return false;
+		}
+			
         Connection conn = null;
         Object key = 0;
         if (getPartialOrdersKey() != null){
@@ -335,10 +342,12 @@ public abstract class AbstractWrapper extends Thread implements Monitorable {
 					lastInOrderTimestamp.put(key,Long.MIN_VALUE); // Table is empty
 				}
 			}
-            if (isTimeStampUnique())
-                return (se.getTimeStamp() <= lastInOrderTimestamp.get(key));
-            else
-            	return (se.getTimeStamp() < lastInOrderTimestamp.get(key));
+            if (isTimeStampUnique()){
+				return (se.getTimeStamp() <= lastInOrderTimestamp.get(key));
+			} else {
+				return (se.getTimeStamp() < lastInOrderTimestamp.get(key));
+			}
+            	
 		} finally {
 			Main.getWindowStorage().close(conn);
 		}
@@ -364,9 +373,10 @@ public abstract class AbstractWrapper extends Thread implements Monitorable {
 
 	public boolean sendToWrapper(Object dataItem)
 			throws OperationNotSupportedException {
-		if (isActive == false)
+		if (isActive == false){
 			throw new GSNRuntimeException(
-					"Sending to an inactive/disabled wrapper is not allowed !");
+				"Sending to an inactive/disabled wrapper is not allowed !");
+		}
 		throw new OperationNotSupportedException(
 				"This wrapper doesn't support sending data back to the source.");
 	}
@@ -385,8 +395,9 @@ public abstract class AbstractWrapper extends Thread implements Monitorable {
 			}
 		}
 		logger.debug("Cutting condition : " + condition);
-		if (condition.length() == 0)
+		if (condition.length() == 0){
 			return null;
+		}
 		StringBuilder sb = new StringBuilder("delete from ").append(
 				getDBAliasInStr()).append(" where ");
 		sb.append(condition);
@@ -395,8 +406,9 @@ public abstract class AbstractWrapper extends Thread implements Monitorable {
 
 	public int removeUselessValues() throws SQLException {
 		StringBuilder query = getUselessWindow();
-		if (query == null)
+		if (query == null){
 			return 0;
+		}
 		logger.debug(new StringBuilder().append(
 					"RESULTING QUERY FOR Table Size Enforce ").append(query)
 					.toString());
@@ -509,8 +521,10 @@ public abstract class AbstractWrapper extends Thread implements Monitorable {
 	}
 
 	protected boolean inputEvent(long timestamp, String sourcename, long volume) {
-		if (!activeAddressBean.getVirtualSensorConfig().isProducingStatistics())
+		if (!activeAddressBean.getVirtualSensorConfig().isProducingStatistics()){
 			return false;
+		}
+			
 		StatisticsElement statisticsElement = new StatisticsElement(timestamp, sourcename, getActiveAddressBean().getInputStreamName(), volume);
 		return StatisticsHandler.getInstance().inputEvent(getActiveAddressBean().getVirtualSensorName(), statisticsElement);
 	}

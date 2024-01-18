@@ -61,10 +61,15 @@ public class Utils {
 		} else {
 			StringBuilder shs = new StringBuilder(s);
 			long value = 0;
-			if ( mIndex >= 0 && mIndex == shs.length() - 1) value = Long.parseLong( shs.deleteCharAt( mIndex ).toString( ) ) * 60000;
-			else if ( hIndex >= 0 && hIndex == shs.length() - 1) value = Long.parseLong( shs.deleteCharAt( hIndex ).toString( ) ) * 3600000;
-			else if ( sIndex >= 0 && sIndex == shs.length() - 1) value = Long.parseLong( shs.deleteCharAt( sIndex ).toString( ) ) * 1000;
-			else throw new NumberFormatException("unable to pasre window size :"+shs);
+			if ( mIndex >= 0 && mIndex == shs.length() - 1){
+				value = Long.parseLong( shs.deleteCharAt( mIndex ).toString( ) ) * 60000;
+			} else if ( hIndex >= 0 && hIndex == shs.length() - 1){
+				value = Long.parseLong( shs.deleteCharAt( hIndex ).toString( ) ) * 3600000;
+			} else if ( sIndex >= 0 && sIndex == shs.length() - 1) {
+				value = Long.parseLong( shs.deleteCharAt( sIndex ).toString( ) ) * 1000;
+			}else{
+				throw new NumberFormatException("unable to pasre window size :"+shs);
+			} 
 			return new Pair<Boolean,Long>(true,value);
 		} 
     }

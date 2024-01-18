@@ -37,7 +37,8 @@ public class AbstractCriterion {
 	public String getCriterion (String criterion, Hashtable<String, String> allowedValues) throws DataRequestException {
 		if (allowedValues.containsKey(criterion.toLowerCase())) {
 			return allowedValues.get(criterion.toLowerCase());
-		}
-		else throw new DataRequestException (CRITERION_ERROR_MSG + " >" + criterion + "<. Valid values are >" + allowedValues.keySet().toString() + "<") ;
+		} else{
+			throw new DataRequestException (CRITERION_ERROR_MSG + " >" + criterion + "<. Valid values are >" + allowedValues.keySet().toString() + "<") ;
+		} 
 	}
 }

@@ -109,7 +109,7 @@ public final class Modifications {
 	 * @param list
 	 */
 	private void loadVirtualSensors ( Collection < String > fileNames , ArrayList < VSensorConfig > list ) {
-		if ( fileNames == null || list == null ) throw new RuntimeException( "Null pointer Exception (" + ( fileNames == null ) + "),(" + ( list == null ) + ")" );
+		if ( fileNames == null || list == null ){ throw new RuntimeException( "Null pointer Exception (" + ( fileNames == null ) + "),(" + ( list == null ) + ")" );}
 		/*IBindingFactory bfact;
 		IUnmarshallingContext uctx;
 		try {
@@ -167,8 +167,10 @@ public final class Modifications {
 					List<Node<VSensorConfig>> nodesAffectedByRemoval = graph.nodesAffectedByRemoval(node);
 					for (Node<VSensorConfig> toRemoveNode : nodesAffectedByRemoval) {
 						VSensorConfig config = toRemoveNode.getObject();
-						if(removeVirtualSensorConf.contains(config) == false)
+						if(removeVirtualSensorConf.contains(config) == false){
 							removeVirtualSensorConf.add(config);
+						}
+							
 					}
 				}
 				try {
@@ -243,12 +245,14 @@ public final class Modifications {
 						String vsensorName = addressing[addressingIndex].getPredicateValue("query");
 						if (vsensorName!=null) {
 							vsensorName = SQLUtils.getTableName(vsensorName);
-							if(vsensorName ==null)
+							if(vsensorName ==null){
 								vsensorName=Double.toString(Math.random()*1000000000.0);
+							}	
 						}else if(isLocalZeroMQ){
 							vsensorName = addressing[addressingIndex].getPredicateValue("vsensor");
-							if(vsensorName ==null)
+							if(vsensorName ==null){
 								vsensorName=Double.toString(Math.random()*1000000000.0);
+							}	
 						}else {
 							vsensorName = addressing[addressingIndex].getPredicateValueWithDefault("name",Double.toString(Math.random()*10000000.0));
 						}
@@ -273,8 +277,9 @@ public final class Modifications {
 						if(( wrapperClass.isAssignableFrom(LocalDeliveryWrapper.class)) || (wrapper.equals("zeromq-sync") && isLocalZeroMQ) ){
 							String vsName = vsensorName.toLowerCase().trim();
 							VSensorConfig sensorConfig = vsNameTOVSConfig.get(vsName);
-							if(sensorConfig == null)
+							if(sensorConfig == null){
 								sensorConfig = Mappings.getVSensorConfig(vsName);
+							}
 							if(sensorConfig == null){
 								logger.debug("There is no virtual sensor with name >" +  vsName + "< in the >" + config.getName() + "< virtual sensor");
 

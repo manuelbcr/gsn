@@ -124,12 +124,15 @@ public class GridModelVS extends AbstractVirtualSensor {
         if (cx_str == null) {
             logger.warn("Parameter \"" + PARAM_X + "\" not provided in Virtual Sensor file");
             return false;
-        } else try {
-            x_BL = Double.parseDouble(cx_str.trim());
-        } catch (NumberFormatException e) {
-            logger.warn("Parameter \"" + PARAM_X + "\" incorrect in Virtual Sensor file");
-            return false;
-        }
+        } else{
+            try {
+                x_BL = Double.parseDouble(cx_str.trim());
+            } catch (NumberFormatException e) {
+                logger.warn("Parameter \"" + PARAM_X + "\" incorrect in Virtual Sensor file");
+                return false;
+            }
+        } 
+        
         
       //get the bottom-left corner latitude coordinate in degree
         String cy_str = params.get(PARAM_Y);
@@ -137,12 +140,14 @@ public class GridModelVS extends AbstractVirtualSensor {
         if (cy_str == null) {
             logger.warn("Parameter \"" + PARAM_Y + "\" not provided in Virtual Sensor file");
             return false;
-        } else try {
-            y_BL = Double.parseDouble(cy_str.trim());
-        } catch (NumberFormatException e) {
-            logger.warn("Parameter \"" + PARAM_Y + "\" incorrect in Virtual Sensor file");
-            return false;
-        }
+        } else{
+            try {
+                y_BL = Double.parseDouble(cy_str.trim());
+            } catch (NumberFormatException e) {
+                logger.warn("Parameter \"" + PARAM_Y + "\" incorrect in Virtual Sensor file");
+                return false;
+            }
+        } 
         
       //get the number of cells of a side of the square grid
         String gridSize_str = params.get(PARAM_GRID_SIZE);
@@ -150,12 +155,14 @@ public class GridModelVS extends AbstractVirtualSensor {
         if (gridSize_str == null) {
             logger.warn("Parameter \"" + PARAM_GRID_SIZE + "\" not provided in Virtual Sensor file");
             return false;
-        } else try {
-        	gridSize = Integer.parseInt(gridSize_str.trim());
-        } catch (NumberFormatException e) {
-            logger.warn("Parameter \"" + PARAM_GRID_SIZE + "\" incorrect in Virtual Sensor file");
-            return false;
-        }
+        } else{
+            try {
+                gridSize = Integer.parseInt(gridSize_str.trim());
+            } catch (NumberFormatException e) {
+                logger.warn("Parameter \"" + PARAM_GRID_SIZE + "\" incorrect in Virtual Sensor file");
+                return false;
+            }
+        } 
 
         if (gridSize < 0) {
             logger.warn("Grid size should always be positive.");
@@ -168,12 +175,14 @@ public class GridModelVS extends AbstractVirtualSensor {
         if (cellSize_str == null) {
             logger.warn("Parameter \"" + PARAM_CELL_SIZE + "\" not provided in Virtual Sensor file");
             return false;
-        } else try {
-        	cellSize = Double.parseDouble(cellSize_str.trim());
-        } catch (NumberFormatException e) {
-            logger.warn("Parameter \"" + PARAM_CELL_SIZE + "\" incorrect in Virtual Sensor file");
-            return false;
-        }
+        } else{
+            try {
+                cellSize = Double.parseDouble(cellSize_str.trim());
+            } catch (NumberFormatException e) {
+                logger.warn("Parameter \"" + PARAM_CELL_SIZE + "\" incorrect in Virtual Sensor file");
+                return false;
+            }
+        } 
 
         if (cellSize < 0) {
             logger.warn("Cell size should always be positive.");

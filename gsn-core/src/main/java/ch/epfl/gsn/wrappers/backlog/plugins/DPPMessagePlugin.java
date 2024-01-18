@@ -50,10 +50,11 @@ public class DPPMessagePlugin extends AbstractPlugin {
 	public boolean initialize(BackLogWrapper backlogwrapper, String coreStationName, String deploymentName) {
 		activeBackLogWrapper = backlogwrapper;
 		String p = getActiveAddressBean().getPredicateValue("priority");
-		if (p == null)
+		if (p == null){
 			priority = null;
-		else
+		} else {
 			priority = Integer.valueOf(p);
+		}
 		
 		try {
 			dppMsgMultiplexer = DPPMessageMultiplexer.getInstance(coreStationName, backlogwrapper.getBLMessageMultiplexer());
@@ -64,8 +65,9 @@ public class DPPMessagePlugin extends AbstractPlugin {
 			
 			msgClass = ((ch.epfl.gsn.wrappers.backlog.plugins.dpp.Message) messageConstructor.newInstance());
 			
-			if (!msgClass.initialize(this, coreStationName, deploymentName))
+			if (!msgClass.initialize(this, coreStationName, deploymentName)){
 				return false;
+			}
 			
 			msgDataField = (DataField[])ArrayUtils.addAll(headerDataField, msgClass.getOutputFormat());
 			
@@ -125,22 +127,26 @@ public class DPPMessagePlugin extends AbstractPlugin {
 		InputInfo inputInfo;
 		Serializable [] header;
 		Serializable[] processPayload;
-		if (msgClass.isMinimal())
+		if (msgClass.isMinimal()){
 			header = new Serializable[] {timestamp, null, null, getDeviceID(), null};
-		else
+		} else {
 			header = new Serializable[] {timestamp, null, null, getDeviceID(), null, null, null, null};
+		}
 		
 		if (getDeviceID() != null) {
 			boolean ret = false;
 			try {
-				if (logger.isDebugEnabled())
+				if (logger.isDebugEnabled()){
 					logger.debug("action: " + action);
+				}
 	
 	            Serializable[] message;
-	            if (msgClass.isMinimal())
-	            	message = new Serializable[5];
-	            else
-	            	message = new Serializable[8];
+	            if (msgClass.isMinimal()){
+					message = new Serializable[5];
+				} else {
+					message = new Serializable[8];
+				}
+	            	
 	            
 	            int device_id = getDeviceID(); // device_id
 	            boolean min_msg = msgClass.isMinimal(); // min_msg
@@ -155,8 +161,9 @@ public class DPPMessagePlugin extends AbstractPlugin {
 							target_id = new Integer((String)paramValues[i]); // target_id
 						}
 					}
-					if (target_id == null)
+					if (target_id == null){
 						throw new Exception("target_id missing");
+					}
 
 		            seqnr = dppMsgMultiplexer.getNextSequenceNumber(); // seqnr
 		            generation_time = timestamp*1000; // generation_time
@@ -191,10 +198,12 @@ public class DPPMessagePlugin extends AbstractPlugin {
 	            ret = sendRemote(timestamp, message, super.priority);
 				processPayload = msgClass.sendPayloadSuccess(ret);
 				
-				if (ret)
+				if (ret) {
 					inputInfo = new InputInfo(getActiveAddressBean().toString(), "MIG message upload successfull", ret);
-				else
+				} else {
 					inputInfo = new InputInfo(getActiveAddressBean().toString(), "MIG message upload not successfull", ret);
+				}
+					
 			}
 			catch (Exception e) {
 				processPayload = msgClass.sendPayloadSuccess(false);
@@ -206,8 +215,10 @@ public class DPPMessagePlugin extends AbstractPlugin {
 			inputInfo = new InputInfo(getActiveAddressBean().toString(), "device ID is null ", false);
 		}
 
-		if (processPayload != null)
+		if (processPayload != null) {
 			dataProcessed(timestamp, (Serializable[])ArrayUtils.addAll(header, processPayload));
+		}
+			
 		
 		return inputInfo;
 	}

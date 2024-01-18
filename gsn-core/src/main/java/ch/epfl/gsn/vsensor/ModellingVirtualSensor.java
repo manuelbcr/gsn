@@ -142,10 +142,12 @@ public class ModellingVirtualSensor extends AbstractVirtualSensor {
 	 * @return the model if it exists or null if the index is out of bound
 	 */
 	public AbstractModel getModel(int index){
-		if (index>=0 && index <am.length)
+		if (index>=0 && index <am.length){
 			return am[index];
-		else
+		} else{
 			return null;
+		}
+			
 	}
 
 }

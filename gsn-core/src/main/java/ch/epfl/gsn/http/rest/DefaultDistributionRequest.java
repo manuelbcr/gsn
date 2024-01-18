@@ -100,16 +100,22 @@ public class DefaultDistributionRequest implements DistributionRequest {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o){ return true;}
+        if (o == null || getClass() != o.getClass()){ return false;}
 
         DefaultDistributionRequest that = (DefaultDistributionRequest) o;
 
-        if (deliverySystem != null ? !deliverySystem.equals(that.deliverySystem) : that.deliverySystem != null)
-            return false;
-        if (query != null ? !query.equals(that.query) : that.query != null) return false;
-        if (vSensorConfig != null ? !vSensorConfig.equals(that.vSensorConfig) : that.vSensorConfig != null)
-            return false;
+        if (deliverySystem != null ? !deliverySystem.equals(that.deliverySystem) : that.deliverySystem != null){
+			return false;
+		}
+            
+        if (query != null ? !query.equals(that.query) : that.query != null){ 
+			return false;
+		}
+        if (vSensorConfig != null ? !vSensorConfig.equals(that.vSensorConfig) : that.vSensorConfig != null){
+			return false;
+		}
+            
 
         return true;
     }

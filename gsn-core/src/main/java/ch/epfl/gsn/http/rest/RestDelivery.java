@@ -53,8 +53,10 @@ public class RestDelivery implements DeliverySystem {
             objectStream.writeObject(new StreamElement4Rest(se));
             objectStream.flush();
             continuation.resume();
-            if (limit != null)
-            	limit--;
+            if (limit != null){
+                limit--;
+            }
+            	
             return ((LinkedBlockingQueue<Boolean>) continuation.getAttribute("status")).take();
         } catch (Exception e) {
             logger.debug(e.getMessage(), e);
@@ -65,8 +67,10 @@ public class RestDelivery implements DeliverySystem {
     public boolean writeKeepAliveStreamElement() {
         logger.debug("Sending the keepalive message.");
         keepAliveMsg.setTimeStamp(System.currentTimeMillis());
-        if (limit != null)
-        	limit++;
+        if (limit != null){
+            limit++;
+        }
+        	
         return writeStreamElement(keepAliveMsg);
     }
 
@@ -101,8 +105,9 @@ public class RestDelivery implements DeliverySystem {
 	}
 
 	public boolean isLimitReached() {
-		if (limit != null && limit <= 0)
-			return true;
+		if (limit != null && limit <= 0){
+            return true;
+        }
 		return false;
 	}
 

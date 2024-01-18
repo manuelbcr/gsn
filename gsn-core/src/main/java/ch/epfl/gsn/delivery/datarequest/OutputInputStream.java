@@ -46,27 +46,34 @@ public class OutputInputStream {
 
 	public void close () throws IOException {
 		synchronized (this) {
-			if (oisi != null && ! oisiClosed) oisi.close();
-			if (oiso != null && ! oisoClosed) oiso.close();
+			if (oisi != null && ! oisiClosed){ oisi.close();}
+			if (oiso != null && ! oisoClosed){ oiso.close();}
 			circularBuffer = null;
 //			System.out.println("OutputInputStream >" + this + "< has been closed");
 		}
 	}
 
 	public InputStream getInputStream () {
-		if (oisi == null) oisi = new OISInputStream () ;
+		if (oisi == null) {
+			oisi = new OISInputStream () ;
+		} 
 		return oisi;
 	}
 
 	public OutputStream getOutputStream () {
-		if (oiso == null) oiso = new OISOutputStream () ;
+		if (oiso == null){
+			oiso = new OISOutputStream () ;
+		} 
 		return oiso;
 	}
 	
 	private class OISOutputStream extends OutputStream {
 		@Override
 		public void write(int b) throws IOException {
-			if (oisoClosed) throw new IOException("Outputstream is closed");
+			if (oisoClosed){
+				throw new IOException("Outputstream is closed");
+			} 
+			
 			try {
 				circularBuffer.put(b);
 			} catch (InterruptedException e) {
@@ -78,7 +85,9 @@ public class OutputInputStream {
 			synchronized (OutputInputStream.this) {
 				oisoClosed = true;
 //				System.out.println("OISOutputStream >" + this + " has been closed<");
-				if (oisiClosed) OutputInputStream.this.close(); 
+				if (oisiClosed){
+					OutputInputStream.this.close(); 
+				} 
 			}
 		}
 	}
@@ -86,7 +95,9 @@ public class OutputInputStream {
 	private class OISInputStream extends InputStream {
 		@Override
 		public int read() throws IOException {
-			if (oisiClosed) throw new IOException("InputStream has been closed");
+			if (oisiClosed){
+				throw new IOException("InputStream has been closed");
+			} 
 			int nextValue = -1;
 			try {
 				if ( ! oisoClosed) {
@@ -102,12 +113,17 @@ public class OutputInputStream {
 		}
 		@Override
 		public int read (byte[] b) throws IOException {
-			if (oisiClosed) throw new IOException("InputStream has been closed");
-			if (b == null || b.length == 0) return 0;
+			if (oisiClosed){
+				 throw new IOException("InputStream has been closed");
+			}
+			if (b == null || b.length == 0){
+				return 0;
+			} 
 			int available = available () ;
 			if (available == 0) {
-				if (oisoClosed) return -1;
-				else {
+				if (oisoClosed){
+					return -1;
+				} else {
 					try {
 						b[0] = circularBuffer.take().byteValue();  // TODO
 					} catch (InterruptedException e) {

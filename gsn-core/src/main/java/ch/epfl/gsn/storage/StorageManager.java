@@ -147,8 +147,10 @@ public abstract class StorageManager {
         Connection conn = null;
         try {
             ResultSet rs = Main.getStorage(virtualSensorName).executeQueryWithResultSet(new StringBuilder("SELECT MAX(timed) FROM ").append(virtualSensorName), conn = Main.getStorage(virtualSensorName).getConnection());
-            if (rs.next())
+            if (rs.next()){
                 timedToRemove = rs.getLong(1);
+            }
+                
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
         } finally {
@@ -169,7 +171,7 @@ public abstract class StorageManager {
             ArrayList<DataField> toReturnArr = new ArrayList<DataField>();
             for (int i = 1; i <= structure.getColumnCount(); i++) {
                 String colName = structure.getColumnLabel(i);
-                if (colName.equalsIgnoreCase("pk")) continue;
+                if (colName.equalsIgnoreCase("pk")) {continue;}
                 int colType = structure.getColumnType(i);
                 byte colTypeInGSN = convertLocalTypeToGSN(colType);
                 if (colTypeInGSN == -100){
@@ -179,8 +181,10 @@ public abstract class StorageManager {
             }
             toReturn = toReturnArr.toArray(new DataField[]{});
         } finally {
-            if (rs != null)
+            if (rs != null){
                 close(rs);
+            }
+               
         }
         return toReturn;
     }
@@ -199,8 +203,8 @@ public abstract class StorageManager {
             ArrayList<DataField> toReturnArr = new ArrayList<DataField>();
             for (int i = 1; i <= structure.getColumnCount(); i++) {
                 String colName = structure.getColumnLabel(i);
-                if (colName.equalsIgnoreCase("pk")) continue;
-                if (colName.equalsIgnoreCase("timed")) continue;
+                if (colName.equalsIgnoreCase("pk")) {continue;}
+                if (colName.equalsIgnoreCase("timed")) {continue;}
                 int colType = structure.getColumnType(i);
                 String colTypeName = structure.getColumnTypeName(i);
                 int precision = structure.getPrecision(i);
@@ -208,16 +212,19 @@ public abstract class StorageManager {
                 if (colTypeInGSN == -100){
                     logger.error("The type can't be converted to GSN form - error description: virtual sensor name is: "+tableName+", field name is: "+colName + ", query is: " + sb);
                 }
-                if ((colTypeInGSN == DataTypes.VARCHAR) || (colTypeInGSN == DataTypes.CHAR))
+                if ((colTypeInGSN == DataTypes.VARCHAR) || (colTypeInGSN == DataTypes.CHAR)){
                     toReturnArr.add(new DataField(colName, colTypeName, precision, colName));
-                else
+                }else{
                     toReturnArr.add(new DataField(colName, colTypeInGSN));
+                }
             }
             toReturn = toReturnArr.toArray(new DataField[]{});
         } finally {
-            if (rs != null)
+            if (rs != null){
                 close(rs);
+            }
         }
+                
         return toReturn;
     }
 
@@ -237,14 +244,16 @@ public abstract class StorageManager {
 
     public boolean tableExists(CharSequence tableName, DataField[] fields, Connection connection) throws SQLException,
             GSNRuntimeException {
-        if (!ValidityTools.isValidJavaVariable(tableName))
+        if (!ValidityTools.isValidJavaVariable(tableName)){
             throw new GSNRuntimeException("Table name is not valid");
+        }
+           
         StringBuilder sb = new StringBuilder("select * from ").append(tableNameGeneratorInString(tableName)).append(" where 1=0 ");
         ResultSet rs = null;
         try {
             rs = executeQueryWithResultSet(sb, connection);
             ResultSetMetaData structure = rs.getMetaData();
-            if (fields != null && fields.length > 0)
+            if (fields != null && fields.length > 0){
                 nextField:for (DataField field : fields) {
                     for (int i = 1; i <= structure.getColumnCount(); i++) {
                         String colName = structure.getColumnLabel(i);
@@ -255,24 +264,27 @@ public abstract class StorageManager {
                             if (gsnType == -100){
                                 logger.error("The type can't be converted to GSN form - error description: virtual sensor name is: "+tableName+", field name is: "+colName + ", query is: " + sb);
                             }
-                            if (field.getDataTypeID() == gsnType)
+                            if (field.getDataTypeID() == gsnType){
                                 continue nextField;
-                            else
+                            } else{
                                 throw new GSNRuntimeException("The column : "
                                         + colName + " in the >" + tableName
                                         + "< table is not compatible with type : "
                                         + field.getType()
                                         + ". The actual type for this table (currently in the database): " + colType);
+                            }
                         }
                     }
                     throw new GSNRuntimeException("The table " + tableName
                             + " in the database, doesn't have the >" + field.getName()
                             + "< column.");
                 }
+            }
+               
         } catch (SQLException e) {
-            if (e.getErrorCode() == getTableNotExistsErrNo() || e.getMessage().contains("does not exist"))
+            if (e.getErrorCode() == getTableNotExistsErrNo() || e.getMessage().contains("does not exist")){
                 return false;
-            else {
+            } else {
                 logger.error(e.getMessage());
                 throw e;
             }
@@ -488,12 +500,16 @@ public abstract class StorageManager {
         prepareStatement.execute();
         prepareStatement.close();
         for (DataField field : structure) {
-        	if (!field.getIndex())
-        		continue;
+        	if (!field.getIndex()){
+                continue;
+            }
+        		
         	sql = getStatementCreateIndexOnField(tableName, field.getName().toUpperCase(), false);
-            if (logger.isDebugEnabled())
+            if (logger.isDebugEnabled()){
                 logger.debug(new StringBuilder().append(
-                        "The create index statement is : ").append(sql).toString());
+                    "The create index statement is : ").append(sql).toString());
+            }
+                
             prepareStatement = connection.prepareStatement(sql.toString());
             prepareStatement.execute();
             prepareStatement.close();
@@ -510,8 +526,10 @@ public abstract class StorageManager {
     private StringBuilder getStatementCreateIndexOnField(
             CharSequence tableName, String field, boolean unique, String order) throws SQLException {
         StringBuilder toReturn = new StringBuilder("CREATE ");
-        if (unique)
+        if (unique){
             toReturn.append(" UNIQUE ");
+        }
+            
         toReturn.append(" INDEX ").append(field).append(System.currentTimeMillis()).append("_").append(Idcounter++).append("_INDEX").append(" ON ").append(tableName).append(" (").append(field).append(" ").append(order).append(")");
         return toReturn;
     }
@@ -611,8 +629,10 @@ public abstract class StorageManager {
             logger.error(error.getMessage() + " FOR: " + sql, error);
         } finally {
             try {
-                if (stmt != null && !stmt.isClosed())
+                if (stmt != null && !stmt.isClosed()){
                     stmt.close();
+                }
+                    
             } catch (SQLException e) {
             	logger.error(e.getMessage(), e);
             }
@@ -665,64 +685,77 @@ public abstract class StorageManager {
             ps = connection.prepareStatement(query);
             int counter = 1;
             for (DataField dataField : fields) {
-                if (dataField.getName().equalsIgnoreCase("timed"))
+                if (dataField.getName().equalsIgnoreCase("timed")){
                     continue;
+                }
+                    
                 Serializable value = streamElement.getData(dataField.getName());
 
                 switch (dataField.getDataTypeID()) {
                     case DataTypes.VARCHAR:
-                        if (value == null)
+                        if (value == null){
                             ps.setNull(counter, Types.VARCHAR);
-                        else
+                        } else {
                             ps.setString(counter, value.toString());
+                        }                           
                         break;
                     case DataTypes.CHAR:
-                        if (value == null)
+                        if (value == null){
                             ps.setNull(counter, Types.CHAR);
-                        else
+                        } else {
                             ps.setString(counter, value.toString());
+                        }                            
                         break;
                     case DataTypes.INTEGER:
-                        if (value == null)
+                        if (value == null){
                             ps.setNull(counter, Types.INTEGER);
-                        else
+                        } else{
                             ps.setInt(counter, ((Number) value).intValue());
+                        }     
                         break;
                     case DataTypes.SMALLINT:
-                        if (value == null)
+                        if (value == null){
                             ps.setNull(counter, Types.SMALLINT);
-                        else
+                        } else{
                             ps.setShort(counter, ((Number) value).shortValue());
+                        }
                         break;
                     case DataTypes.TINYINT:
-                        if (value == null)
+                        if (value == null){
                             ps.setNull(counter, Types.TINYINT);
-                        else
+                        } else{
                             ps.setByte(counter, ((Number) value).byteValue());
+                        }  
                         break;
                     case DataTypes.DOUBLE:
-                        if (value == null)
+                        if (value == null){
                             ps.setNull(counter, Types.DOUBLE);
-                        else
+                        } else {
                             ps.setDouble(counter, ((Number) value).doubleValue());
+                        } 
                         break;
                     case DataTypes.FLOAT:
-                        if (value == null)
+                        if (value == null){
                             ps.setNull(counter, Types.FLOAT);
-                        else
+                        }else{
                             ps.setFloat(counter, ((Number) value).floatValue());
+                        }
                         break;
                     case DataTypes.BIGINT:
-                        if (value == null)
+                        if (value == null){
                             ps.setNull(counter, Types.BIGINT);
-                        else
+                        }else{
                             ps.setLong(counter, ((Number) value).longValue());
+                        }
+                           
                         break;
                     case DataTypes.BINARY:
-                        if (value == null)
+                        if (value == null){
                             ps.setNull(counter, Types.BINARY);
-                        else
+                        } else {
                             ps.setBytes(counter, (byte[]) value);
+                        }
+                            
                         break;
                     default:
                         logger.error("The type conversion is not supported for : "
@@ -741,10 +774,12 @@ public abstract class StorageManager {
                 logger.warn("Inserting a stream element failed : "
                         + streamElement.toString(), e);
         } catch (SQLException e) {
-            if (e.getMessage().toLowerCase().contains("duplicate entry"))
+            if (e.getMessage().toLowerCase().contains("duplicate entry")){
                 logger.info("Error occurred on inserting data to the database, an stream element dropped due to: " + e.getMessage() + ". (Stream element: " + streamElement.toString() + ")+ Query: " + query);
-            else
+            }else{
                 logger.warn("Error occurred on inserting data to the database, an stream element dropped due to: " + e.getMessage() + ". (Stream element: " + streamElement.toString() + ")+ Query: " + query);
+            }
+               
             throw e;
         }
         finally {
@@ -768,14 +803,18 @@ public abstract class StorageManager {
         StringBuilder toReturn = new StringBuilder("insert into ").append(tableName).append(" ( ");
         int numberOfQuestionMarks = 1; //Timed is always there.
         for (DataField dataField : fields) {
-            if (dataField.getName().equalsIgnoreCase("timed"))
+            if (dataField.getName().equalsIgnoreCase("timed")){
                 continue;
+            }
+                
             numberOfQuestionMarks++;
             toReturn.append(dataField.getName()).append(" ,");
         }
         toReturn.append(" timed ").append(" ) values (");
-        for (int i = 1; i <= numberOfQuestionMarks; i++)
+        for (int i = 1; i <= numberOfQuestionMarks; i++){
             toReturn.append("?,");
+        }
+           
         toReturn.deleteCharAt(toReturn.length() - 1);
         toReturn.append(")");
         return toReturn;
@@ -807,8 +846,10 @@ public abstract class StorageManager {
     public StringBuilder getStatementCreateIndexOnTimed(
             CharSequence tableName, boolean unique) throws SQLException {
         StringBuilder toReturn = new StringBuilder("CREATE ");
-        if (unique)
+        if (unique){
             toReturn.append(" UNIQUE ");
+        }
+            
         toReturn.append(" INDEX ").append(tableNamePostFixAppender(tableName, "_INDEX")).append(" ON ").append(tableName).append(" (timed DESC)");
         return toReturn;
     }
@@ -910,18 +951,22 @@ public abstract class StorageManager {
 
 	public StringBuilder tableNameGeneratorInString (int code) {
 		StringBuilder sb = new StringBuilder ("_");
-		if (code<0)
-			sb.append ( "_" );
+		if (code<0){
+            sb.append ( "_" );
+        }
+			
 		sb.append ( Math.abs (code) );
 		return tableNameGeneratorInString(sb);
 	}
 
     public String tableNamePostFixAppender(CharSequence table_name,String postFix) {
         String tableName = table_name.toString();
-		if (tableName.endsWith("\""))
-			return (tableName.substring(0, tableName.length()-2))+postFix+"\"";
-		else
-			return tableName+postFix;
+		if (tableName.endsWith("\"")){
+            return (tableName.substring(0, tableName.length()-2))+postFix+"\"";
+        } else {
+            return tableName+postFix;
+        }
+			
     }
 
     // deprecated

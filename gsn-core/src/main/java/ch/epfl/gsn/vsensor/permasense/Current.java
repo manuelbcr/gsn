@@ -9,14 +9,18 @@ public class Current implements Converter {
 	
 	
 	public String convert(Serializable signal_name, String value, Serializable input) {
-		if (signal_name == null)
+		if (signal_name == null){
 			return null;
+		}
+			
 		
 		int v = ((Integer) signal_name).intValue();
-		if (value.trim().isEmpty() || v == 0xffff)
+		if (value.trim().isEmpty() || v == 0xffff){
 			return null;
-		else
+		} else {
 			return decimal3.format(Double.parseDouble(value) * v);
+		}
+			
 	}
 	
 }

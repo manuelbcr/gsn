@@ -110,8 +110,9 @@ public class ReplayWrapper  extends AbstractWrapper{
   }
   
   public void start_publishing() {
-    if (!dt.hasMoreElements())
+    if (!dt.hasMoreElements()){
       return;
+    }
     final ScheduledStreamElement item = dt.nextElement();
     final long delay = item.getExecutionTime();
     timer.schedule(new TimerTask() {
@@ -149,8 +150,9 @@ class DelayedDataEnumerator implements Enumeration<ScheduledStreamElement>{
   public ScheduledStreamElement nextElement() {
     StreamElement currentSe = data.nextElement();
     long delay = 500;// First time execution is delayed for 500ms.
-    if (previousElement!=null) 
+    if (previousElement!=null) {
       delay =  (currentSe.getTimeStamp()-previousElement.getTimeStamp())/speed;
+    }
     previousElement = currentSe;
     return new ScheduledStreamElement(currentSe,delay);
   }

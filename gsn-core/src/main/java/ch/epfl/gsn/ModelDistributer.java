@@ -35,9 +35,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.LoggerFactory;
 
-import ch.epfl.gsn.ModelDistributer;
-import ch.epfl.gsn.VSensorStateChangeListener;
-import ch.epfl.gsn.VirtualSensorDataListener;
+
 import ch.epfl.gsn.beans.StreamElement;
 import ch.epfl.gsn.beans.VSensorConfig;
 import ch.epfl.gsn.delivery.DeliverySystem;
@@ -88,14 +86,18 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
 
     public static ModelDistributer getInstance(Class<? extends DeliverySystem> c) {
         ModelDistributer toReturn = singletonMap.get(c);
-        if (toReturn == null)
+        if (toReturn == null){
             singletonMap.put(c, (toReturn = new ModelDistributer()));
+        }
+           
         return toReturn;
     }
 
     public static int getKeepAlivePeriod() {
-        if (keepAlivePeriod == -1)
+        if (keepAlivePeriod == -1){
             keepAlivePeriod = System.getProperty("remoteKeepAlivePeriod") == null ? KEEP_ALIVE_PERIOD : Integer.parseInt(System.getProperty("remoteKeepAlivePeriod"));
+        }
+            
         return keepAlivePeriod;
     }
 
@@ -191,7 +193,7 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
 
     public void consume(StreamElement se, VSensorConfig config) {
         synchronized (listeners) {
-            for (DistributionRequest listener : listeners)
+            for (DistributionRequest listener : listeners){
                 if (listener.getVSensorConfig() == config) {
                     logger.debug("sending stream element " + (se == null ? "second-chance-se" : se.toString()) + " produced by " + config.getName() + " to listener =>" + listener.toString());
                     if (!candidateListeners.containsKey(listener)) {
@@ -200,6 +202,7 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
                         candidatesForNextRound.put(listener, Boolean.TRUE);
                     }
                 }
+            }
         }
     }
 
@@ -218,9 +221,9 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
 
             for (Entry<DistributionRequest, DataEnumeratorIF> item : candidateListeners.entrySet()) {
                 boolean success = flushStreamElement(item.getValue(), item.getKey());
-                if (success == false)
+                if (success == false){
                     removeListener(item.getKey());
-                else {
+                } else {
                     if (!item.getValue().hasMoreElements()) {
                         removeListenerFromCandidates(item.getKey());
                         // As we are limiting the number of elements returned by the JDBC driver
@@ -241,8 +244,9 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
             logger.debug("Distributer unloading: " + listeners.size());
             ArrayList<DistributionRequest> toRemove = new ArrayList<DistributionRequest>();
             for (DistributionRequest listener : listeners) {
-                if (listener.getVSensorConfig() == config)
+                if (listener.getVSensorConfig() == config){
                     toRemove.add(listener);
+                }   
             }
             for (DistributionRequest listener : toRemove) {
                 try {
@@ -262,18 +266,21 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
 
     public void release() {
         synchronized (listeners) {
-            while (!listeners.isEmpty())
+            while (!listeners.isEmpty()){
                 removeListener(listeners.get(0));
+            }      
         }
-        if (keepAliveTimer != null)
+        if (keepAliveTimer != null){
             keepAliveTimer.stop();
+        }
+            
     }
 
     public boolean contains(DeliverySystem delivery) {
         synchronized (listeners) {
-            for (DistributionRequest listener : listeners)
-                if (listener.getDeliverySystem().equals(delivery))
-                    return true;
+            for (DistributionRequest listener : listeners){
+                if (listener.getDeliverySystem().equals(delivery)){return true;}
+            }      
             return false;
 		}
 

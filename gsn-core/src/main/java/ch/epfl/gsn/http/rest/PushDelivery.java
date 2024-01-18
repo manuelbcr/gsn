@@ -51,8 +51,10 @@ public class PushDelivery implements DeliverySystem {
 
 	public void writeStructure(DataField[] fields) throws IOException {
 		String xml = xstream.toXML(fields);
-		if (writer ==null)
+		if (writer ==null){
 			throw new RuntimeException("The writer structue is null.");
+		}
+			
 		writer.write(xml);
 		writer=  null;
 	}
@@ -103,11 +105,11 @@ public class PushDelivery implements DeliverySystem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o){ return true;}
+        if (o == null || getClass() != o.getClass()){ return false;}
         PushDelivery that = (PushDelivery) o;
-        if (Double.compare(that.notificationId, notificationId) != 0) return false;
-        if (httpPut != null ? !httpPut.getURI().equals(that.httpPut.getURI()) : that.httpPut != null) return false;
+        if (Double.compare(that.notificationId, notificationId) != 0){ return false;}
+        if (httpPut != null ? !httpPut.getURI().equals(that.httpPut.getURI()) : that.httpPut != null){ return false;}
         return true;
     }
 

@@ -87,9 +87,10 @@ public class BackLogWrapper extends AbstractWrapper {
 	 */
 	@Override
 	public boolean initialize() {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("BackLog wrapper initialize started...");
-		
+		}
+			
 	    addressBean = getActiveAddressBean();
 
 		String deployment = addressBean.getVirtualSensorName().split("_")[0].toLowerCase();
@@ -116,8 +117,9 @@ public class BackLogWrapper extends AbstractWrapper {
 	    }
 		
 		// instantiating the plugin class specified in the XML file
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("Loading BackLog plugin: >" + plugin + "<");
+		}
 		try {
 			Class<?> cl = Class.forName(plugin);
 			pluginObject = (AbstractPlugin) cl.getConstructor().newInstance();
@@ -146,12 +148,14 @@ public class BackLogWrapper extends AbstractWrapper {
 	@Override
 	public void run() {
 		synchronized (blMsgMultiplexer) {
-			if (!blMsgMultiplexer.isAlive())
+			if (!blMsgMultiplexer.isAlive()){
 				blMsgMultiplexer.start();
+			}	
 		}
 
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("Starting BackLog plugin: >" + plugin + "<");
+		}
 		pluginObject.start();
 	}
 
@@ -176,8 +180,9 @@ public class BackLogWrapper extends AbstractWrapper {
 	 * @return false if storing the new item fails otherwise true
 	 */
 	public boolean dataProcessed(long timestamp, Serializable... data) {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("dataProcessed timestamp: " + timestamp);
+		}
 		return postStreamElement(timestamp, data);
 	}
 	
@@ -267,8 +272,9 @@ public class BackLogWrapper extends AbstractWrapper {
 			return pluginObject.sendToPlugin(action, paramNames, paramValues);
 		}
 		else if ( id.compareTo(blMsgMultiplexer.getDeviceID()) == 0 || id == 65535) {
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()){
 				logger.debug("Upload command received for device id " + id);
+			}
 			return pluginObject.sendToPlugin(action, paramNames, paramValues);
 		}
 		return new InputInfo(getActiveAddressBean().toString(), "", true);
@@ -295,8 +301,9 @@ public class BackLogWrapper extends AbstractWrapper {
 	 */
 	@Override
 	public boolean sendToWrapper ( Object dataItem ) throws OperationNotSupportedException {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("Upload object received.");
+		}
 		return pluginObject.sendToPlugin(dataItem);
 	}
 

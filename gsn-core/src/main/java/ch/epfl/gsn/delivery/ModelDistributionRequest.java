@@ -105,18 +105,24 @@ public class ModelDistributionRequest implements DistributionRequest {
 
 	    @Override
 	    public boolean equals(Object o) {
-	        if (this == o) return true;
-	        if (o == null || getClass() != o.getClass()) return false;
+	        if (this == o) {return true;}
+	        if (o == null || getClass() != o.getClass()) {return false;}
 
 	        ModelDistributionRequest that = (ModelDistributionRequest) o;
 
-	        if (deliverySystem != null ? !deliverySystem.equals(that.deliverySystem) : that.deliverySystem != null)
+	        if (deliverySystem != null ? !deliverySystem.equals(that.deliverySystem) : that.deliverySystem != null){
 	            return false;
-	        if (query != null ? !query.equals(that.query) : that.query != null) return false;
-	        if (vSensorConfig != null ? !vSensorConfig.equals(that.vSensorConfig) : that.vSensorConfig != null)
+			}
+
+	        if (query != null ? !query.equals(that.query) : that.query != null){ return false;}
+	        if (vSensorConfig != null ? !vSensorConfig.equals(that.vSensorConfig) : that.vSensorConfig != null){
 	            return false;
-	        if (modelClass != null ? modelClass.getClass() != that.modelClass.getClass() : that.modelClass != null)
+			}
+
+	        if (modelClass != null ? modelClass.getClass() != that.modelClass.getClass() : that.modelClass != null){
 	            return false;
+			}
+
 
 	        return true;
 	    }

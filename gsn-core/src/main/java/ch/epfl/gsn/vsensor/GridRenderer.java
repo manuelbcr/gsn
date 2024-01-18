@@ -189,11 +189,13 @@ public class GridRenderer extends AbstractVirtualSensor {
         minvalue = a[0][0];
         maxvalue = a[0][0];
 
-        for (int i = 0; i < a.length; i++)
+        for (int i = 0; i < a.length; i++){
             for (int j = 0; j < a[0].length; j++) {
-                if (minvalue > a[i][j]) minvalue = a[i][j];
-                if (maxvalue < a[i][j]) maxvalue = a[i][j];
+                if (minvalue > a[i][j]) {minvalue = a[i][j];}
+                if (maxvalue < a[i][j]) {maxvalue = a[i][j];}
             }
+        }
+            
     	}else{
     		minvalue = min_v;
     		maxvalue = max_v;
@@ -238,7 +240,7 @@ public class GridRenderer extends AbstractVirtualSensor {
 				logger.error(e1.getMessage(), e1);
 			}
 	    	//go through the picture pixel by pixel
-	    	for (int x=0;x<width;x++)
+	    	for (int x=0;x<width;x++){
 	        	for (int y=0;y<height;y++){
 	        		//the indices in the grid corresponding to this pixel
 	        		int i = (int) (x/(width * 1.0 / ncols));
@@ -257,6 +259,7 @@ public class GridRenderer extends AbstractVirtualSensor {
 	        		int rgb = (bw+r2)/2 * 256 * 256 + (bw+g2)/2 * 256 + (bw+b2)/2;
 	        		back.setRGB(x, y, rgb);
 	        	}
+            }
     	} else {
 	        int Y = a.length;
 	        int X = a[0].length;
@@ -265,23 +268,27 @@ public class GridRenderer extends AbstractVirtualSensor {
 	
 	        int bigPixel[] = new int[cell_pixels * cell_pixels];
 	
-	        for (int i = 0; i < X; ++i)
-	            for (int j = 0; j < Y; ++j) {
+	        for (int i = 0; i < X; ++i){
+                for (int j = 0; j < Y; ++j) {
 	
 	                int color = mapValue(a[j][i]);
 	
-	                for (int k = 0; k < cell_pixels * cell_pixels; k++)
-	                    bigPixel[k] = color;
+	                for (int k = 0; k < cell_pixels * cell_pixels; k++){
+                        bigPixel[k] = color;
+                    } 
 	
 	                back.setRGB(i * cell_pixels, j * cell_pixels, cell_pixels, cell_pixels, bigPixel, 0, cell_pixels);
 	            }
+            }
+	            
     	}
     	// draw the gradient of the scale
     	int bigPixel[] = new int[15];
     	for (int x=0;x<back.getHeight();x++){
     		int color = map[255-(int)(x*255.0/back.getHeight())];
-            for (int k = 0; k < 15; k++)
+            for (int k = 0; k < 15; k++){
                 bigPixel[k] = color;
+            }
     		back.setRGB(0, x, 15, 1, bigPixel, 0,15);
     	}
     	// draw the min and max of the scale
@@ -304,14 +311,17 @@ public class GridRenderer extends AbstractVirtualSensor {
         map = new int[256];
         int r, g, b;
         for (int i = 0; i <= 255; i++) {
-            if (i < 128)
+            if (i < 128){
                 r = 255;
-            else
+            } else {
                 r = 255 - i * 2;
-            if (i < 128)
+            }
+            if (i < 128){
                 g = i * 2;//i;
-            else
+            }  else{
                 g = 255;
+            }
+                
             b = 0;//255;
             map[255-i] = r * 256 * 256 + g * 256 + b;
         }
@@ -323,10 +333,12 @@ public class GridRenderer extends AbstractVirtualSensor {
      * @return
      */
     public int mapValue(double value) {
-        if (value > maxvalue)
+        if (value > maxvalue){
             return  0; //black
-        if (value < minvalue)
+        }  
+        if (value < minvalue){
             return 255 * 256 * 256 + 255 * 256 + 255; //white
+        } 
         return map[(int) Math.round((value - minvalue) * 255 / (maxvalue - minvalue))];
     }
 }

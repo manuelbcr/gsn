@@ -27,9 +27,7 @@ package ch.epfl.gsn;
 
 import org.slf4j.LoggerFactory;
 
-import ch.epfl.gsn.Main;
 import ch.epfl.gsn.VirtualSensor;
-import ch.epfl.gsn.VirtualSensorInitializationFailedException;
 import ch.epfl.gsn.beans.InputStream;
 import ch.epfl.gsn.beans.StreamSource;
 import ch.epfl.gsn.beans.VSensorConfig;
@@ -81,9 +79,11 @@ public class VirtualSensor {
      * @param o
      */
     public synchronized void returnVS(AbstractVirtualSensor o) {
-        if (o == null) return;
-        if (++noOfCallsToReturnVS % GARBAGE_COLLECTOR_INTERVAL == 0)
+        if (o == null) {return;}
+        if (++noOfCallsToReturnVS % GARBAGE_COLLECTOR_INTERVAL == 0){
             DoUselessDataRemoval();
+        }
+            
     }
 
     public synchronized void closePool() {
@@ -134,7 +134,7 @@ public class VirtualSensor {
 
     // apply the storage size parameter to the virtual sensor table
     public void DoUselessDataRemoval() {
-        if (config.getParsedStorageSize() == VSensorConfig.STORAGE_SIZE_NOT_SET) return;
+        if (config.getParsedStorageSize() == VSensorConfig.STORAGE_SIZE_NOT_SET){ return;}
         StringBuilder query;
 
         if (config.isStorageCountBased()) {

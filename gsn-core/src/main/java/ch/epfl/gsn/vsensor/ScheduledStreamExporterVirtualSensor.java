@@ -61,11 +61,12 @@ import org.slf4j.Logger;
 		// Get the StreamExporter parameters
 		TreeMap<String, String> params = getVirtualSensorConfiguration()
 		.getMainClassInitialParams();
-		for (String param : OBLIGATORY_PARAMS)
+		for (String param : OBLIGATORY_PARAMS) {
 			if ( params.get( param ) == null || params.get(param).trim().length()==0) {
 				logger.warn("Initialization Failed, The "+param+ " initialization parameter is missing");
 				return false;
 			}
+		}
 		table_name = params.get( TABLE_NAME );
 		user = params.get(PARAM_USER);
 		password = params.get(PARAM_PASSWD);
@@ -74,8 +75,9 @@ import org.slf4j.Logger;
 			Class.forName(params.get(PARAM_DRIVER));
 			connection = getConnection();
 			logger.debug( "jdbc connection established." );
-			if (!Main.getStorage(table_name.toString()).tableExists(table_name,getVirtualSensorConfiguration().getOutputStructure() , connection))
+			if (!Main.getStorage(table_name.toString()).tableExists(table_name,getVirtualSensorConfiguration().getOutputStructure() , connection)){
 				Main.getStorage(table_name.toString()).executeCreateTable(table_name, getVirtualSensorConfiguration().getOutputStructure(), false,connection);
+			}
 		} catch (ClassNotFoundException e) {
 			logger.error(e.getMessage(),e);
 			logger.error("Initialization of the Stream Exporter VS failed !");
@@ -105,9 +107,9 @@ import org.slf4j.Logger;
 
 		public void run() {
 			
-			if(dataItem == null)
-				return;	
-			
+			if(dataItem == null){
+				return;
+			}
 			dataItem.setTimeStamp(System.currentTimeMillis());
 			logger.warn(getVirtualSensorConfiguration().getName() + " Timer Event ");
 			StringBuilder query = Main.getStorage(table_name.toString()).getStatementInsert(table_name, getVirtualSensorConfiguration().getOutputStructure());
@@ -126,10 +128,11 @@ import org.slf4j.Logger;
 				try {
 					ContainerImpl.getInstance().publishData(ScheduledStreamExporterVirtualSensor.this, dataItem);
 				} catch (SQLException e) {
-					if (e.getMessage().toLowerCase().contains("duplicate entry"))
+					if (e.getMessage().toLowerCase().contains("duplicate entry")){
 						logger.info(e.getMessage(), e);
-					else
+					} else {
 						logger.error(e.getMessage(), e);
+					}
 				}
 			}
 
@@ -137,8 +140,9 @@ import org.slf4j.Logger;
 	}
 
 	public Connection getConnection() throws SQLException {
-		if (this.connection==null || this.connection.isClosed())
+		if (this.connection==null || this.connection.isClosed()){
 			this.connection=DriverManager.getConnection(url,user,password);
+		}
 		return connection;
 	}
 

@@ -50,8 +50,10 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 			    byte[] rec = requester.recv();
 			    if (rec != null){
 			        structure =  kryo.readObjectOrNull(new Input(new ByteArrayInputStream(rec)),DataField[].class);
-			        if (structure != null)
-			            requester.close();
+			        if (structure != null){
+						requester.close();
+					}
+			            
 			        return structure;
 			    }
 			}
@@ -75,14 +77,18 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 		vsensor = addressBean.getPredicateValue ( "vsensor" ).toLowerCase();
 		String startTime = addressBean.getPredicateValue ( "start-time" );
 
-		if ( address == null || address.trim().length() == 0 ) 
+		if ( address == null || address.trim().length() == 0 ) {
 			throw new RuntimeException( "The >address< parameter is missing from the ZeroMQ wrapper." );
-		if ( laddress == null || laddress.trim().length() == 0 ) 
+		}
+		if ( laddress == null || laddress.trim().length() == 0 ) {
 			throw new RuntimeException( "The >local_address< parameter is missing from the ZeroMQ wrapper." );
+		}
 		if (_lport != null){
 			lport = Integer.parseInt(_lport); 
-			if ( lport < 0 || lport > 65535 ) 
+			if ( lport < 0 || lport > 65535 ){
 				throw new RuntimeException( "The >local_port< parameter must be a valid port number." );
+			} 
+				
 		}
 		try {
             isLocal = new URI(address).getScheme().equals("inproc");
@@ -101,7 +107,7 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 		ctx = Main.getZmqContext();
 		receiver = ctx.createSocket(ZMQ.REP);
 		if (lport == 0){
-		lport = receiver.bindToRandomPort("tcp://*", 50000, 60000);
+			lport = receiver.bindToRandomPort("tcp://*", 50000, 60000);
 		} else {
 			receiver.bind("tcp://*:"+lport);
 		}

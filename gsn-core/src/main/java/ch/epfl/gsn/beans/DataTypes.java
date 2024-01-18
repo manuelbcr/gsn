@@ -135,13 +135,15 @@ public class DataTypes {
          new Date( ).getTime( ) , new Integer( 1 ) , new Integer( 9 ), new Float(2.02) };
    
    public static byte convertTypeNameToGSNTypeID ( final String type ) {
-       if ( type == null ) throw new GSNRuntimeException( new StringBuilder( "The type *null* is not recoginzed by GSN." ).append( DataTypes.ERROR_MESSAGE ).toString( ) );
-       if(type.trim().equalsIgnoreCase("string")) return DataTypes.VARCHAR;
-       for ( byte i = 0 ; i < DataTypes.ALL_PATTERNS.length ; i++ )
-         if ( DataTypes.ALL_PATTERNS[ i ].matcher( type ).matches( ) ){
-             return i;
-         }
-      if(type.trim().equalsIgnoreCase("numeric")) return DataTypes.DOUBLE;
+       if ( type == null ){ throw new GSNRuntimeException( new StringBuilder( "The type *null* is not recoginzed by GSN." ).append( DataTypes.ERROR_MESSAGE ).toString( ) );}
+       if(type.trim().equalsIgnoreCase("string")){ return DataTypes.VARCHAR;}
+       for ( byte i = 0 ; i < DataTypes.ALL_PATTERNS.length ; i++ ){
+            if ( DataTypes.ALL_PATTERNS[ i ].matcher( type ).matches( ) ){
+                  return i;
+            }
+       }
+
+      if(type.trim().equalsIgnoreCase("numeric")){ return DataTypes.DOUBLE;}
       
       
       throw new GSNRuntimeException( new StringBuilder( "The type *" ).append( type ).append( "* is not recognized." ).append( DataTypes.ERROR_MESSAGE ).toString( ) );
@@ -153,12 +155,13 @@ public class DataTypes {
     * @return
     */
    public static byte SQLTypeToGSNTypeSimplified(int sqlType) {
-	   if (sqlType == Types.BIGINT || sqlType == Types.SMALLINT || sqlType == Types.DOUBLE || sqlType==Types.INTEGER || sqlType == Types.DECIMAL||sqlType == Types.REAL || sqlType == Types.FLOAT|| sqlType == Types.NUMERIC )
-			return  DataTypes.DOUBLE;
-		else if (sqlType == Types.VARCHAR || sqlType == Types.CHAR|| sqlType == Types.LONGNVARCHAR || sqlType == Types.LONGVARCHAR || sqlType== Types.NCHAR )
-			return  DataTypes.VARCHAR;
-		else if (sqlType == Types.BINARY || sqlType == Types.BLOB|| sqlType == Types.VARBINARY )
-			return  DataTypes.BINARY;
+	   if (sqlType == Types.BIGINT || sqlType == Types.SMALLINT || sqlType == Types.DOUBLE || sqlType==Types.INTEGER || sqlType == Types.DECIMAL||sqlType == Types.REAL || sqlType == Types.FLOAT|| sqlType == Types.NUMERIC ){
+            return  DataTypes.DOUBLE;
+         } else if (sqlType == Types.VARCHAR || sqlType == Types.CHAR|| sqlType == Types.LONGNVARCHAR || sqlType == Types.LONGVARCHAR || sqlType== Types.NCHAR ){
+            return  DataTypes.VARCHAR;
+         } else if (sqlType == Types.BINARY || sqlType == Types.BLOB|| sqlType == Types.VARBINARY ) {
+            return  DataTypes.BINARY;
+         }			
 	   throw new RuntimeException("Can't convert SQL type id of: "+sqlType+ " to GSN type id.");
    }
 }

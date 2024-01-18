@@ -107,8 +107,9 @@ public class CSVHandler {
             logger.error(e.getMessage(), e);
             return false;
         }
-        if (!validateFormats(this.formats))
+        if (!validateFormats(this.formats)){
             return false;
+        }
         if (fields.length != formats.length) {
             logger.error("loading the csv-wrapper failed as the length of fields(" + fields.length + ") doesn't match the length of formats(" + formats.length + ")");
             return false;
@@ -125,9 +126,9 @@ public class CSVHandler {
 
     public static boolean validateFormats(String[] formats) {
         for (int i = 0; i < formats.length; i++) {
-            if (formats[i].equalsIgnoreCase("numeric") || formats[i].equalsIgnoreCase("string") || formats[i].equalsIgnoreCase("bigint"))
+            if (formats[i].equalsIgnoreCase("numeric") || formats[i].equalsIgnoreCase("string") || formats[i].equalsIgnoreCase("bigint")){
                 continue;
-            else if (isTimeStampFormat(formats[i])) {
+            } else if (isTimeStampFormat(formats[i])) {
                 try {
                     String tmp = DateTimeFormat.forPattern(getTimeStampFormat(formats[i])).print(System.currentTimeMillis());
                 } catch (IllegalArgumentException e) {
@@ -154,12 +155,15 @@ public class CSVHandler {
      */
     public static String[] generateFieldIdx(String rawFields, boolean toLowerCase) throws IOException {
         String[] toReturn = new CSVReader(new StringReader(rawFields)).readNext();
-        if (toReturn == null)
+        if (toReturn == null){
             return new String[0];
+        }
+            
         for (int i = 0; i < toReturn.length; i++) {
             toReturn[i] = toReturn[i].trim();
-            if (toLowerCase)
+            if (toLowerCase){
                 toReturn[i] = toReturn[i].toLowerCase();
+            }
         }
         return toReturn;
     }
@@ -169,8 +173,10 @@ public class CSVHandler {
         setupCheckPointFileIfNeeded();
         String val = FileUtils.readFileToString(new File(checkPointFile), "UTF-8");
         long lastItem = 0;
-        if (val != null && val.trim().length() > 0)
+        if (val != null && val.trim().length() > 0){
             lastItem = Long.parseLong(val.trim());
+        }
+            
         items = parseValues(dataFile, lastItem);
 
         return items;
@@ -189,12 +195,15 @@ public class CSVHandler {
         long currentLine = 0;
         while ((values = reader.readNext()) != null) {
             TreeMap<String, Serializable> se = convertTo(formats, fields, getNulls(), values, getSeparator());
-            if (isEmpty(se))
+            if (isEmpty(se)){
                 continue;
+            } 
             if (se.containsKey(TIMESTAMP)) {
             	//System.out.println("times "+se.get(TIMESTAMP)+"--"+previousCheckPoint);
-                if (((Long) se.get(TIMESTAMP)) <= previousCheckPoint)
+                if (((Long) se.get(TIMESTAMP)) <= previousCheckPoint){
                     continue;
+                }
+                   
             } else {// assuming useCounterForCheckPoint = true
 
                 if (logger.isDebugEnabled()) {
@@ -212,8 +221,9 @@ public class CSVHandler {
             toReturn.add(se);
             currentLine++;
             loggedNoChange = false;
-            if (toReturn.size() > 250)
+            if (toReturn.size() > 250){
                 break; // Move outside the loop as in each call we only read 250 values;
+            } 
         }
         if (logger.isDebugEnabled() && toReturn.size() == 0 && loggedNoChange == false) {
             logger.debug("There is no new item after most recent checkpoint(previousCheckPoint:" + new DateTime(previousCheckPoint) + ").");
@@ -225,16 +235,20 @@ public class CSVHandler {
     }
 
     private boolean isEmpty(Map<String, Serializable> se) {
-        for (Object o : se.values())
-            if (o != null)
+        for (Object o : se.values()){
+            if (o != null){
                 return false;
+            }
+        } 
         return true;
     }
 
     public TreeMap<String, Serializable> convertTo(String[] formats, String[] fields, String nullValues[], String[] values, char separator) {
         TreeMap<String, Serializable> streamElement = new TreeMap<String, Serializable>(new CaseInsensitiveComparator());
-        for (String field : fields)
+        for (String field : fields){
             streamElement.put(field, null);
+        }
+           
         HashMap<String, String> timeStampFormats = new HashMap<String, String>();
         for (int i = 0; i < Math.min(fields.length, values.length); i++) {
             if (isNull(nullValues, values[i])) {
@@ -264,8 +278,10 @@ public class CSVHandler {
                     value += separator;
                     format += separator;
                 }
-                if (isTimeStampLeftPaddedFormat(formats[i]))
+                if (isTimeStampLeftPaddedFormat(formats[i])){
                     values[i] = StringUtils.leftPad(values[i], getTimeStampFormat(formats[i]).length(), '0');
+                }
+                  
 
                 value += values[i];
                 format += getTimeStampFormat(formats[i]);
@@ -291,10 +307,12 @@ public class CSVHandler {
     }
 
     public static String getTimeStampFormat(String input) {
-        if (input.indexOf("timestampl(") >= 0)
+        if (input.indexOf("timestampl(") >= 0){
             return input.substring("timestampl(".length(), input.indexOf(")")).trim();
-        else
+        } else {
             return input.substring("timestamp(".length(), input.indexOf(")")).trim();
+        }
+            
     }
 
     public static boolean isTimeStampFormat(String input) {
@@ -319,11 +337,16 @@ public class CSVHandler {
     }
 
     public static boolean isNull(String[] possibleNullValues, String value) {
-        if (value == null || value.length() == 0)
+        if (value == null || value.length() == 0){
             return true;
-        for (int i = 0; i < possibleNullValues.length; i++)
-            if (possibleNullValues[i].equalsIgnoreCase(value.trim()))
+        }
+            
+        for (int i = 0; i < possibleNullValues.length; i++){
+            if (possibleNullValues[i].equalsIgnoreCase(value.trim())){
                 return true;
+            }
+        }
+            
         return false;
     }
 
@@ -339,17 +362,21 @@ public class CSVHandler {
             if (isTimeStampFormat(type)) {
                 //GSN doesn't support timestamp data type, all timestamp values are supposed to be bigint.
                 fields.put(field, "bigint");
-            } else if (type.equalsIgnoreCase("numeric"))
+            } else if (type.equalsIgnoreCase("numeric")){
                 fields.put(field, "numeric");
-            else if (type.equalsIgnoreCase("bigint"))
+            } else if (type.equalsIgnoreCase("bigint")) {
                 fields.put(field, "bigint");
-            else
+            } else {
                 fields.put(field, "string");
+            }
+                
         }
         DataField[] toReturn = new DataField[fields.size()];
         int i = 0;
-        for (String key : fields.keySet())
+        for (String key : fields.keySet()){
             toReturn[i++] = new DataField(key, fields.get(key));
+        }
+            
         return toReturn;
     }
 

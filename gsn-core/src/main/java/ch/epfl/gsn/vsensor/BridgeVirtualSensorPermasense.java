@@ -62,26 +62,28 @@ public class BridgeVirtualSensorPermasense extends ScriptletProcessor
 		
 		String[] jpeg = null;
 		s = params.get("jpeg_scaled");
-		if (s != null)
+		if (s != null){
 			jpeg = s.split(",");
-		if (jpeg == null) jpeg = new String[]{ };
+		}
+			
+		if (jpeg == null) {jpeg = new String[]{ };}
 		jpeg_scaled = new Vector<String>(jpeg.length);
 		for (i = 0; i < jpeg.length; i++) {
 			jpeg_scaled.addElement(jpeg[i].trim().toLowerCase());
 		}
 
-		if (params.get("position_mapping") != null)
+		if (params.get("position_mapping") != null){
 			position_mapping = true;
-
-		if (params.get("sensortype_mapping") != null)
+		}
+		if (params.get("sensortype_mapping") != null){
 			sensortype_mapping = true;
-
-		if (params.get("sensorvalue_conversion") != null)
+		}
+		if (params.get("sensorvalue_conversion") != null){
 			sensorvalue_conversion = true;
-
-		if (params.get("gps_time_conversion") != null)
+		}
+		if (params.get("gps_time_conversion") != null){
 			gps_time_conversion = true;
-		
+		}
 		processScriptlet = super.initialize();
 		return true;
 	}
@@ -156,16 +158,17 @@ public class BridgeVirtualSensorPermasense extends ScriptletProcessor
 		    }
 		}
 
-		if (processScriptlet)
+		if (processScriptlet){
 			super.dataAvailable(inputStreamName, data);
-		else
+		} else {
 			dataProduced( data );
-			
+		}
 	}
 	
 	@Override
 	public synchronized void dispose() {
-		if (processScriptlet)
+		if (processScriptlet){
 			super.dispose();
+		}
 	}
 }

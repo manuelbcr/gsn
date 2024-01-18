@@ -19,8 +19,10 @@ public class Field4RestConverter implements Converter {
 	public void marshal(Object in, HierarchicalStreamWriter writer, MarshallingContext context) {
 		Field4Rest input = (Field4Rest) in;
 		writer.addAttribute("name", input.getName());
-		if(input.getValue()==null)
+		if(input.getValue()==null){
 			writer.addAttribute("is-null", "true");
+		}
+			
 		String type = "not-detected";
 		String value = null;
 
@@ -31,24 +33,32 @@ public class Field4RestConverter implements Converter {
 		case DataTypes.DOUBLE:
 		case DataTypes.TINYINT:
 			type="numeric";
-			if (input.getValue() !=null)
+			if (input.getValue() !=null){
 				value = Double.toString(((Number)input.getValue()).doubleValue());
+			}
+				
 			break;
 		case DataTypes.CHAR:
 		case DataTypes.VARCHAR:
 			type="string";
-			if (input.getValue() !=null)
+			if (input.getValue() !=null){
 				value = (String)input.getValue();
+			}
+				
 			break;
 		default:
 			type="binary";
-		if (input.getValue() !=null) 
+		if (input.getValue() !=null){
 			value =base64.encode((byte[]) input.getValue());
+		} 
+			
 		}
 
 		writer.addAttribute("type", type);
-		if (value!=null)
+		if (value!=null){
 			writer.setValue(value);
+		}
+			
 	}
 
 	public Object unmarshal(HierarchicalStreamReader reader,UnmarshallingContext context) {
@@ -56,25 +66,31 @@ public class Field4RestConverter implements Converter {
 		String name = reader.getAttribute("name");
 		String type = reader.getAttribute("type");
 		Byte typeId;
-		if (type.equalsIgnoreCase("numeric"))
+		if (type.equalsIgnoreCase("numeric")){
 			typeId = DataTypes.DOUBLE;
-		else if (type.equalsIgnoreCase("string"))
+		} else if (type.equalsIgnoreCase("string")) {
 			typeId = DataTypes.VARCHAR;
-		else 
+		} else {
 			typeId = DataTypes.BINARY;
+		}
+			
 		
 		Boolean isNull = false;
-		if (reader.getAttribute("is-null")!=null)
+		if (reader.getAttribute("is-null")!=null){
 			isNull = Boolean.valueOf(reader.getAttribute("is-null"));
+		}
+			
 
 		Serializable value = null;
 		if (!isNull) {
-			if (type.equalsIgnoreCase("string")) 
+			if (type.equalsIgnoreCase("string")){
 				value = reader.getValue();
-			else if (type.equalsIgnoreCase("numeric"))
+			} else if (type.equalsIgnoreCase("numeric")){
 				value = Double.parseDouble(reader.getValue());
-			else
+			} else{
 				value = (byte[]) base64.decode(reader.getValue());
+			}
+				
 		}
 
 		toReturn = new Field4Rest(name,typeId,value);

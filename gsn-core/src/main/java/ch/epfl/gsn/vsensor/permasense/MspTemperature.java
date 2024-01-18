@@ -9,14 +9,18 @@ public class MspTemperature implements Converter {
 	
 	
 	public String convert(Serializable signal_name, String value, Serializable input) {
-		if (signal_name == null)
+		if (signal_name == null){
 			return null;
+		}
+			
 		
 		int v = ((Integer) signal_name).intValue();
-		if (v == 65535)
+		if (v == 65535){
 			return null;
-		else
+		} else {
 			return decimal3.format((new Double(v) * (1.5/4095) - 0.986) / 0.00355);
+		}
+			
 	}
 	
 }

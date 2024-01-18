@@ -70,8 +70,9 @@ public class HibernateStorage implements VirtualSensorStorage {
     private HibernateStorage(DBConnectionInfo dbInfo, String identifier, DataField[] structure, boolean unique) throws RuntimeException {
         String em = generateEntityMapping(identifier, structure, unique);
         this.sf = HibernateUtil.getSessionFactory(dbInfo.getDriverClass(), dbInfo.getUrl(), dbInfo.getUserName(), dbInfo.getPassword(), em);
-        if (this.sf == null)
+        if (this.sf == null){
             throw new RuntimeException("Unable to instanciate the Storage for:" + identifier);
+        }
         this.identifier = identifier.toLowerCase();
         this.structure = structure;
     }
@@ -111,8 +112,9 @@ public class HibernateStorage implements VirtualSensorStorage {
             return dm2se(dm);
         } catch (RuntimeException e) {
             try {
-                if (tx != null)
+                if (tx != null){
                     tx.rollback();
+                }                   
             } catch (RuntimeException ex) {
                 logger.error("Couldn't roll back transaction.");
             }
@@ -133,8 +135,9 @@ public class HibernateStorage implements VirtualSensorStorage {
 
         } catch (RuntimeException e) {
             try {
-                if (tx != null)
+                if (tx != null){
                     tx.rollback();
+                }                   
             } catch (RuntimeException ex) {
                 logger.error("Couldn't roll back transaction.");
             }
@@ -162,8 +165,9 @@ public class HibernateStorage implements VirtualSensorStorage {
             return pk;
         } catch (RuntimeException e) {
             try {
-                if (tx != null)
+                if (tx != null){
                     tx.rollback();
+                }
             } catch (RuntimeException ex) {
                 logger.error("Couldn't roll back transaction.");
             }
@@ -173,8 +177,9 @@ public class HibernateStorage implements VirtualSensorStorage {
 
     protected void finalize() throws Throwable {
         try {
-            if (sf != null)
+            if (sf != null){
                 HibernateUtil.closeSessionFactory(sf);
+            }  
         } finally {
             super.finalize();
         }
@@ -215,8 +220,9 @@ public class HibernateStorage implements VirtualSensorStorage {
         ArrayList<Serializable> data = new ArrayList<Serializable>();
         long timed = (Long) dm.get("timed");
         for (DataField df : structure) {
-            if (!"timed".equalsIgnoreCase(df.getName()))
+            if (!"timed".equalsIgnoreCase(df.getName())){
                 data.add(dm.get(df.getName()));
+            }               
         }
         return new StreamElement(structure, data.toArray(new Serializable[]{data.size()}), timed);
     }
@@ -225,8 +231,9 @@ public class HibernateStorage implements VirtualSensorStorage {
         Map<String, Serializable> dm = new HashMap<String, Serializable>();
         dm.put("timed", se.getTimeStamp());
         for (String fieldName : se.getFieldNames()) {
-            if (!"timed".equalsIgnoreCase(fieldName))
+            if (!"timed".equalsIgnoreCase(fieldName)){
                 dm.put(fieldName, se.getData(fieldName));
+            }     
         }
         return dm;
     }
@@ -311,8 +318,9 @@ public class HibernateStorage implements VirtualSensorStorage {
             this.crits = crits;
             currentPage = 0;
             pci = null;             //page content iterator
-            if (maxResults == 0)
+            if (maxResults == 0){
                 close();
+            }       
             hasMoreElements();
         }
 
@@ -324,13 +332,15 @@ public class HibernateStorage implements VirtualSensorStorage {
         public boolean hasMoreElements() {
 
             // Check if the DataEnumerator is closed
-            if (closed)
+            if (closed){
                 return false;
+            }
 
             // Check if there is still data in the current pageContent
-            if (pci != null && pci.hasNext())
+            if (pci != null && pci.hasNext()){
                 return true;
-
+            }
+                
             // Compute the next number of elements to fetch
             int offset = currentPage * pageSize;
             int mr = pageSize;
@@ -362,8 +372,9 @@ public class HibernateStorage implements VirtualSensorStorage {
 
             } catch (RuntimeException e) {
                 try {
-                    if (tx != null)
+                    if (tx != null){
                         tx.rollback();
+                    }    
                 } catch (RuntimeException ex) {
                     logger.error("Couldn't roll back transaction.");
                 }
@@ -379,15 +390,18 @@ public class HibernateStorage implements VirtualSensorStorage {
         }
 
         public StreamElement nextElement() throws RuntimeException {
-            if ( ! hasMoreElements())
+            if ( ! hasMoreElements()){
                 throw new IndexOutOfBoundsException("The DataEnumerator has no more StreamElement or is closed."); 
-            else
+            } else {
                 return dm2se(pci.next());
+            }   
         }
 
         public void close() {
-            if (! closed)
-                 closed = true;
+            if (! closed){
+                closed = true;
+            }
+                 
         }
     }
 }

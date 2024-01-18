@@ -61,10 +61,12 @@ public class H2StorageManager extends StorageManager {
                     case DataTypes.VARCHAR:
                         // Because the parameter for the varchar is not
                         // optional.
-                    	if (gsnType.getType().trim().equalsIgnoreCase("string"))
+                    	if (gsnType.getType().trim().equalsIgnoreCase("string")){
                             convertedType = "TEXT";
-                        else
+                        } else {
                             convertedType = gsnType.getType();
+                        }
+                            
                         break;
                     case DataTypes.FLOAT:
                     	convertedType = "REAL"; // Warning! The type FLOAT in H2 is a synonym of DOUBLE !!
@@ -153,7 +155,7 @@ public class H2StorageManager extends StorageManager {
         StringBuilder result = new StringBuilder("CREATE TABLE ").append(tableName);
         result.append(" (PK BIGINT NOT NULL IDENTITY, timed BIGINT NOT NULL, ");
         for (DataField field : structure) {
-            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) continue;
+            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) {continue;}
             result.append(field.getName().toUpperCase()).append(' ');
             result.append(convertGSNTypeToLocalType(field));
             result.append(" ,");

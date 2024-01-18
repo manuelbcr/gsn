@@ -90,8 +90,9 @@ public class SystemTime extends AbstractWrapper implements ActionListener {
     if(maximumDelay > 0){
     	streamElementBuffer = SynchronizedBuffer.decorate(new UnboundedFifoBuffer());
     	delayPostingElements = true;
-    	if(timer.getDelay() < maximumDelay)
-    		logger.warn("Maximum delay is greater than element production interval. Running for a long time may lead to an OutOfMemoryException" );
+    	if(timer.getDelay() < maximumDelay){
+        logger.warn("Maximum delay is greater than element production interval. Running for a long time may lead to an OutOfMemoryException" );
+      }
     }
     return true;
   }
@@ -137,9 +138,9 @@ public class SystemTime extends AbstractWrapper implements ActionListener {
     	synchronized(objectLock){
     		objectLock.notifyAll();
     	}
-    }
-    else
-    	postStreamElement( streamElement );
+    }  else {
+      postStreamElement( streamElement );
+    }	
   }
   
   public void dispose ( ) {

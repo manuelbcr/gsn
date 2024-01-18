@@ -51,23 +51,26 @@ public class CoreStationStatistics {
 	
 	public void msgReceived(int type, long size) {
 		Long val = msgRecvCounterMap.get(type);
-		if (val == null)
+		if (val == null){
 			msgRecvCounterMap.put(type, new Long(1));
-		else
+		} else {
 			msgRecvCounterMap.put(type, val + 1);
+		}
 		
 		val = msgRecvByteCounterMap.get(type);
-		if (val == null)
+		if (val == null){
 			msgRecvByteCounterMap.put(type, size);
-		else
+		} else {
 			msgRecvByteCounterMap.put(type, val + size);
+		}
 	}
 	
 	public void bytesReceived(long size) {
-		if (recvTotal == null)
+		if (recvTotal == null){
 			recvTotal = size;
-		else
+		} else {
 			recvTotal += size;
+		}
 	}
 	
 	public Long getTotalRecvByteCounter() {
@@ -77,8 +80,9 @@ public class CoreStationStatistics {
 	public Long getTotalMsgRecvCounter() {
 		long total = 0;
 		synchronized (msgRecvCounterMap) {
-			for (Iterator<Long> iter = msgRecvCounterMap.values().iterator(); iter.hasNext();)
+			for (Iterator<Long> iter = msgRecvCounterMap.values().iterator(); iter.hasNext();){
 				total += iter.next();
+			}
 		}
 		return total;
 	}
@@ -88,8 +92,9 @@ public class CoreStationStatistics {
 	public Long getTotalMsgRecvByteCounter() {
 		long total = 0;
 		synchronized (msgRecvByteCounterMap) {
-			for (Iterator<Long> iter = msgRecvByteCounterMap.values().iterator(); iter.hasNext();)
+			for (Iterator<Long> iter = msgRecvByteCounterMap.values().iterator(); iter.hasNext();){
 				total += iter.next();
+			}
 		}
 		return total;
 	}
@@ -99,23 +104,27 @@ public class CoreStationStatistics {
 	
 	public void msgSent(int type, long size) {
 		Long val = msgSendCounterMap.get(type);
-		if (val == null)
+		if (val == null){
 			msgSendCounterMap.put(type, new Long(1));
-		else
+		} else {
 			msgSendCounterMap.put(type, val + 1);
+		}	
 
 		val = msgSendByteCounterMap.get(type);
-		if (val == null)
-			msgSendByteCounterMap.put(type, new Long(size));
-		else
+		if (val == null){
+			msgSendByteCounterMap.put(type, size);
+		} else {
 			msgSendByteCounterMap.put(type, val + size);
+		}
 	}
 	
 	public void bytesSent(long size) {
-		if (sendTotal == null)
+		if (sendTotal == null){
 			sendTotal = size;
-		else
+		} else {
 			sendTotal += size;
+		}
+			
 	}
 	
 	public Long getTotalSendByteCounter() {
@@ -125,8 +134,9 @@ public class CoreStationStatistics {
 	public Long getTotalMsgSendCounter() {
 		long total = 0;
 		synchronized (msgSendCounterMap) {
-			for (Iterator<Long> iter = msgSendCounterMap.values().iterator(); iter.hasNext();)
+			for (Iterator<Long> iter = msgSendCounterMap.values().iterator(); iter.hasNext();){
 				total += iter.next();
+			}
 		}
 		return total;
 	}
@@ -136,8 +146,9 @@ public class CoreStationStatistics {
 	public Long getTotalMsgSendByteCounter() {
 		long total = 0;
 		synchronized (msgSendByteCounterMap) {
-			for (Iterator<Long> iter = msgSendByteCounterMap.values().iterator(); iter.hasNext();)
+			for (Iterator<Long> iter = msgSendByteCounterMap.values().iterator(); iter.hasNext();){
 				total += iter.next();
+			}
 		}
 		return total;
 	}

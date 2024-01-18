@@ -80,8 +80,10 @@ public class AnomalyDetector implements Monitorable {
         TreeMap <String, String> params = sensor.getVirtualSensorConfiguration().
             getMainClassInitialParams();
         
-        if (params == null)
+        if (params == null){
             return;
+        }
+            
 
         for (Map.Entry<String,String> entry : params.entrySet()) {
             
@@ -89,9 +91,9 @@ public class AnomalyDetector implements Monitorable {
             String key = entry.getKey().trim();        // key should be of the form anomaly.function.field[.groupByField]
             String value = entry.getValue().trim();    // Value should be of the form interval[,value]
             
-            if (!key.startsWith("anomaly."))                // For a parameter defined for anamaly, key (name) has to start with string "anomaly."             
+            if (!key.startsWith("anomaly.")) {               // For a parameter defined for anamaly, key (name) has to start with string "anomaly."             
                 continue;
-            
+            }
             String parts [] = key.split("\\.");             // Tokenizing String with '.'
             String function = null, fieldName=null, groupBy = null;
     
@@ -133,12 +135,12 @@ public class AnomalyDetector implements Monitorable {
                 }  
                 String valParts [] = value.split(",");
                 Anomaly anomaly;
-                if (valParts.length == 1) // Threshold is not provided
+                if (valParts.length == 1){ // Threshold is not provided
                     anomaly = new Anomaly (function,field,valParts[0],groupByField);  //valParts[0] is the interval
-                else if (valParts.length == 2) // valParts[0] is interval and valParts[1] is threshold value 
+                }else if (valParts.length == 2){ // valParts[0] is interval and valParts[1] is threshold value 
                     anomaly = new Anomaly (function,field,valParts[0], groupByField,valParts[1]);
                         
-                else {
+                }else {
                     logger.info ("ANOMALY-PARSING-ERROR ["+ key+"="+value+"] "
                         + "Value: " + value + " should be of the form value,interval");        
                     break;
@@ -165,8 +167,10 @@ public class AnomalyDetector implements Monitorable {
     private DataField getDataField (String fieldName) {
         
         for (int i = 0; i < fields.length; i++) {
-            if (fields[i].getName().equals(fieldName))
+            if (fields[i].getName().equals(fieldName)){
                 return fields[i];
+            }
+                
         }
         
         return null;
@@ -177,22 +181,22 @@ public class AnomalyDetector implements Monitorable {
      */
     private void countOutliers (Hashtable <String, Object> stat, boolean direction) throws SQLException {
              
-        if (direction == POSITIVE && !functions.containsKey("positive_outlier"))
+        if (direction == POSITIVE && !functions.containsKey("positive_outlier")){
             return;
-        
-        if (direction == NEGATIVE && !functions.containsKey("negative_outlier"))
+        }
+        if (direction == NEGATIVE && !functions.containsKey("negative_outlier")){
             return;
-        
+        }
         ArrayList <Anomaly> anomalies = null;
 
-        if (direction == POSITIVE)
+        if (direction == POSITIVE){
             anomalies = functions.get("positive_outlier");
-        else
+        }else{
             anomalies = functions.get("negative_outlier");
         
-        if (anomalies == null || anomalies.size() == 0) 
+        }if (anomalies == null || anomalies.size() == 0) {
             return;
-         
+        }
         StorageManager storageMan = Main.getStorage (sensor.getVirtualSensorConfiguration().getName()); 
         Connection con = null;
         PreparedStatement ps = null;
@@ -208,12 +212,13 @@ public class AnomalyDetector implements Monitorable {
             DataField field = anomaly.getField();
             String query;
             
-            if (anomaly.isGroupBy())
+            if (anomaly.isGroupBy()){
                 query = getOutlierQueryByGroup (sensor.getVirtualSensorConfiguration().getName().toLowerCase(), field,
                                                         anomaly.getGroupByField(), direction);
-            else
+            }else{
                 query = getOutlierQuery (sensor.getVirtualSensorConfiguration().getName().toLowerCase(), field,
                                                         direction);
+            }
             try {
                 ps = con.prepareStatement(query);
                 
@@ -268,10 +273,13 @@ public class AnomalyDetector implements Monitorable {
         
         
             finally {
-                if (rs!= null)
+                if (rs!= null){
                     rs.close();
-                if (ps!=null)
+                }
+                    
+                if (ps!=null){
                     ps.close();
+                }
             }
 
         }   
@@ -287,11 +295,11 @@ public class AnomalyDetector implements Monitorable {
         toReturn.append("SELECT COUNT(*) FROM ").append(tableName).append( " WHERE " + field.getName());
         
         // Outier could be positive or negative
-        if (direction == POSITIVE)
+        if (direction == POSITIVE){
             toReturn.append(" > ");
-        else
+        }else{
             toReturn.append(" < ");
-
+        }    
         toReturn.append("? AND timed > ?"); // ) as maxTable"
         
         return toReturn.toString();
@@ -302,11 +310,11 @@ public class AnomalyDetector implements Monitorable {
         StringBuilder toReturn = new StringBuilder ();
         toReturn.append("SELECT " + groupBy.getName() + ", COUNT(*) FROM ").append(tableName).append(" WHERE " + field.getName());
         
-        if (direction == POSITIVE)
+        if (direction == POSITIVE){
             toReturn.append(" > ");
-        else
+        }else{
             toReturn.append(" < ");
-
+        }
         toReturn.append("? AND timed > ?");
 
         toReturn.append(" GROUP BY " + groupBy.getName());
@@ -317,15 +325,15 @@ public class AnomalyDetector implements Monitorable {
     
     private void interQuartileRange (Hashtable <String, Object> stat) throws SQLException {
     
-        if (!functions.containsKey("iqr"))
+        if (!functions.containsKey("iqr")){
             return;
-
+        }    
         ArrayList <Anomaly> anomalies = functions.get("iqr");
     
         // TODO: remove key iqr
-        if (anomalies == null || anomalies.size() == 0)
+        if (anomalies == null || anomalies.size() == 0){
             return;
-
+        }
         StorageManager storageMan = Main.getStorage(sensor.getVirtualSensorConfiguration().getName());
         Connection con = null;
         PreparedStatement ps = null;
@@ -339,11 +347,11 @@ public class AnomalyDetector implements Monitorable {
             DataField field = anomaly.getField();
             String query;
 
-            if (anomaly.isGroupBy())
+            if (anomaly.isGroupBy()){
                 query = getIQRQueryByGroup (sensor.getVirtualSensorConfiguration().getName().toLowerCase(),field,anomaly.getGroupByField());
-            else
+            }else{
                 query = getIQRQuery(sensor.getVirtualSensorConfiguration().getName().toLowerCase(), field);
-            
+            }
             ps = con.prepareStatement(query);
             long timestamp = 0;
             //TODO: Improve IQR SQL Query
@@ -366,10 +374,12 @@ public class AnomalyDetector implements Monitorable {
                 }
             }
             
-            if (rs!=null)
+            if (rs!=null){
                 rs.close();
-            if (ps!=null)
+            }
+            if (ps!=null){
                 ps.close();
+            }
         }
         
         con.close();
@@ -440,9 +450,9 @@ public class AnomalyDetector implements Monitorable {
     // Count unique values of a field over a specified timed-interval
     private void countUnique (Hashtable <String, Object> stat) throws SQLException {
 
-        if (!functions.containsKey("unique"))
+        if (!functions.containsKey("unique")){
             return;
-
+        }
         ArrayList <Anomaly> anomalies = functions.get("unique");
 
         // TODO: remove key iqr
@@ -464,11 +474,11 @@ public class AnomalyDetector implements Monitorable {
             DataField field = anomaly.getField();
             String query;
             
-            if (anomaly.isGroupBy())
+            if (anomaly.isGroupBy()){
                 query = getUniqueQueryByGroup(sensor.getVirtualSensorConfiguration().getName().toLowerCase(), field, anomaly.getGroupByField());
-            else
+            }else{
                 query = getUniqueQuery(sensor.getVirtualSensorConfiguration().getName().toLowerCase(), field);
-            
+            }
             ps = con.prepareStatement(query);
             long timeStamp = this.getTimeStamp(anomaly.getTime());
             //logger.info ("COUNT UNIQUE timestamp : " + timeStamp);
@@ -486,10 +496,12 @@ public class AnomalyDetector implements Monitorable {
                 }   
             }
 
-            if (rs!=null)
+            if (rs!=null){
                 rs.close();
-            if (ps!=null)
+            }
+            if (ps!=null){
                 ps.close();
+            }
         }
 
         con.close();
@@ -520,9 +532,9 @@ public class AnomalyDetector implements Monitorable {
     private long getTimeStamp (long windowSize) {
         
         // Counter intuitively, zero represents we will look into all the stored data for anomalies
-        if (windowSize ==-1)
+        if (windowSize ==-1){
             return -1;
-
+        }
         return System.currentTimeMillis() - windowSize;
     }
     
@@ -554,12 +566,12 @@ public class AnomalyDetector implements Monitorable {
         StringBuilder sb = new StringBuilder ("vs."+sensor.getVirtualSensorConfiguration().getName().replaceAll("\\,","_" )+".output");
         sb.append(".anomaly." + anomaly.getFunction() + "." + anomaly.getField().getName());
         
-        if (anomaly.getFunction().equals ("positive_outlier") || anomaly.getFunction().equals ("negative_outlier"))
+        if (anomaly.getFunction().equals ("positive_outlier") || anomaly.getFunction().equals ("negative_outlier")){
             sb.append("." + anomaly.getValue().trim());
-        
-        if (anomaly.isGroupBy())
+        }
+        if (anomaly.isGroupBy()){
             sb.append("." + anomaly.getGroupByField().getName());
-
+        }
        
         return sb.toString();
         

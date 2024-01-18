@@ -14,27 +14,29 @@ public class RotationY implements Converter {
 
 	@Override
 	public String convert(Serializable signal_name, String value, Serializable input) {
-		if (signal_name == null || input == null)
+		if (signal_name == null || input == null){
 			return null;
+		}
+			
 		Double y, x;
 		
 		if (signal_name instanceof Integer ||
 				signal_name instanceof Double ||
 				signal_name instanceof Float ||
-				signal_name instanceof Short)
-			y = (Double) signal_name;
-		else if (signal_name instanceof String)
+				signal_name instanceof Short){
+					y = (Double) signal_name;
+		} else if (signal_name instanceof String){
 			y = Double.parseDouble((String)signal_name);
-		else {
+		} else {
 			logger.error("signal_name is not of supported type");
 			return null;
 		}
 		
-		if (input instanceof Integer)
+		if (input instanceof Integer){
 			x = (Double) input;
-		else if (input instanceof String)
+		} else if (input instanceof String) {
 			x = Double.parseDouble((String)input);
-		else {
+		} else {
 			logger.error("input is not of supported type");
 			return null;
 		}

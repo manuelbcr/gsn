@@ -86,8 +86,10 @@ public class SchedulePlugin extends AbstractPlugin {
 					timestamp_gsn = rs.getLong("generation_time");
 					query.append("select * from ").append(activeBackLogWrapper.getActiveAddressBean().getVirtualSensorName()).append(" where device_id = ").append(deviceId).append(" and generation_time = ").append(rs.getLong("generation_time")).append(" and transmission_time is not null order by timed desc limit 1");
 					ResultSet result = Main.getStorage(getActiveAddressBean().getVirtualSensorConfig()).executeQueryWithResultSet(query, conn);
-					if (result.next())
+					if (result.next()){
 						schedule = null;
+					}
+						
 				}
 				Main.getStorage(getActiveAddressBean().getVirtualSensorConfig()).close(rs);
 				
@@ -105,14 +107,16 @@ public class SchedulePlugin extends AbstractPlugin {
 							// if the schedule on the deployment has the same or a newer
 							// creation time as the newest one in the database, we do not have
 							// to resend anything
-							if (logger.isDebugEnabled())
+							if (logger.isDebugEnabled()){
 								logger.debug("no newer schedule available");
+							}
 							reply = new Serializable [] {TYPE_NO_NEW_SCHEDULE};
 						}
 						else {
 							// send the new schedule to the deployment
-							if (logger.isDebugEnabled())
+							if (logger.isDebugEnabled()){
 								logger.debug("send new schedule (" + new String(schedule) + ")");
+							}
 	
 							reply = new Serializable [] {TYPE_SCHEDULE, timestamp_gsn, schedule};
 						}
@@ -124,8 +128,9 @@ public class SchedulePlugin extends AbstractPlugin {
 				}
 				else {
 					// a manually uploaded schedule has not yet been transmitted -> transmit it to the CoreStation
-					if (logger.isDebugEnabled())
+					if (logger.isDebugEnabled()){
 						logger.debug("send manually uploaded schedule (" + new String(schedule) + ")");
+					}
 					reply = new Serializable [] {TYPE_SCHEDULE, timestamp_gsn, schedule};
 				}
 				
@@ -144,10 +149,12 @@ public class SchedulePlugin extends AbstractPlugin {
 		} else if (((Byte)data[0]) == TYPE_SCHEDULE) {
 			long time = System.currentTimeMillis();
 			try {
-				if(dataProcessed(time, new Serializable[] {deviceId, timestamp, time, (String)data[1], ((String)data[2]).getBytes("UTF-8")}))
+				if(dataProcessed(time, new Serializable[] {deviceId, timestamp, time, (String)data[1], ((String)data[2]).getBytes("UTF-8")})){
 					ackMessage(timestamp, super.priority);
-				else
+				} else {
 					return false;
+				}
+					
 			} catch (UnsupportedEncodingException e) {
 				logger.error(e.getMessage(), e);
 				return false;
@@ -181,16 +188,19 @@ public class SchedulePlugin extends AbstractPlugin {
 			
 			// and try to send it to the deployment
 			try {
-				if (sendRemote(System.currentTimeMillis(), new Serializable [] {TYPE_SCHEDULE, time, schedule}, super.priority))
+				if (sendRemote(System.currentTimeMillis(), new Serializable [] {TYPE_SCHEDULE, time, schedule}, super.priority)) {
 					return new InputInfo(getActiveAddressBean().toString(), "schedule successfully sent to CoreStation", true);
-				else
+				} else {
 					return new InputInfo(getActiveAddressBean().toString(), "schedule could not be sent to CoreStation", false);
+				}
+					
 			} catch (IOException e) {
 				logger.warn(e.getMessage());
 				return new InputInfo(getActiveAddressBean().toString(), e.getMessage(), false);
 			}
-		}
-		else
+		} else{
 			return new InputInfo(getActiveAddressBean().toString(), "action >" + action + "< not supported", false);
+		}
+			
 	}
 }

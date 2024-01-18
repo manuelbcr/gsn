@@ -102,7 +102,7 @@ public class InputStream implements Serializable{
 	}
 
 	public Long getCount ( ) {
-		if ( this.count == null || this.count == 0 ) this.count = Long.MAX_VALUE;
+		if ( this.count == null || this.count == 0 ){ this.count = Long.MAX_VALUE;}
 		return this.count;
 	}
 
@@ -233,7 +233,7 @@ public class InputStream implements Serializable{
 	private transient boolean                   cachedValidationResult = false;
 
 	public boolean validate ( ) {
-		if ( this.hasValidated ) return this.cachedValidationResult;
+		if ( this.hasValidated ){ return this.cachedValidationResult;}
 		hasValidated=true;
 		if (sources==null || sources.length==0) {
 			logger.error("Input Stream "+getInputStreamName()+ " is not valid (No stream sources are specified), deployment failed !");
@@ -289,9 +289,11 @@ public class InputStream implements Serializable{
 
 		if ( !queryCached ) {
 			rewriteQuery();
-			if ( queryCached)
+			if ( queryCached){
 				logger.debug( new StringBuilder( ).append( "Rewritten SQL: " ).append( this.rewrittenSQL ).append( "(" ).append( Main.getWindowStorage().isThereAnyResult( this.rewrittenSQL ) ).append( ")" )
 						.toString( ) );
+			}
+
 		}
 		int elementCounterForDebugging = 0;
 		if ( queryCached && Main.getWindowStorage().isThereAnyResult( this.rewrittenSQL ) ) {

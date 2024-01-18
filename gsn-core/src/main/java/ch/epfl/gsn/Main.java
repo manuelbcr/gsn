@@ -172,9 +172,11 @@ public final class Main {
 
 		vsloader.addVSensorStateChangeListener(new SQLValidatorIntegration(SQLValidator.getInstance()));
 		vsloader.addVSensorStateChangeListener(DataDistributer.getInstance(LocalDeliveryWrapper.class));
-		if (containerConfig.isZMQEnabled())
+		if (containerConfig.isZMQEnabled()){
 			vsloader.addVSensorStateChangeListener(DataDistributer.getInstance(ZeroMQDeliverySync.class));
 		    vsloader.addVSensorStateChangeListener(DataDistributer.getInstance(ZeroMQDeliveryAsync.class));
+		}
+
 
 		ContainerImpl.getInstance().addVSensorDataListener(DataDistributer.getInstance(LocalDeliveryWrapper.class));
 		ContainerImpl.getInstance().addVSensorDataListener(DataDistributer.getInstance(ZeroMQDeliverySync.class));
@@ -192,8 +194,10 @@ public final class Main {
 		if (splash == null) {
 			return;
 		}
-		if (splash.isVisible())
+		if (splash.isVisible()){
 			splash.close();
+		}
+			
 	}
 
 
@@ -202,8 +206,10 @@ public final class Main {
 
 		if (!headless_check) {
 			SplashScreen splash = SplashScreen.getSplashScreen();
-			if (splash == null)
+			if (splash == null){
 				return;
+			}
+				
 			if (splash.isVisible()) {
 				//Get a graphics overlay for the splash screen
 				Graphics2D g = splash.createGraphics();
@@ -216,8 +222,9 @@ public final class Main {
 				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g.setColor(Color.BLACK);
 				g.setFont(new Font("Arial",Font.BOLD,11));
-				for (int i=0;i<message.length;i++)
+				for (int i=0;i<message.length;i++){
 					g.drawString(message[i], 13, 16*i+10);
+				}	
 				splash.update();
 			}
 		}
@@ -228,13 +235,14 @@ public final class Main {
 	}
 
 	public synchronized static Main getInstance() {
-		if (singleton==null)
+		if (singleton==null){
 			try {
 				singleton=new Main();
 			} catch (Exception e) {
 				logger.error(e.getMessage(),e);
 				throw new RuntimeException(e);
 			}
+		}
 			return singleton;
 	}
 
@@ -339,8 +347,9 @@ public final class Main {
 	}
 
 	public static Properties getWrappers()  {
-		if (singleton==null )
+		if (singleton==null ){
 			return WrappersUtil.loadWrappers(new HashMap<String, Class<?>>());
+		}
 		return Main.wrappers;
 	}
     
@@ -365,14 +374,15 @@ public final class Main {
 	 * @throws Exception
 	 */
 	public static ContainerConfig getContainerConfig() {
-		if (singleton == null)
+		if (singleton == null){
 			try {
 				return loadContainerConfig(Main.gsnConfFolder + "/gsn.xml");
 			} catch (Exception e) {
 				return null;
 			}
-			else
-				return singleton.containerConfig;
+		} else{
+			return singleton.containerConfig;
+		}			
 	}
 
     public static StorageManager getValidationStorage() {
@@ -381,8 +391,10 @@ public final class Main {
 
     public static StorageManager getStorage(VSensorConfig config) {
         StorageManager sm = storagesConfigs.get(config == null ? null : config);
-        if  (sm != null)
-            return sm;
+        if  (sm != null){
+			return sm;
+		}
+            
 
         DBConnectionInfo dci = null;
         if (config == null || config.getStorage() == null || !config.getStorage().isDefined()) {

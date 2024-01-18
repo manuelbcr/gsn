@@ -39,8 +39,10 @@ public class RemoteWrapperParamParser {
 		
 		logger.debug("Remote wrapper parameter [keep-alive: "+isPushBased+"], Query=> "+query);
 
-		if (isPushBased ) 
+		if (isPushBased ) {
 			deliveryContactPoint = addressBean.getPredicateValueWithException(PushDelivery.LOCAL_CONTACT_POINT);
+		}
+			
 
 		username = addressBean.getPredicateValue( "username" );
 		password = addressBean.getPredicateValue( "password" );
@@ -53,18 +55,24 @@ public class RemoteWrapperParamParser {
 		 */
 		if ( (remoteContactPoint =addressBean.getPredicateValue ( "remote-contact-point" ))==null) {
 			String host = addressBean.getPredicateValue ( "host" );
-			if ( host == null || host.trim ( ).length ( ) == 0 ) 
+			if ( host == null || host.trim ( ).length ( ) == 0 ) {
 				throw new RuntimeException( "The >host< parameter is missing from the RemoteWrapper wrapper." );
+			}
+				
 			//int port = addressBean.getPredicateValueAsInt("port" ,ContainerConfig.DEFAULT_GSN_PORT);
             int port = addressBean.getPredicateValueAsInt("port" ,ContainerConfig.DEFAULT_MONITOR_PORT); // change to default_monitor_port which is 22001 as in the old version
-			if ( port > 65000 || port <= 0 ) 
+			if ( port > 65000 || port <= 0 ) {
 				throw new RuntimeException("Remote wrapper initialization failed, bad port number:"+port);
+			}
+				
 
 			remoteContactPoint ="http://" + host +":"+port+"/streaming/";
 		}
 		remoteContactPoint= remoteContactPoint.trim();
-		if (!remoteContactPoint.trim().endsWith("/"))
+		if (!remoteContactPoint.trim().endsWith("/")){
 			remoteContactPoint+="/";
+		}
+			
         //
         isSSLRequired = remoteContactPoint.toLowerCase().startsWith("https");
         
@@ -88,9 +96,10 @@ public class RemoteWrapperParamParser {
 					if (rs.next()) {
 						startTime = rs.getLong(1);
 					}
-				}
-				else
+				} else{
 					logger.info("Table '" + addressBean.getVirtualSensorName() + "' doesn't exist => using all data from the remote database");
+				}
+					
 			} catch (SQLException e) {
 				logger.error(e.getMessage(), e);
 				throw new RuntimeException(e);
@@ -158,10 +167,12 @@ public class RemoteWrapperParamParser {
     public String getRemoteContactPointEncoded(long lastModifiedTime) {
 		String toSend;
 		try {
-			if (continuous)
+			if (continuous){
 				toSend = getRemoteContactPoint()+URLEncoder.encode(query, "UTF-8")+"/"+URLEncoder.encode(getStartTimeInString(lastModifiedTime), "UTF-8")+"/c";
-			else
+			} else{
 				toSend = getRemoteContactPoint()+URLEncoder.encode(query, "UTF-8")+"/"+URLEncoder.encode(getStartTimeInString(lastModifiedTime), "UTF-8");
+			}
+				
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}

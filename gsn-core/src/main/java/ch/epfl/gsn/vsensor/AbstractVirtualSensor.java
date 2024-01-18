@@ -86,11 +86,13 @@ public abstract class AbstractVirtualSensor implements Monitorable{
 			StringBuilder exceptionMessage = new StringBuilder( ).append( "The streamElement produced by :" ).append( getVirtualSensorConfiguration( ).getName( ) ).append(
 			" Virtual Sensor is not compatible with the defined streamElement.\n" );
 			exceptionMessage.append( "The expected stream element structure (specified in " ).append( getVirtualSensorConfiguration( ).getFileName( ) ).append( " is [" );
-			for ( DataField df : getVirtualSensorConfiguration( ).getOutputStructure( ) ) 
+			for ( DataField df : getVirtualSensorConfiguration( ).getOutputStructure( ) ){
 				exceptionMessage.append( df.getName( ) ).append( " (" ).append( DataTypes.TYPE_NAMES[ df.getDataTypeID( ) ] ).append( ") , " );
+			} 	
 			exceptionMessage.append( "] but the actual stream element received from the " + getVirtualSensorConfiguration( ).getName( ) ).append( " has the [" );
-			for ( int i = 0 ; i < streamElement.getFieldNames( ).length ; i++ )
+			for ( int i = 0 ; i < streamElement.getFieldNames( ).length ; i++ ){
 				exceptionMessage.append( streamElement.getFieldNames( )[ i ] ).append( "(" ).append( DataTypes.TYPE_NAMES[ streamElement.getFieldTypes( )[ i ] ] ).append( ")," );
+			}
 			exceptionMessage.append(" ] thus the stream element dropped !!!" );
 			throw new RuntimeException( exceptionMessage.toString( ) );
 		}
@@ -111,7 +113,7 @@ public abstract class AbstractVirtualSensor implements Monitorable{
 			logger.error( e.getMessage( ) , e );
 			return;
 		}
-		if ( !streamElement.isTimestampSet( ) ) streamElement.setTimeStamp( System.currentTimeMillis( ) );
+		if ( !streamElement.isTimestampSet( ) ) {streamElement.setTimeStamp( System.currentTimeMillis( ) );}
 
 		final int outputStreamRate = getVirtualSensorConfiguration( ).getOutputStreamRate( );
 		final long currentTime = System.currentTimeMillis( );
@@ -124,10 +126,11 @@ public abstract class AbstractVirtualSensor implements Monitorable{
 			ContainerImpl.getInstance().publishData( this ,streamElement);
 			outputCount = outputCount == Long.MAX_VALUE ? 0 : outputCount + 1;
 		} catch (SQLException e) {
-			if (e.getMessage().toLowerCase().contains("duplicate entry"))
+			if (e.getMessage().toLowerCase().contains("duplicate entry")){
 				logger.info(e.getMessage(),e);
-			else
+			} else {
 				logger.error(e.getMessage(),e);
+			}	
 		}
 	}
 	/**
@@ -160,8 +163,9 @@ public abstract class AbstractVirtualSensor implements Monitorable{
 		for (DataField field: outputStructure) {
 			Serializable value = se.getData(field.getName());
 			i++;
-			if (value==null)
+			if (value==null){
 				continue;
+			}
 			if ( ( (  field.getDataTypeID() == DataTypes.BIGINT ||
 					field.getDataTypeID() == DataTypes.DOUBLE ||
 					field.getDataTypeID() == DataTypes.FLOAT ||

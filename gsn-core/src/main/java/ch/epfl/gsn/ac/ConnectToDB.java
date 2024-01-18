@@ -194,8 +194,9 @@ public class ConnectToDB
             // execute query
             ResultSet resultset=statement.executeQuery("SELECT DATASOURCENAME FROM ACDATASOURCE");
             
-            while (resultset.next())
-            	datasourcelist.add(resultset.getString(1));
+            while (resultset.next()){
+                datasourcelist.add(resultset.getString(1));
+            }	
  		}
  		catch(SQLException e)
  		{
@@ -1274,18 +1275,22 @@ public class ConnectToDB
     boolean updateOneColumnUnderOneCondition(Column col,Column cond,String tableName)throws SQLException
    {
        String query = "UPDATE "+tableName+" SET "+col.columnLabel+"= '"+col.columnValue+"' WHERE "+cond.columnLabel+"= '"+cond.columnValue+"'";
-       if(stmt.executeUpdate(query) !=0)
-           return true;
-       else
-           return false;
+       if(stmt.executeUpdate(query) !=0){
+        return true;
+       } else {
+        return false;
+       }
+           
    }
     boolean updateOneColumnUnderTwoConditions(Column col,Column firstCond,Column secondCond,String tableName)throws SQLException
    {
        String query = "UPDATE "+tableName+" SET "+col.columnLabel+"= '"+col.columnValue+"' WHERE "+firstCond.columnLabel+"= '"+firstCond.columnValue+"' AND "+secondCond.columnLabel+"= '"+secondCond.columnValue+"'";
-       if(stmt.executeUpdate(query) !=0)
-           return true;
-       else
-           return false;
+       if(stmt.executeUpdate(query) !=0){
+        return true;
+       } else {
+        return false;
+       }
+           
    }
 
 	public void updateDataSourceCandidate(String valueForName) throws SQLException {
@@ -1332,10 +1337,11 @@ public class ConnectToDB
             .append("' WHERE USERNAME='")
             .append(user.getUserName())
             .append("'");
-       if(stmt.executeUpdate(query.toString()) !=0)
-           return true;
-       else
-           return false;
+       if(stmt.executeUpdate(query.toString()) !=0){
+        return true;
+       } else {
+        return false;
+       }
     }
 
     void updateOwnerDecision(String decision, String userName, String dataSourceName )throws SQLException

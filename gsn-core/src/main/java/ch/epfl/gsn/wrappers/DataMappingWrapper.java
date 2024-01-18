@@ -182,10 +182,11 @@ public class DataMappingWrapper extends AbstractWrapper {
 				}
 
 				Mappings mapping;
-				if (deployments.containsKey(deployment))
+				if (deployments.containsKey(deployment)){
 					mapping = deployments.get(deployment);
-				else
+				} else {
 					mapping = new Mappings();
+				}	
 
 				switch (mappingType) {
 				case POSITION_MAPPING:
@@ -211,8 +212,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 				h2Stat = h2DBconn.createStatement();
 				h2Stat.execute("DROP TABLE IF EXISTS " + deployment + "_" + mappingName);
 				h2Stat.execute(createTableStatement);
-				if (createIndexStatement != null)
+				if (createIndexStatement != null){
 					h2Stat.execute(createIndexStatement);
+				}
 				logger.info("create " + mappingName + " mapping table for " + deployment + " deployment");
 
 				ResultSet rs = null;
@@ -233,8 +235,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 							while (rs.next()) {
 								isEmpty = false;
 								Long end = rs.getLong(outputStructure[3].getName());
-								if (rs.wasNull())
+								if (rs.wasNull()){
 									end = null;
+								}
 								mapping.executePositionInsert(
 										getActiveAddressBean().getVirtualSensorConfig(),
 										rs.getInt(outputStructure[0].getName()),
@@ -269,11 +272,13 @@ public class DataMappingWrapper extends AbstractWrapper {
 							while (rs.next()) {
 								isEmpty = false;
 								Long end = rs.getLong(outputStructure[2].getName());
-								if (rs.wasNull())
+								if (rs.wasNull()){
 									end = null;
+								}
 								Long sensortyp_args = rs.getLong(outputStructure[4].getName());
-								if (rs.wasNull())
+								if (rs.wasNull()){
 									sensortyp_args = null;
+								}
 								mapping.executeSensorInsert(
 										getActiveAddressBean().getVirtualSensorConfig(),
 										rs.getInt(outputStructure[0].getName()),
@@ -286,12 +291,14 @@ public class DataMappingWrapper extends AbstractWrapper {
 							}
 						}
 						
-						if (sensortype_args_available)
+						if (sensortype_args_available){
 							mapping.setConversionQuery();
+						}
 						break;
 					}
-					if (isEmpty)
+					if (isEmpty){
 						logger.warn(mappingName + " mapping for " + deployment + " deployment is empty");
+					}
 				} catch (Exception e) {
 					logger.error(e.getMessage(), e);
 				}
@@ -309,9 +316,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 	public static Integer getPosition(int device_id, long generationTime, String deployment, String vsName, String inputStreamName, boolean warn) {
 		Integer pos = null;
 		long start = -1;
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			start = System.nanoTime();
-
+		}
 		Mappings m = deployments.get(deployment);
 		
 		if (m == null || !m.isPositionAvailable()) {
@@ -325,10 +332,13 @@ public class DataMappingWrapper extends AbstractWrapper {
 			logger.warn(e.getMessage(), e);
 		}
 		
-		if (pos==null && (warn || logger.isDebugEnabled()))
+		if (pos==null && (warn || logger.isDebugEnabled())){
 			logger.warn(vsName+"[source="+inputStreamName+"]: No position mapping available for deployment "+deployment+" device-id "+device_id+" and generation_time="+generationTime);
-		if (logger.isDebugEnabled())
+		}
+		if (logger.isDebugEnabled()){
 			logger.debug(vsName+"[source="+inputStreamName+"]: getPosition: " + Long.toString((System.nanoTime() - start) / 1000) + " us");
+		}
+			
 		
 		return pos;
 	}
@@ -341,8 +351,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 	public static HashMap<Integer, MappedEntry> getAllPositions(String deployment, String vsName, String inputStreamName) {
 		HashMap<Integer, MappedEntry> allMappedPositions = null;
 		long start = -1;
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			start = System.nanoTime();
+		}
 
 		Mappings m = deployments.get(deployment);
 		
@@ -357,8 +368,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 			logger.warn(e.getMessage(), e);
 		}
 		
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug(vsName+"[source="+inputStreamName+"]: getAllPositions: " + Long.toString((System.nanoTime() - start) / 1000) + " us");
+		}
 		return allMappedPositions;
 	}
 	
@@ -366,9 +378,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 	public static Short getDeviceType(int device_id, long generationTime, String deployment, String vsName, String inputStreamName) {
 		Short deviceType = null;
 		long start = -1;
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			start = System.nanoTime();
-
+		}
 		Mappings m = deployments.get(deployment);
 		
 		if (m == null || !m.isPositionAvailable()) {
@@ -382,10 +394,13 @@ public class DataMappingWrapper extends AbstractWrapper {
 			logger.warn(e.getMessage(), e);
 		}
 		
-		if (deviceType==null)
+		if (deviceType==null){
 			logger.warn(vsName+"[source="+inputStreamName+"]: No device type mapping available for deployment "+deployment+" device-id "+device_id+" and generation_time="+generationTime);
-		if (logger.isDebugEnabled())
+		}
+		if (logger.isDebugEnabled()){
 			logger.debug(vsName+"[source="+inputStreamName+"]: getDeviceType: " + Long.toString((System.nanoTime() - start) / 1000) + " us");
+		}
+			
 		
 		return deviceType;
 	}
@@ -393,8 +408,10 @@ public class DataMappingWrapper extends AbstractWrapper {
 	public static Coordinate getCoordinate(int position, String deployment, String vsName, String inputStreamName) {
 		Coordinate coordinate = null;
 		long start = -1;
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			start = System.nanoTime();
+		}
+			
 
 		Mappings m = deployments.get(deployment);
 		
@@ -409,11 +426,13 @@ public class DataMappingWrapper extends AbstractWrapper {
 			logger.warn(e.getMessage(), e);
 		}
 
-		if (coordinate==null)
+		if (coordinate==null){
 			logger.warn(vsName+"[source="+inputStreamName+"]: No coordinate mapping available for deployment "+deployment+" position "+position);
-		
-		if (logger.isDebugEnabled())
+		}
+		if (logger.isDebugEnabled()){
 			logger.debug(vsName+"[source="+inputStreamName+"]: getCoordinate: " + Long.toString((System.nanoTime() - start) / 1000) + " us");
+		}
+			
 		
 		return coordinate;
 	}
@@ -421,8 +440,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 	public static Serializable[] getSensorType(int position, long generationTime, String deployment, String vsName, String inputStreamName) {
 		Serializable[] res = new Serializable[]{null, null, null};
 		long start = -1;
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			start = System.nanoTime();
+		}
 
 		Mappings m = deployments.get(deployment);
 		
@@ -436,8 +456,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 		} catch (SQLException e) {
 			logger.warn(e.getMessage(), e);
 		}
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug(vsName+"[source="+inputStreamName+"]: getSensortype: " + Long.toString((System.nanoTime() - start) / 1000) + " us");
+		}
 		return res;
 	}
 	
@@ -447,8 +468,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 		Converter converter;
 		HashMap<String, Serializable> map = new HashMap<String, Serializable>();
 		long start = -1;
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			start = System.nanoTime();
+		}
 
 		Mappings m = deployments.get(deployment);
 		
@@ -481,10 +503,11 @@ public class DataMappingWrapper extends AbstractWrapper {
 								}
 								converter = converterList.get(convResult[1]);
 							}
-							if (convResult[2].isEmpty())
+							if (convResult[2].isEmpty()){
 								map.put(convResult[0], converter.convert(data.getData(convName), convResult[3], null));
-							else
+							} else {
 								map.put(convResult[0], converter.convert(data.getData(convName), convResult[3], data.getData(convResult[2])));
+							}
 						} catch (Exception e) {
 							logger.error(e.getMessage(), e);
 						}
@@ -504,8 +527,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 		} catch (SQLException e) {
 			logger.warn(e.getMessage(), e);
 		}
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug(vsName+"[source="+inputStreamName+"]: conversion: " + Long.toString((System.nanoTime() - start) / 1000) + " us");
+		}
 		return data;
 	}
 	
@@ -524,43 +548,48 @@ public class DataMappingWrapper extends AbstractWrapper {
 				String comment = null;
 				
 				for (String param: paramNames) {
-					if (param.equals("device_id"))
+					if (param.equals("device_id")){
 						deviceId = Integer.parseInt((String)paramValues[index]);
-					else if (param.equals("device_type")) {
+					} else if (param.equals("device_type")) {
 						deviceType = Short.parseShort((String)paramValues[index]);
-						if (deviceType.compareTo((short)0) == 0)
+						if (deviceType.compareTo((short)0) == 0){
 							return new InputInfo(getActiveAddressBean().toString(), "device type has to be selected", false);
-					}
-					else if (param.equals("begin")) {
-						if (!((String)paramValues[index]).trim().isEmpty())
+						}
+					} else if (param.equals("begin")) {
+						if (!((String)paramValues[index]).trim().isEmpty()){
 							try {
 								begin = sdfWeb.parse((String)paramValues[index]).getTime();
 							} catch (ParseException e) {
 								return new InputInfo(getActiveAddressBean().toString(), "begin is not in the wright date format (dd/MM/yyyy HH:mm:ss)", false);
 							}
-					}
-					else if (param.equals("end")) {
-						if (!((String)paramValues[index]).trim().isEmpty())
+						}
+
+					} else if (param.equals("end")) {
+						if (!((String)paramValues[index]).trim().isEmpty()){
 							try {
 								end = sdfWeb.parse((String)paramValues[index]).getTime();
 							} catch (ParseException e) {
 								return new InputInfo(getActiveAddressBean().toString(), "end is not in the wright date format (dd/MM/yyyy HH:mm:ss)", false);
 							}
-					}
-					else if (param.equals("position"))
+						}
+					} else if (param.equals("position")){
 						position = Integer.parseInt((String)paramValues[index]);
-					else if (param.equals("comment"))
+					} else if (param.equals("comment")){
 						comment = (String)paramValues[index];
+					}
+						
 					index++;
 				}
 				
-				if (position == null)
+				if (position == null){
 					return new InputInfo(getActiveAddressBean().toString(), "position has to be set", false);
-				if (deviceId == null)
+				}
+				if (deviceId == null){
 					return new InputInfo(getActiveAddressBean().toString(), "device_id has to be set", false);
-				if (comment == null)
+				}
+				if (comment == null){
 					return new InputInfo(getActiveAddressBean().toString(), "comment has to be set", false);
-				
+				}
 				try {
 					streamElements = deployments.get(deployment).executePositionInsert(getActiveAddressBean().getVirtualSensorConfig(), deviceId, deviceType, begin, end, position, comment, true);
 				} catch (Exception e) {
@@ -573,45 +602,47 @@ public class DataMappingWrapper extends AbstractWrapper {
 				comment = null;
 				
 				for (String param: paramNames) {
-					if (param.equals("position"))
+					if (param.equals("position")){
 						position = Integer.parseInt((String)paramValues[index]);
-					else if (param.equals("longitude")) {
+					} else if (param.equals("longitude")) {
 						try {
 							longitude = Double.parseDouble((String)paramValues[index]);
 						} catch (NumberFormatException e) {
 							return new InputInfo(getActiveAddressBean().toString(), "longitude must be a double", false);
 						}
-					}
-					else if (param.equals("latitude")) {
+					} else if (param.equals("latitude")) {
 						try {
 							latitude = Double.parseDouble((String)paramValues[index]);
 						} catch (NumberFormatException e) {
 							return new InputInfo(getActiveAddressBean().toString(), "latitude must be a double", false);
 						}
-					}
-					else if (param.equals("altitude")) {
+					} else if (param.equals("altitude")) {
 						try {
 							altitude = Double.parseDouble((String)paramValues[index]);
 						} catch (NumberFormatException e) {
 							return new InputInfo(getActiveAddressBean().toString(), "altitude must be a double", false);
 						}
-					}
-					else if (param.equals("comment"))
+					} else if (param.equals("comment")){
 						comment = (String)paramValues[index];
+					} 	
 					index++;
 				}
 				
-				if (position == null)
+				if (position == null){
 					return new InputInfo(getActiveAddressBean().toString(), "position has to be set", false);
-				if (longitude == null)
+				}	
+				if (longitude == null){
 					return new InputInfo(getActiveAddressBean().toString(), "longitude has to be set", false);
-				if (latitude == null)
+				}
+				if (latitude == null){
 					return new InputInfo(getActiveAddressBean().toString(), "latitude has to be set", false);
-				if (altitude == null)
+				}
+				if (altitude == null){
 					return new InputInfo(getActiveAddressBean().toString(), "altitude has to be set", false);
-				if (comment == null)
+				}
+				if (comment == null){
 					return new InputInfo(getActiveAddressBean().toString(), "comment has to be set", false);
-				
+				}
 				try {
 					streamElements = deployments.get(deployment).executeGeoInsert(getActiveAddressBean().getVirtualSensorConfig(), position, longitude, latitude, altitude, comment, true);
 				} catch (Exception e) {
@@ -626,43 +657,55 @@ public class DataMappingWrapper extends AbstractWrapper {
 				comment = null;
 				
 				for (String param: paramNames) {
-					if (param.equals("position"))
+					if (param.equals("position")){
 						position = Integer.parseInt((String)paramValues[index]);
+					}	
 					else if (param.equals("begin")) {
-						if (!((String)paramValues[index]).trim().isEmpty())
+						if (!((String)paramValues[index]).trim().isEmpty()){
 							try {
 								begin = sdfWeb.parse((String)paramValues[index]).getTime();
 							} catch (ParseException e) {
 								return new InputInfo(getActiveAddressBean().toString(), "begin is not in the wright date format (dd/MM/yyyy HH:mm:ss)", false);
 							}
+						}
+							
 					}
 					else if (param.equals("end")) {
-						if (!((String)paramValues[index]).trim().isEmpty())
+						if (!((String)paramValues[index]).trim().isEmpty()){
 							try {
 								end = sdfWeb.parse((String)paramValues[index]).getTime();
 							} catch (ParseException e) {
 								return new InputInfo(getActiveAddressBean().toString(), "end is not in the wright date format (dd/MM/yyyy HH:mm:ss)", false);
 							}
+						}	
 					}
-					else if (param.equals("sensortype"))
+					else if (param.equals("sensortype")){
 						sensortype = (String)paramValues[index];
-					else if (param.equals("sensortype_args")) {
-						if (!((String)paramValues[index]).trim().isEmpty())
-							sensortypeArgs = Long.parseLong((String)paramValues[index]);
 					}
-					else if (param.equals("comment"))
+					else if (param.equals("sensortype_args")) {
+						if (!((String)paramValues[index]).trim().isEmpty()){
+							sensortypeArgs = Long.parseLong((String)paramValues[index]);
+						}	
+					}
+					else if (param.equals("comment")){
 						comment = (String)paramValues[index];
+					}
+						
 					index++;
 				}
 				
-				if (position == null)
+				if (position == null){
 					return new InputInfo(getActiveAddressBean().toString(), "position has to be set", false);
-				if (sensortype == null)
+				}
+				if (sensortype == null){
 					return new InputInfo(getActiveAddressBean().toString(), "sensortype has to be set", false);
-				if (sensortypeArgs == null)
+				}
+				if (sensortypeArgs == null){
 					return new InputInfo(getActiveAddressBean().toString(), "sensortype_args has to be set", false);
-				if (comment == null)
+				}
+				if (comment == null){
 					return new InputInfo(getActiveAddressBean().toString(), "comment has to be set", false);
+				}
 				
 				try {
 					streamElements = deployments.get(deployment).executeSensorInsert(getActiveAddressBean().getVirtualSensorConfig(), position, begin, end, sensortype, sensortypeArgs, comment, true);
@@ -674,8 +717,10 @@ public class DataMappingWrapper extends AbstractWrapper {
 
 			if (streamElements != null) {
 				Iterator<Serializable[]> iter = streamElements.iterator();
-				while (iter.hasNext())
+				while (iter.hasNext()){
 					postStreamElement(iter.next());
+				}
+					
 			}
 			
 			return new InputInfo(getActiveAddressBean().toString(), "mapping upload successfull", true);
@@ -713,8 +758,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 			if (deployments.isEmpty()) {
 				logger.info("close connection to jdbc:h2:mem:mapping");
 				try {
-					if (h2DBconn != null)
+					if (h2DBconn != null){
 						h2DBconn.close();
+					}
 				} catch (SQLException e) {
 					logger.error(e.getMessage(), e);
 				}
@@ -761,10 +807,12 @@ public class DataMappingWrapper extends AbstractWrapper {
 		}
 		
 		public boolean isPositionAvailable() {
-			if (position_select == null)
+			if (position_select == null){
 				return false;
-			else
+			} else {
 				return true;
+			}
+				
 		}
 		
 		public ArrayList<Serializable[]> executePositionInsert(VSensorConfig vSensorConfig, int deviceId, short deviceType, Long begin, Long end, int pos, String comment, boolean check) throws Exception {
@@ -775,16 +823,19 @@ public class DataMappingWrapper extends AbstractWrapper {
 						Statement h2Stat = h2DBconn.createStatement();
 						StorageManager gsnsm = Main.getStorage(vSensorConfig);
 						ResultSet rs;
-						if (deviceId < 0)
+						if (deviceId < 0){
 							throw new Exception("device_id must be a positive integer");
-						if (pos < 0)
+						}
+						if (pos < 0){
 							throw new Exception("position must be a positive integer");
-
-						if (begin == null && end == null)
+						}
+						if (begin == null && end == null){
 							throw new Exception("at least either begin or end has to specified");
-						else if (begin != null && end != null) {
-							if (begin >= end)
+						}else if (begin != null && end != null) {
+							if (begin >= end){
 								throw new Exception("begin must be smaller than end");
+							}
+								
 							
 							// check for overlapping position in this time period
 							rs = h2Stat.executeQuery("SELECT pk FROM " + deployment + "_position WHERE position = " +
@@ -793,9 +844,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 									end + " > begin AND " + end + " <= end))) OR (end IS null AND (begin > " +
 									begin + " AND begin < " + end + "))) LIMIT 1");
 							
-							if (rs.next())
+							if (rs.next()){
 								throw new Exception("new position mapping overlaps with existing entry");
-
+							}
 							// check for overlapping device_id in this time period
 							rs = h2Stat.executeQuery("SELECT pk FROM " + deployment + "_position WHERE device_id = " + 
 									deviceId + " AND ((end IS NOT null AND ((" + 
@@ -803,27 +854,31 @@ public class DataMappingWrapper extends AbstractWrapper {
 									end + " > begin AND " + end + " <= end))) OR (end IS null AND (begin <= " +
 									begin + " OR begin < " + end + "))) LIMIT 1");
 							
-							if (rs.next())
+							if (rs.next()){
 								throw new Exception("the device_id does already exist in the specified time period");
-						}
-						else if (begin == null) {
+							}			
+						} else if (begin == null) {
 							rs = h2Stat.executeQuery("SELECT * FROM " + deployment + "_position WHERE position = " +
 									pos + " AND device_id = " +
 									deviceId + " AND end IS null AND begin < " + end);
 							
-							if (!rs.next())
+							if (!rs.next()){
 								throw new Exception("new mapping does not end an existing entry with the same position and device_id");
-							else {
-								if (!rs.isLast())
+							} else {
+								if (!rs.isLast()){
 									logger.error("there are too many result sets");
+								}
+									
 								
 								long h2pk = rs.getLong(1);
 								long h2deviceType = rs.getLong(3);
 								long h2begin = rs.getLong(4);
 								String h2comment = rs.getString(7);
 								
-								if (h2deviceType != deviceType)
+								if (h2deviceType != deviceType){
 									throw new Exception("new mapping has not the same device type as the existing one to be ended");
+								}
+									
 								
 								gsnsm.executeUpdate(new StringBuilder("DELETE FROM " + vSensorConfig.getName() +
 									" WHERE position = " + pos + " AND end IS null AND begin < " + end), gsnsm.getConnection());
@@ -858,22 +913,25 @@ public class DataMappingWrapper extends AbstractWrapper {
 									deviceId + " AND (end IS null OR (end IS NOT null AND " + 
 									begin + " < end)) LIMIT 1");
 							
-							if (rs.next())
+							if (rs.next()){
 								throw new Exception("the device_id does already exist in the specified open time period");
+							}
 						}
 
 						rs = h2Stat.executeQuery("SELECT pk FROM " + deployment + "_position WHERE position = " + 
 									pos + " AND device_id != " +
 									deviceId + " AND end IS null AND begin = " + begin);
-						if (rs.next())
+						if (rs.next()){
 							throw new Exception("the same begin for this position is already existing with an other device_id");
+						}
 						
 						rs = h2Stat.executeQuery("SELECT * FROM " + deployment + "_position WHERE position = " + 
 									pos + " AND end IS null AND begin = " + begin);
 						if (rs.next()) {
-							if (!rs.isLast())
+							if (!rs.isLast()){
 								logger.error("there are too many result sets");
-							
+							}
+								
 							if (end != null) {
 								long h2pk = rs.getLong(1);
 								String h2comment = rs.getString(6);
@@ -891,9 +949,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 											end + ", comment = '" + comment + "' WHERE pk = " + h2pk);
 									ret.add(new Serializable[] {deviceId, deviceType, begin, end, pos, comment});
 								}
-							}
-							else
+							} else {
 								throw new Exception("the same begin for this position is already existing");
+							}
 							
 							return ret;
 						}
@@ -902,8 +960,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 								pos + " AND end IS null AND begin < " + begin);
 						
 						if (rs.next()) {
-							if (!rs.isLast())
+							if (!rs.isLast()){
 								logger.error("there are too many result sets");
+							}	
 							
 							long h2pk = rs.getLong(1);
 							int h2deviceid = rs.getInt(2);
@@ -923,10 +982,11 @@ public class DataMappingWrapper extends AbstractWrapper {
 					position_insert.setInt(1, deviceId);
 					position_insert.setShort(2, deviceType);
 					position_insert.setLong(3, begin);
-					if (end == null)
+					if (end == null) {
 						position_insert.setNull(4, java.sql.Types.BIGINT);
-					else
+					} else {
 						position_insert.setLong(4, end);
+					}
 					position_insert.setInt(5, pos);
 					position_insert.setString(6, comment);
 					position_insert.executeUpdate();
@@ -934,9 +994,10 @@ public class DataMappingWrapper extends AbstractWrapper {
 
 					return ret;
 				}
-			}
-			else
+			} else{
 				throw new Exception("no position mapping available");
+			}
+				
 		}
 		
 		public Integer executePositionSelect(int deviceId, long generationTime) throws SQLException {
@@ -949,8 +1010,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 					ResultSet rs = position_select.executeQuery();
 					if (rs.next()) {
 						pos = rs.getInt(1);
-						if (rs.wasNull())
+						if (rs.wasNull()){
 							pos = null;
+						}	
 					}
 				}
 			}
@@ -980,8 +1042,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 					ResultSet rs = position_select.executeQuery();
 					if (rs.next()) {
 						deviceType = rs.getShort(2);
-						if (rs.wasNull())
+						if (rs.wasNull()){
 							deviceType = null;
+						}
 					}
 				}
 			}
@@ -999,10 +1062,12 @@ public class DataMappingWrapper extends AbstractWrapper {
 		}
 		
 		public boolean isGeoAvailable() {
-			if (geo_select == null)
+			if (geo_select == null){
 				return false;
-			else
+			} else {
 				return true;
+			}
+				
 		}
 		
 		public ArrayList<Serializable[]> executeGeoInsert(VSensorConfig vSensorConfig, Integer pos, Double longitude, Double latitude, Double altitude, String comment, boolean check) throws Exception {
@@ -1012,20 +1077,23 @@ public class DataMappingWrapper extends AbstractWrapper {
 					if (check) {
 						Statement h2Stat = h2DBconn.createStatement();
 						StorageManager gsnsm = Main.getStorage(vSensorConfig);
-						if (pos == null || longitude == null || latitude == null || altitude == null)
+						if (pos == null || longitude == null || latitude == null || altitude == null){
 							throw new Exception("position, longitude, latitude and altitude have to be specified");
-						else if (pos < 0)
+						} else if (pos < 0) {
 							throw new Exception("position must be a positive integer");
-						else {
+						} else {
 							int h2del = h2Stat.executeUpdate("DELETE FROM " + deployment + "_geo WHERE position = " + pos);
 							
 							int gsndel = gsnsm.executeUpdate(new StringBuilder("DELETE FROM " + vSensorConfig.getName() +
 								" WHERE position = " + pos), gsnsm.getConnection());
 							
-							if (h2del != gsndel)
+							if (h2del != gsndel){
 								logger.error("not the same amount of rows deleted (h2del=" + h2del + ", gsndel=" + gsndel + ")");
-							if (gsndel > 0)
+							} 
+							if (gsndel > 0) {
 								logger.warn("An existing geo mapping entry has been overwritten");
+							}
+								
 						}
 					}
 					
@@ -1039,9 +1107,10 @@ public class DataMappingWrapper extends AbstractWrapper {
 					
 					return ret;
 				}
-			}
-			else
+			} else {
 				throw new Exception("no geo mapping available");
+			}
+				
 		}
 		
 		public Coordinate executeGeoSelect(int pos) throws SQLException {
@@ -1052,8 +1121,10 @@ public class DataMappingWrapper extends AbstractWrapper {
 					ResultSet rs = geo_select.executeQuery();
 					if (rs.next()) {
 						coord = new Coordinate(rs.getDouble(1), rs.getDouble(2), rs.getDouble(3));;
-						if (rs.wasNull())
+						if (rs.wasNull()){
 							coord = null;
+						}
+							
 					}
 				}
 			}
@@ -1072,10 +1143,12 @@ public class DataMappingWrapper extends AbstractWrapper {
 		}
 		
 		public boolean isSensorAvailable() {
-			if (sensor_select == null)
+			if (sensor_select == null){
 				return false;
-			else
+			} else {
 				return true;
+			}
+				
 		}
 		
 		public ArrayList<Serializable[]> executeSensorInsert(VSensorConfig vSensorConfig, Integer pos, Long begin, Long end, String type, Long typeArgs, String comment, boolean check) throws Exception {
@@ -1087,14 +1160,17 @@ public class DataMappingWrapper extends AbstractWrapper {
 						StorageManager gsnsm = Main.getStorage(vSensorConfig);
 						String rootType = type.split("_")[0];
 						ResultSet rs;
-						if (pos < 0)
+						if (pos < 0){
 							throw new Exception("position must be a positive integer");
-						
-						if (begin == null && end == null)
+						}
+							
+						if (begin == null && end == null){
 							throw new Exception("at least either begin or end has to specified");
-						else if (begin != null && end != null) {
-							if (begin >= end)
+						} else if (begin != null && end != null) {
+							if (begin >= end){
 								throw new Exception("begin must be smaller than end");
+							}
+								
 							
 							// check for overlapping positions in this time period
 							rs = h2Stat.executeQuery("SELECT pk FROM " + deployment + "_sensor WHERE position = " + 
@@ -1104,19 +1180,21 @@ public class DataMappingWrapper extends AbstractWrapper {
 									end + " > begin AND " + end + " <= end))) OR (end IS null AND (begin > " +
 									begin + " AND begin < " + end + "))) LIMIT 1");
 							
-							if (rs.next())
+							if (rs.next()){
 								throw new Exception("new sensor mapping overlaps with existing entry");
+							}
 						}
 						else if (begin == null) {
 							rs = h2Stat.executeQuery("SELECT * FROM " + deployment + "_sensor WHERE position = " +
 									pos + " AND sensortype LIKE '" +
 									type + "' AND end IS null AND begin < " + end);
 							
-							if (!rs.next())
+							if (!rs.next()){
 								throw new Exception("new sensor mapping does not end an existing entry or sensortype is not matching");
-							else {
-								if (!rs.isLast())
+							} else {
+								if (!rs.isLast()){
 									logger.error("there are too many result sets");
+								}
 								
 								long h2pk = rs.getLong(1);
 								long h2begin = rs.getLong(3);
@@ -1148,23 +1226,27 @@ public class DataMappingWrapper extends AbstractWrapper {
 									begin + " < begin) OR (end IS NOT null AND " + 
 									begin + " < end)) LIMIT 1");
 							
-							if (rs.next())
+							if (rs.next()){
 								throw new Exception("new sensor mapping overlaps with existing entry");
+							}
+								
 						}
 
 						rs = h2Stat.executeQuery("SELECT pk FROM " + deployment + "_sensor WHERE position = " + 
 									pos + " AND sensortype LIKE '" +
 									rootType + "%' AND sensortype NOT LIKE '" +
 									type + "' AND end IS null AND begin = " + begin);
-						if (rs.next())
+						if (rs.next()){
 							throw new Exception("the same begin for this position is already existing with an other similar sensortype");
+						}
 
 						rs = h2Stat.executeQuery("SELECT * FROM " + deployment + "_sensor WHERE position = " + 
 									pos + " AND sensortype LIKE '" +
 									type + "' AND end IS null AND begin = " + begin);
 						if (rs.next()) {
-							if (!rs.isLast())
+							if (!rs.isLast()){
 								logger.error("there are too many result sets");
+							}
 							
 							if (end != null) {
 								long h2pk = rs.getLong(1);
@@ -1184,10 +1266,10 @@ public class DataMappingWrapper extends AbstractWrapper {
 											end + ", comment = '" + comment + "' WHERE pk = " + h2pk);
 									ret.add(new Serializable[] {pos, begin, end, type, typeArgs, comment});
 								}
-							}
-							else
+							} else {
 								throw new Exception("the same begin for this position is already existing");
-							
+							}
+														
 							return ret;
 						}
 	
@@ -1196,8 +1278,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 								rootType + "%' AND end IS null AND begin < " + begin);
 						
 						if (rs.next()) {
-							if (!rs.isLast())
+							if (!rs.isLast()){
 								logger.error("there are too many result sets");
+							}
 							
 							long h2pk = rs.getLong(1);
 							int h2pos = rs.getInt(2);
@@ -1218,24 +1301,29 @@ public class DataMappingWrapper extends AbstractWrapper {
 
 					sensor_insert.setInt(1, pos);
 					sensor_insert.setLong(2, begin);
-					if (end == null)
+					if (end == null){
 						sensor_insert.setNull(3, java.sql.Types.BIGINT);
-					else
+					} else {
 						sensor_insert.setLong(3, end);
+					}
+						
 					sensor_insert.setString(4, type);
-					if (typeArgs == null)
+					if (typeArgs == null){
 						sensor_insert.setNull(5, java.sql.Types.BIGINT);
-					else
+					} else {
 						sensor_insert.setLong(5, typeArgs);
+					}
+						
 					sensor_insert.setString(6, comment);
 					sensor_insert.executeUpdate();
 					ret.add(new Serializable[] {pos, begin, end, type, typeArgs, comment});
 					
 					return ret;
 				}
-			}
-			else
+			} else {
 				throw new Exception("no sensor mapping available");
+			}
+				
 		}
 		
 		public String executeSensorSelect(int pos, long generationTime) throws SQLException {
@@ -1269,8 +1357,9 @@ public class DataMappingWrapper extends AbstractWrapper {
 					ResultSet rs = serialid_select.executeQuery();
 					if (rs.next()) {
 						serialid = rs.getLong(1);
-						if (rs.wasNull())
+						if (rs.wasNull()){
 							serialid = null;
+						}	
 					}
 				}
 			}
@@ -1306,10 +1395,12 @@ public class DataMappingWrapper extends AbstractWrapper {
 		}
 		
 		public boolean isConversionAvailable() {
-			if (conversion_select == null)
+			if (conversion_select == null){
 				return false;
-			else
+			} else {
 				return true;
+			}
+				
 		}
 	}
 	

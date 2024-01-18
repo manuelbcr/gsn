@@ -76,21 +76,22 @@ public class AbstractQuery {
 
 						lastStandardCriterionLinkedToVs = cc;
 
-						if (cc.getOperator().compareToIgnoreCase("like") == 0) partStandardCriteria.append("'%");
+						if (cc.getOperator().compareToIgnoreCase("like") == 0){ partStandardCriteria.append("'%");}
 
 						partStandardCriteria.append(cc.getValue());
 
-						if (cc.getOperator().compareToIgnoreCase("like") == 0) partStandardCriteria.append("%'");
+						if (cc.getOperator().compareToIgnoreCase("like") == 0){ partStandardCriteria.append("%'");}
 						partStandardCriteria.append(" ");
 					}
 				}
-				if (lastStandardCriterionLinkedToVs != null) partStandardCriteria.insert(0, "where ");
+				if (lastStandardCriterionLinkedToVs != null){ partStandardCriteria.insert(0, "where ");}
 			}
 
 			StringBuilder partFields = new StringBuilder () ;
 			for (int i = 0 ; i < fields.length ; i++) {
-				if (partFields.length()>0)
+				if (partFields.length()>0){
 					partFields.append(", ");
+				}
 				if (aggregation != null) {
 					if ("timed".equals(fields[i])) {
 						partFields.append("max(");
@@ -111,7 +112,7 @@ public class AbstractQuery {
 				}
 				partFields.append("floor(timed/" + aggregation.getTimeRange() + ") as aggregation_interval ");
 			}
-			else partFields.append(" ");
+			else{ partFields.append(" ");}
 
 
 			// Build a final query
@@ -120,9 +121,11 @@ public class AbstractQuery {
 			sqlQuery.append(partFields);
 			sqlQuery.append("from ").append(vsName).append(" ");
 			sqlQuery.append(partStandardCriteria);
-			if (aggregation == null)	sqlQuery.append("order by timed desc ");
-			else 								sqlQuery.append("group by aggregation_interval desc ");
-
+			if (aggregation == null){	
+				sqlQuery.append("order by timed desc ");
+			} else{
+				sqlQuery.append("group by aggregation_interval desc ");
+			}	
 			logger.debug("SQL Query built >" + sqlQuery.toString() + "<");
         return sqlQuery;
 	}
@@ -156,9 +159,10 @@ public class AbstractQuery {
         int index = criteria.indexOf(criterion);
         if (index != -1) {
             criteria.set(index, criterion);
-        }
-        else
-            criteria.add(criterion);
+        }else{
+			criteria.add(criterion);
+		}
+            
     }
 
     public ArrayList<StandardCriterion> getCriteria() {

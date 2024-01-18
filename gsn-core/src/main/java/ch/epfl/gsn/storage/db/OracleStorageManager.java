@@ -94,12 +94,14 @@ public class OracleStorageManager extends StorageManager {
     public byte convertLocalTypeToGSN(int jdbcType, int precision) {
         switch (jdbcType) {
             case Types.NUMERIC:
-                if (precision == 0)
+                if (precision == 0){
                     return DataTypes.BIGINT;
-                else if (precision > 8)
+                } else if (precision > 8) {
                     return DataTypes.DOUBLE;
-                else
-                	return DataTypes.FLOAT;
+                } else {
+                    return DataTypes.FLOAT;
+                }
+                	
             case Types.VARCHAR:
                 return DataTypes.VARCHAR;
             case Types.CHAR:
@@ -134,29 +136,39 @@ public class OracleStorageManager extends StorageManager {
     @Override
     public String addLimit(String query, int limit, int offset) {
         String toAppend = "";
-        if (offset == 0)
+        if (offset == 0){
             toAppend = " ROWNUM <= " + limit;
-        else
+        } else{
             toAppend = " ROWNUM BETWEEN " + offset + " AND " + (limit + offset) + " ";
+        }
+            
 
         int indexOfWhere = SQLUtils.getWhereIndex(query);
         int indexOfGroupBy = SQLUtils.getGroupByIndex(query);
         int indexOfOrder = SQLUtils.getOrderByIndex(query);
 
         StringBuilder toReturn = new StringBuilder(query);
-        if (indexOfGroupBy < 0 && indexOfWhere < 0 && indexOfOrder < 0)
+        if (indexOfGroupBy < 0 && indexOfWhere < 0 && indexOfOrder < 0) {
             return query + " WHERE " + toAppend;
-        if (indexOfWhere < 0 && indexOfOrder > 0)
+        }
+            
+        if (indexOfWhere < 0 && indexOfOrder > 0) {
             return toReturn.insert(indexOfOrder, " WHERE " + toAppend).toString();
-        if (indexOfWhere < 0 && indexOfGroupBy > 0)
+        }
+            
+        if (indexOfWhere < 0 && indexOfGroupBy > 0) {
             return toReturn.insert(indexOfGroupBy, " WHERE " + toAppend).toString();
+        }
+            
         if (indexOfWhere > 0) {
             StringBuilder tmp = toReturn.insert(indexOfWhere + " WHERE ".length(), toAppend + " AND (");
             int endIndex = tmp.length();
-            if (indexOfGroupBy > 0)
+            if (indexOfGroupBy > 0){
                 endIndex = SQLUtils.getGroupByIndex(tmp);
-            else if (indexOfOrder > 0)
+            } else if (indexOfOrder > 0) {
                 endIndex = SQLUtils.getOrderByIndex(tmp);
+            }
+                
             tmp.insert(endIndex, ")");
             return tmp.toString();
         }
@@ -180,7 +192,7 @@ public class OracleStorageManager extends StorageManager {
         StringBuilder result = new StringBuilder("CREATE TABLE ").append(tableName);
         result.append(" (PK number(38) PRIMARY KEY, timed number(38) NOT NULL, ");
         for (DataField field : structure) {
-            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) continue;
+            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) {continue;}
             result.append(field.getName().toUpperCase()).append(' ');
             result.append(convertGSNTypeToLocalType(field));
             result.append(" ,");
@@ -224,15 +236,19 @@ public class OracleStorageManager extends StorageManager {
             stmt.execute(sql);
         } catch (SQLException error) {
             if ((sql.toLowerCase().contains("drop trigger") && error.getMessage().contains("does not exist")) ||
-                    (sql.toLowerCase().contains("create sequence") && error.getMessage().contains("name is already used")))
-                // ignore it for oracle
-                ;
-            else
+                    (sql.toLowerCase().contains("create sequence") && error.getMessage().contains("name is already used"))){
+                        // ignore it for oracle
+                        ;
+            } else {
                 logger.error(error.getMessage() + " FOR: " + sql, error);
+            }
+                
         } finally {
             try {
-                if (stmt != null && !stmt.isClosed())
+                if (stmt != null && !stmt.isClosed()){
                     stmt.close();
+                }
+                    
             } catch (SQLException e) {
             	logger.error(e.getMessage(), e);
             }
@@ -287,16 +303,19 @@ public class OracleStorageManager extends StorageManager {
     @Override
 	public String tableNamePostFixAppender(CharSequence table_name,String postFix) {
 		String tableName = table_name.toString();
-		if (tableName.endsWith("\""))
-			return (tableName.substring(0, tableName.length()-2))+postFix+"\"";
-		else
-			return tableName+postFix;
+		if (tableName.endsWith("\"")){
+            return (tableName.substring(0, tableName.length()-2))+postFix+"\"";
+        } else {
+            return tableName+postFix;
+        }
+			
 	}
 
     @Override
     public StringBuilder tableNameGeneratorInString (CharSequence tableName) {
-		if (tableName.charAt(0)=='_')
-			return new StringBuilder( "\"").append(tableName).append("\"");
+		if (tableName.charAt(0)=='_'){
+            return new StringBuilder( "\"").append(tableName).append("\"");
+        }	
 		return new StringBuilder(tableName);
 	}
 }

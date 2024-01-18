@@ -121,9 +121,10 @@ public class RestStreamHandler extends HttpServlet implements ContinuationListen
     								logger.info("newest local timed is older than requested start time -> using timed as start time");
     							}
     						}
-    					}
-    					else
-    						logger.info("Table '" + vsConfig.getName() + "' doesn't exist => can not check for newest local timed");
+    					} else {
+							logger.info("Table '" + vsConfig.getName() + "' doesn't exist => can not check for newest local timed");
+						}
+    						
     				} catch (SQLException e) {
     					logger.error(e.getMessage(), e);
     				} finally {
@@ -161,8 +162,10 @@ public class RestStreamHandler extends HttpServlet implements ContinuationListen
                 logger.debug(e.getMessage(), e);
             }
         	if (((RestDelivery)streamingReq.getDeliverySystem()).isLimitReached()) {
-        		if (timeoutTimer != null)
-        			timeoutTimer.cancel();
+        		if (timeoutTimer != null){
+					timeoutTimer.cancel();
+				}
+        			
         		DataDistributerRest.getInstance(streamingReq.getDeliverySystem().getClass()).removeListener(streamingReq);
         	}
 		}
@@ -232,10 +235,12 @@ public class RestStreamHandler extends HttpServlet implements ContinuationListen
 		try {
 			if (notification!=null) {
 				boolean status = notification.manualDataInsertion(request.getParameter(PushDelivery.DATA));
-                if (status)
-                    response.setStatus(SUCCESS_200);
-                else
-                    response.setStatus(_300);
+                if (status){
+					response.setStatus(SUCCESS_200);
+				} else {
+					response.setStatus(_300);
+				}
+                    
 			}else {
 				logger.warn("Received a Http put request for an INVALID notificationId: " + notificationId);
 				response.sendError(_300);
@@ -298,12 +303,16 @@ public class RestStreamHandler extends HttpServlet implements ContinuationListen
 					checkToken(URLDecoder.decode(token,"UTF-8").toLowerCase().trim());
 					pos++;
 				}
-				if (pos > 4)
+				if (pos > 4) {
 					throw new Exception("URL mall formated >" + requestURI + "<");
+				}
+					
 			}
 			tableName = SQLValidator.getInstance().validateQuery(query);
-			if (tableName==null)
+			if (tableName==null) {
 				throw new RuntimeException("Bad Table name in the query:"+query);
+			}
+				
 			/** IMPORTANT: We change the table names to lower-case as some databases (e.g., MySQL on linux) are case sensitive and in 
 			 * general we use lower case for table names in GSN. **/
 			tableName=tableName.trim();
@@ -312,13 +321,13 @@ public class RestStreamHandler extends HttpServlet implements ContinuationListen
 			config = Mappings.getVSensorConfig(tableName);
 		}
 		private void checkToken(String s) throws Exception {
-			if (s.startsWith("t"))
+			if (s.startsWith("t")){
 				timeout = Integer.parseInt(s.substring(1));
-			else if (s.startsWith("l"))
+			} else if (s.startsWith("l")) {
 				limit = Integer.parseInt(s.substring(1));
-			else if (s.equals("c"))
+			} else if (s.equals("c")){
 				continuous = true;
-			else {
+			} else {
 				try {
 					startTime = Long.parseLong(s);
 				} catch (NumberFormatException e) {

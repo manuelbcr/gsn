@@ -175,8 +175,9 @@ public class ScriptletProcessor extends AbstractVirtualSensor {
 
     @Override
     public void dispose() {
-        if (periodicalTask != null)
+        if (periodicalTask != null){
             periodicalTask.cancel();
+        }     
     }
 
     @Override
@@ -188,8 +189,10 @@ public class ScriptletProcessor extends AbstractVirtualSensor {
         if (outputStructure == null) {
             logger.warn("Failed to initialize the processing class because the outputStructure is null.");
             return false;
-        } else
+        } else {
             this.outputStructure = outputStructure;
+        }
+            
 
         // Mandatory Parameters
 
@@ -206,26 +209,34 @@ public class ScriptletProcessor extends AbstractVirtualSensor {
         String ps1 = parameters.get(PARAM_SCRIPTLET);
         if (ps1 != null) {
             scriptlet = initScriptlet(ps1);
-            if (scriptlet == null)
+            if (scriptlet == null){
                 return false;
+            }
+               
         }
 
         String ps2 = parameters.get(PARAM_SCRIPTLETPERIODIC);
         if (ps2 != null) {
             scriptletPeriodic = initScriptlet(ps2);
-            if (scriptletPeriodic == null)
+            if (scriptletPeriodic == null){
                 return false;
+            }
+                
         }
 
         // At least one of the following is mandatory: {scriptlet,  scriptlet-periodic}.
         if (scriptlet == null && scriptletPeriodic == null) {
-            if (logger.isDebugEnabled())
+            if (logger.isDebugEnabled()){
                 logger.warn("The Initial Parameter >" + PARAM_SCRIPTLET + "< or >" + PARAM_SCRIPTLETPERIODIC + "< MUST be provided in the configuration file for the processing class.");
+            }
+                
             return false;
         }
         if ((scriptletPeriodic != null && period < 0) || (scriptletPeriodic == null && period >= 0)) {
-            if (logger.isDebugEnabled())
+            if (logger.isDebugEnabled()){
                 logger.warn("The Initial Parameters >" + PARAM_SCRIPTLETPERIODIC + "< and >" + PARAM_PERIOD + "< MUST be provided together in the configuration file for the processing class.");
+            }
+                
             return false;
         }
 
@@ -328,8 +339,9 @@ public class ScriptletProcessor extends AbstractVirtualSensor {
     }
 
     private synchronized Timer getTimer() {
-        if (timer == null)
+        if (timer == null){
             timer = new Timer(false);
+        } 
         return timer;
     }
 }

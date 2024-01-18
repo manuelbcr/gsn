@@ -145,16 +145,18 @@ public class DataSource {
 
     String getAccessRightsString() {
     	char c = this.dataSourceType.charAt(this.dataSourceType.length()-1);
-    	if (c == '1')
-    		return "read";
-    	else if (c == '2')
-    		return "write";
-    	else if (c == '3')
-    		return "read/write";
-    	else if (c == '4')
-    		return "own";
-    	else
-    		return "unknown";
+    	if (c == '1'){
+            return "read";
+        } else if (c == '2'){
+            return "write";
+        } else if (c == '3'){
+            return "read/write";
+        } else if (c == '4') {
+            return "own";
+        } else {
+            return "unknown";
+        }
+    		
     }
 
     /****************************************** AC Methods********************************************/

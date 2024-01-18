@@ -75,17 +75,17 @@ public class SensorInternetVS extends AbstractVirtualSensor {
 		String param = null;
 
 		param = params.get(SI_URL);
-		if (param != null)
+		if (param != null){
 			try {
 				siUrl = new URL (param) ;
 			} catch (MalformedURLException e) {
 				logger.error(e.getMessage(), e);
 				return false;
 			}
-			else {
+		} else {
 				logger.error("The required parameter: >" + SI_URL + "<+ is missing from the virtual sensor configuration file.");
 				return false;
-			}
+		}
 
 		param = params.get(SI_USERNAME) ;
 		if (param != null) {
@@ -170,7 +170,7 @@ public class SensorInternetVS extends AbstractVirtualSensor {
 		//
 		for (int i = 0 ; i < fieldsNames.length ; i++) {
 			if (i < siStreamMapping.length) {
-				if (i != 0) sb.append("&");
+				if (i != 0) {sb.append("&");}
 				sb.append(createPostParameter ("time[" + i + "]=", dateFormat.format(new Date (timestamp))));
 				sb.append("&");
 				sb.append(createPostParameter ("data[" + i + "]=", data[i].toString()));

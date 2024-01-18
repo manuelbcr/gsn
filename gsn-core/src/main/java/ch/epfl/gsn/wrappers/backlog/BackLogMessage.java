@@ -237,8 +237,9 @@ public class BackLogMessage {
 	 * @throws IOException 
 	 */
 	public BackLogMessage(short type) throws IOException {
-		if (type < 0 || type > 255)
+		if (type < 0 || type > 255) {
 			throw new IOException("BackLog message type has to be in range 0 to 255");
+		}
 		this.type = type;
 	}
 	
@@ -252,8 +253,9 @@ public class BackLogMessage {
 	 * @throws IOException 
 	 */
 	public BackLogMessage(short type, long timestamp) throws IOException {
-		if (type < 0 || type > 255)
+		if (type < 0 || type > 255) {
 			throw new IOException("BackLog message type has to be in range 0 to 255");
+		}
 		this.type = type;
 		this.timestamp = timestamp;
 	}
@@ -270,10 +272,12 @@ public class BackLogMessage {
 	 * @throws IOException if the payload is too big
 	 */
 	public BackLogMessage(short type, long timestamp, Serializable[] payload) throws IOException, NullPointerException {
-		if( payload == null )
+		if( payload == null ){
 			throw new NullPointerException("The payload should not be null");
-		if (type < 0 || type > 255)
+		}
+		if (type < 0 || type > 255){
 			throw new IOException("BackLog message type has to be in range 0 to 255");
+		}
 		
 		checkPayload(payload);
 		
@@ -297,8 +301,9 @@ public class BackLogMessage {
 		byte [] arraybuffer = bbuffer.array();
 		
 		type = (short) (bbuffer.get() & 0xFF);
-		if (type < 0 || type > 255)
+		if (type < 0 || type > 255){
 			throw new IOException("BackLog message type is not in range 0 to 255 -> drop message");
+		}
 		timestamp = bbuffer.getLong();
 		
 		if (bbuffer.hasRemaining()) {
@@ -319,12 +324,13 @@ public class BackLogMessage {
 					break;
 				case '?':
 					byte bool = bbuffer.get();
-					if (bool == 0)
+					if (bool == 0){
 						payload[payloadIndex] = false;
-					else if (bool == 1)
+					} else if (bool == 1){
 						payload[payloadIndex] = true;
-					else
+					} else {
 						throw new IOException("wrong boolean format");
+					} 
 					break;
 				case 'h':
 					payload[payloadIndex] = bbuffer.getShort();
@@ -383,10 +389,11 @@ public class BackLogMessage {
 						format += "b";
 					}
 					else if (payload[i] instanceof Boolean) {
-						if ((Boolean)payload[i])
+						if ((Boolean)payload[i]){
 							bbuffer.put((byte) 1);
-						else
+						} else {
 							bbuffer.put((byte) 0);
+						}
 						format += "?";
 					}
 					else if (payload[i] instanceof Short) {
@@ -422,13 +429,15 @@ public class BackLogMessage {
 					else if (payload[i] instanceof Byte[]) {
 						bbuffer.putInt(((Byte[])payload[i]).length);
 						byte [] tmp = new byte [((Byte[])payload[i]).length];
-						for (int j=0; j<((Byte[])payload[i]).length; j++)
+						for (int j=0; j<((Byte[])payload[i]).length; j++){
 							tmp[j] = ((Byte[])payload[i])[j];
+						}	
 						bbuffer.put(tmp);
 						format += "X";
-					}
-					else
+					} else {
 						System.err.print("unsupported type");
+					}
+						
 				}
 			}
 	
@@ -472,8 +481,9 @@ public class BackLogMessage {
 	 * @throws Exception 
 	 */
 	public void setType(short type) throws IOException {
-		if (type < 0 || type > 255)
+		if (type < 0 || type > 255){
 			throw new IOException("BackLog message type has to be in range 0 to 255");
+		}
 		this.type = type;
 	}
 	
@@ -531,43 +541,46 @@ public class BackLogMessage {
 	 * @throws IOException if the payload length exceeds MAX_PAYLOAD_SIZE
 	 */
 	public int getSize() throws IOException {
-		if (payloadBin == null)
+		if (payloadBin == null){
 			return checkPayload(payload);
-		else
+		} else {
 			return payloadBin.length;
+		}
+			
 	}
 	
 	
 	private int checkPayload(Serializable[] payload) throws IOException {
 		int length = 2;
 		for (int i=0; i<payload.length; i++) {
-			if (payload[i] == null)
+			if (payload[i] == null){
 				length += 1;
-			else if (payload[i] instanceof Byte)
+			} else if (payload[i] instanceof Byte) {
 				length += 2;
-			else if (payload[i] instanceof Boolean)
+			} else if (payload[i] instanceof Boolean) {
 				length += 2;
-			else if (payload[i] instanceof Short)
+			} else if (payload[i] instanceof Short) {
 				length += 3;
-			else if (payload[i] instanceof Integer)
+			} else if (payload[i] instanceof Integer) {
 				length += 5;
-			else if (payload[i] instanceof Long)
+			} else if (payload[i] instanceof Long) {
 				length += 9;
-			else if (payload[i] instanceof Double)
+			} else if (payload[i] instanceof Double) {
 				length += 9;
-			else if (payload[i] instanceof String)
+			} else if (payload[i] instanceof String) {
 				length += ((String)payload[i]).length()+3;
-			else if (payload[i] instanceof byte[])
+			} else if (payload[i] instanceof byte[]) {
 				length += ((byte[])payload[i]).length+3;
-			else if (payload[i] instanceof Byte[])
+			} else if (payload[i] instanceof Byte[]) {
 				length += ((Byte[])payload[i]).length+3;
-			else
+			} else {
 				throw new IOException("unsupported type in payload (index=" + i + ", type=" + payload[i].getClass().getName() + ").");
+			}
 		}
 
-		if( length > MAX_PAYLOAD_SIZE )
+		if( length > MAX_PAYLOAD_SIZE ) {
 			throw new IOException("The payload exceeds the maximum size of " + MAX_PAYLOAD_SIZE + "bytes.");
-		
+		}		
 		return length;
 	}
 }

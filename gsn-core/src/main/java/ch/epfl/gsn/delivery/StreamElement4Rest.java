@@ -54,8 +54,10 @@ public class StreamElement4Rest {
         StringBuilder sb = new StringBuilder("StreamElement4Rest: (timestamp:");
         sb.append(timestamp.toString());
 		sb.append("Fields =>{ ");
-		for (Field4Rest field : fields)
+		for (Field4Rest field : fields){
 			sb.append(field.toString()).append(", ");
+		}
+
         sb.append("})");
 		return sb.toString();
     }

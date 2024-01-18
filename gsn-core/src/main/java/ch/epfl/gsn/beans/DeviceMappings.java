@@ -33,10 +33,13 @@ public class DeviceMappings {
 	private void calcPositionTimeAxis() {
 		for (PositionMappings mappings: positionMappings) {
 			for (PositionMap map: mappings.mappings) {
-				if (map.begin != null && (positionTimeMin == null || positionTimeMin.compareTo(map.begin) > 0))
+				if (map.begin != null && (positionTimeMin == null || positionTimeMin.compareTo(map.begin) > 0)){
 					positionTimeMin = map.begin;
-				if (positionTimeMax == null || map.end == null || positionTimeMax.compareTo(map.end) < 0)
+				}	
+				if (positionTimeMax == null || map.end == null || positionTimeMax.compareTo(map.end) < 0){
 					positionTimeMax = map.end;
+				}
+					
 				
 				if (map.end != null) {
 					boolean newTick = true;
@@ -46,8 +49,10 @@ public class DeviceMappings {
 							break;
 						}
 					}
-					if (newTick)
+					if (newTick){
 						positionTimeTicks.add(new TimeTick(map.end));
+					}
+						
 					
 					newTick = true;
 					for (TimeTick t: positionTimeTicks) {
@@ -56,8 +61,10 @@ public class DeviceMappings {
 							break;
 						}
 					}
-					if (newTick)
+					if (newTick){
 						positionTimeTicks.add(new TimeTick(map.begin));
+					}
+						
 				}
 			}
 		}
@@ -66,11 +73,12 @@ public class DeviceMappings {
 	private void calcSensorTimeAxis() {
 		for (SensorMappings mappings: sensorMappings) {
 			for (SensorMap map: mappings.mappings) {
-				if (map.begin != null && (sensorTimeMin == null || sensorTimeMin.compareTo(map.begin) > 0))
+				if (map.begin != null && (sensorTimeMin == null || sensorTimeMin.compareTo(map.begin) > 0)){
 					sensorTimeMin = map.begin;
-				if (sensorTimeMax == null || map.end == null || sensorTimeMax.compareTo(map.end) > 0)
+				}
+				if (sensorTimeMax == null || map.end == null || sensorTimeMax.compareTo(map.end) > 0){
 					sensorTimeMax = map.end;
-				
+				}
 				if (map.end != null) {
 					boolean newTick = true;
 					for (TimeTick t: sensorTimeTicks) {
@@ -79,9 +87,10 @@ public class DeviceMappings {
 							break;
 						}
 					}
-					if (newTick)
+					if (newTick){
 						sensorTimeTicks.add(new TimeTick(map.end));
-
+					}
+						
 					newTick = true;
 					for (TimeTick t: sensorTimeTicks) {
 						if (map.begin.compareTo(t.tick+172800000L) < 0 && map.begin.compareTo(t.tick-172800000L) > 0) {
@@ -89,8 +98,10 @@ public class DeviceMappings {
 							break;
 						}
 					}
-					if (newTick)
+					if (newTick){
 						sensorTimeTicks.add(new TimeTick(map.begin));
+					}
+						
 				}
 			}
 		}

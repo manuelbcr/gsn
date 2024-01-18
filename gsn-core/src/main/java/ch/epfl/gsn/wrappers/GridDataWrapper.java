@@ -244,10 +244,11 @@ public class GridDataWrapper extends AbstractWrapper {
 
                         try {
                             Double d = Double.parseDouble(aLine[j]);
-                            if (d != null)
+                            if (d != null){
                                 raw.add(d);
-                            else
+                            } else {
                                 raw.add(NODATA_value);
+                            }  
                         } catch (java.lang.NumberFormatException e) {
                             logger.warn(j + ": \"" + aLine[j] + "\"");
                             logger.warn(e.getMessage());
@@ -262,11 +263,13 @@ public class GridDataWrapper extends AbstractWrapper {
 
                 if (raw.size() == nrows * ncols) {
                     rawData = new Double[nrows][ncols];
-                    for (int i = 0; i < nrows; i++)
+                    for (int i = 0; i < nrows; i++){
                         for (int j = 0; j < ncols; j++) {
                             rawData[i][j] = (Double) raw.get(i * ncols + j);
                             //System.out.println(i + "," + j + " : " + rawData[i][j]);
                         }
+                    }
+
                     logger.debug("rawData.length " + rawData.length);
                     logger.debug("rawData[0].length " + rawData[0].length);
                 } else {

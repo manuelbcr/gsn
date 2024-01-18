@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.LoggerFactory;
 
 import ch.epfl.gsn.Mappings;
-import ch.epfl.gsn.VirtualSensor;
 import ch.epfl.gsn.beans.DataField;
 import ch.epfl.gsn.beans.VSensorConfig;
 
@@ -79,20 +78,20 @@ public final class Mappings {
    }
    
    public static VSensorConfig getVSensorConfig ( String vSensorName ) {
-      if ( vSensorName == null ) return null;
+      if ( vSensorName == null ){ return null;}
       return vsNameTOVSConfig.get( vSensorName );
    }
    
    public static void removeFilename ( String fileName ) {
 	   if(fileNameToVSInstance.containsKey(fileName)){
-		   VSensorConfig config = ( fileNameToVSInstance.get( fileName ) ).getConfig( );
+		   VSensorConfig config = fileNameToVSInstance.get( fileName ).getConfig( );
 		   vsNameTOVSConfig.remove( config.getName( ) );
 		   fileNameToVSInstance.remove( fileName );
 	   }
    }
    
    public static Long getLastModifiedTime ( String configFileName ) {
-      return Long.valueOf( ( fileNameToVSInstance.get( configFileName ) ).getLastModified( ) );
+      return Long.valueOf(fileNameToVSInstance.get( configFileName ).getLastModified( ) );
    }
    
    public static String[] getAllKnownFileName() {
@@ -100,8 +99,8 @@ public final class Mappings {
    }
    
    public static VSensorConfig getConfigurationObject(String fileName) {
-      if (fileName == null) return null;
-      return (fileNameToVSInstance.get(fileName)).getConfig();
+      if (fileName == null){ return null;}
+      return fileNameToVSInstance.get(fileName).getConfig();
    }
    
    public static Iterator <VSensorConfig> getAllVSensorConfigs() {
@@ -109,9 +108,9 @@ public final class Mappings {
    }
    
    public static VirtualSensor getVSensorInstanceByVSName(String vsensorName) {
-      if (vsensorName == null) return null;
+      if (vsensorName == null){ return null;}
       VSensorConfig vSensorConfig = vsNameTOVSConfig.get(vsensorName);
-      if (vSensorConfig == null) return null;
+      if (vSensorConfig == null){ return null;}
       return getVSensorInstanceByFileName(vSensorConfig.getFileName());
    }
    /**
@@ -123,8 +122,9 @@ public final class Mappings {
 		Iterator<VSensorConfig> configs = Mappings.getAllVSensorConfigs();
 		while(configs.hasNext()) {
 			VSensorConfig config = configs.next();
-			if (config.getName().equalsIgnoreCase(vsName))
-				return config;
+			if (config.getName().equalsIgnoreCase(vsName)){
+            return config;
+         }	
 		}
 		return null;
 	}  

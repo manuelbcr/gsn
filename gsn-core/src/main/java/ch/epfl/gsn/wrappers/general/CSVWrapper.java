@@ -115,13 +115,16 @@ public class CSVWrapper extends AbstractWrapper {
                     .append(addressBean.getWrapper())
                     .append("_")
                     .append(new File(dataFile).getName());
-            if (!handler.initialize(dataFile.trim(), csvFields, csvFormats, csvSeparator.toCharArray()[0], csvStringQuote.toCharArray()[0], skipFirstXLine, nullValues, timezone, checkPointFile.toString()))
+            if (!handler.initialize(dataFile.trim(), csvFields, csvFormats, csvSeparator.toCharArray()[0], csvStringQuote.toCharArray()[0], skipFirstXLine, nullValues, timezone, checkPointFile.toString())){
                 return false;
+            }
+        
 
             String val = FileUtils.readFileToString(new File(checkPointFile.toString()), "UTF-8");
             long lastItem = 0;
-            if (val != null && val.trim().length() > 0)
+            if (val != null && val.trim().length() > 0){
                 lastItem = Long.parseLong(val.trim());
+            }
             logger.warn("Latest item: "+lastItem);
 
             if (useCounterForCheckPoint) {
@@ -150,10 +153,13 @@ public class CSVWrapper extends AbstractWrapper {
             File chkPointFile = new File(handler.getCheckPointFile());
             long lastModified = -1;
             long lastModifiedCheckPoint = -1;
-            if (dataFile.isFile())
+            if (dataFile.isFile()){
                 lastModified = dataFile.lastModified();
-            if (chkPointFile.isFile())
+            } 
+            if (chkPointFile.isFile()){
                 lastModifiedCheckPoint = chkPointFile.lastModified();
+            }
+                
             FileReader reader = null;
 
             /*
@@ -180,28 +186,32 @@ public class CSVWrapper extends AbstractWrapper {
                         }
                         boolean insertionSuccess = postStreamElement(streamElement);
 
-                        if (!useCounterForCheckPoint)
+                        if (!useCounterForCheckPoint){
                             handler.updateCheckPointFile(streamElement.getTimeStamp()); // write latest processed timestamp
-                        else
+                        } else {
                             handler.updateCheckPointFile(processedLineCounter); // write latest processed line number
+                        }
+                            
                     }
                 }
                 //if (output==null || output.size()==0) //More intelligent sleeping, being more proactive once the wrapper receives huge files.
                 Thread.sleep(samplingPeriodInMsc);
             } catch (Exception e) {
-                if (preivousError != null && preivousError.getMessage().equals(e.getMessage()))
+                if (preivousError != null && preivousError.getMessage().equals(e.getMessage())){
                     continue;
+                }
                 logger.error(e.getMessage() + " :: " + dataFile, e);
                 preivousError = e;
                 previousModTime = lastModified;
                 previousCheckModTime = lastModifiedCheckPoint;
             } finally {
-                if (reader != null)
+                if (reader != null){
                     try {
                         reader.close();
                     } catch (IOException e) {
                         logger.debug(e.getMessage(), e);
                     }
+                }
             }
             /*
             DEBUG_INFO("* Exit *");

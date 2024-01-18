@@ -60,44 +60,57 @@ public class VaisalaDemuxBridgeVirtualSensor extends BridgeVirtualSensorPermasen
 			serialized_data[4] = Integer.parseInt(r1[0].split("R")[0]);
 			
 			// check input correctness
-			if (Integer.parseInt(r1[0].split("R")[1]) != 1)
+			if (Integer.parseInt(r1[0].split("R")[1]) != 1){
 				throw new Exception("wu should start with #R1:timestamp=" + data.getTimeStamp());
-			if (Integer.parseInt(r2[0].split("R")[1]) != 2)
+			} 
+			if (Integer.parseInt(r2[0].split("R")[1]) != 2){
 				throw new Exception("tu should start with #R2:timestamp=" + data.getTimeStamp());
-			if (Integer.parseInt(r3[0].split("R")[1]) != 3)
+			}
+			if (Integer.parseInt(r3[0].split("R")[1]) != 3){
 				throw new Exception("ru should start with #R3:timestamp=" + data.getTimeStamp());
-			if (Integer.parseInt(r5[0].split("R")[1]) != 5)
+			}
+			if (Integer.parseInt(r5[0].split("R")[1]) != 5){
 				throw new Exception("su should start with #R5:timestamp=" + data.getTimeStamp());
+			}
+
 			
 			for (int i=1; i<r1.length; i++) {
-				if (r1[i].endsWith("#"))
+				if (r1[i].endsWith("#")){
 					serialized_data[index++] = null;
-				else
+				} else {
 					serialized_data[index++] = r1[i].substring(3, r1[i].length()-1);
+				}
+					
 			}
 			for (int i=1; i<r2.length; i++) {
-				if (r2[i].endsWith("#"))
+				if (r2[i].endsWith("#")){
 					serialized_data[index++] = null;
-				else
+				} else{
 					serialized_data[index++] = r2[i].substring(3, r2[i].length()-1);
+				}
+					
 			}
 			for (int i=1; i<r3.length; i++) {
-				if (r3[i].endsWith("#"))
+				if (r3[i].endsWith("#")){
 					serialized_data[index++] = null;
-				else
+				}else {
 					serialized_data[index++] = r3[i].substring(3, r3[i].length()-1);
+				}
+					
 			}
 			for (int i=1; i<r5.length; i++) {
-				if (r5[i].endsWith("#"))
+				if (r5[i].endsWith("#")){
 					serialized_data[index++] = null;
-				else
+				} else {
 					serialized_data[index++] = r5[i].substring(3, r5[i].length()-1);
-				
+				}
+
 				if (r5[i].startsWith("Vh")) {
-					if (r5[i].endsWith("#"))
+					if (r5[i].endsWith("#")){
 						serialized_data[index++] = null;
-					else
+					} else {
 						serialized_data[index++] = String.valueOf(r5[i].charAt(r5[i].length()-1));
+					}
 				}
 			}
 		} catch (Exception e) {

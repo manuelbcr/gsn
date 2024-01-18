@@ -65,12 +65,16 @@ public class ZeroMQWrapperPush extends AbstractWrapper {
 		String _lport = addressBean.getPredicateValue("local_port");
 		laddress = addressBean.getPredicateValue("local_address");
 
-		if ( laddress == null || laddress.trim().length() == 0 ) 
+		if ( laddress == null || laddress.trim().length() == 0 ){
 			throw new RuntimeException( "The >local_address< parameter is missing from the ZeroMQ wrapper." );
+		} 
+			
 		if (_lport != null){
 			lport = Integer.parseInt(_lport); 
-			if ( lport <= 0 || lport > 65535 ) 
+			if ( lport <= 0 || lport > 65535 ) {
 				throw new RuntimeException( "The >local_port< parameter must be a valid port number." );
+			}
+				
 		} else {
 			throw new RuntimeException( "The >local_port< parameter is missing from the ZeroMQ wrapper." );
 		}

@@ -133,19 +133,19 @@ public class SerialWrapper extends AbstractWrapper implements SerialPortEventLis
 		}
 
 		inputSeparator = addressBean.getPredicateValue( "inputseparator" );
-		if ( inputSeparator == null ) 
+		if ( inputSeparator == null ) {
 			useInputSeparator = false;
-		else 
+		} else {
 			useInputSeparator = true;
-
+		}
 
 		String representation = addressBean.getPredicateValue( "representation" );
 		
 		if ( representation == null || representation.equalsIgnoreCase("binary") ){ 
 			output_format=0;
-		}else if (representation.startsWith("string"))
+		}else if (representation.startsWith("string")){
 			output_format=1;
-		else {
+		} else {
 			logger.error("The provided representation >"+representation+"< is not valid, possible values are binary , string");
 			return false;
 		}
@@ -180,18 +180,18 @@ public class SerialWrapper extends AbstractWrapper implements SerialPortEventLis
 		if ( newStopBits != null && newStopBits.trim( ).length( ) > 0 ) {
 			float newstopbits = Float.parseFloat( newStopBits );
 
-			if ( newstopbits == 1.0 ) stopBits = SerialPort.STOPBITS_1;
-			if ( newstopbits == 2.0 ) stopBits = SerialPort.STOPBITS_2;
-			if ( newstopbits == 1.5 ) stopBits = SerialPort.STOPBITS_1_5;
+			if ( newstopbits == 1.0 ) {stopBits = SerialPort.STOPBITS_1;}
+			if ( newstopbits == 2.0 ) {stopBits = SerialPort.STOPBITS_2;}
+			if ( newstopbits == 1.5 ) {stopBits = SerialPort.STOPBITS_1_5;}
 		}
 
 		String newParity = addressBean.getPredicateValue( "parity" );
 		if ( newParity != null && newParity.trim( ).length( ) > 0 ) {
-			if ( newParity.equals( "PARITY_EVEN" ) ) parity = SerialPort.PARITY_EVEN;
-			if ( newParity.equals( "PARITY_MARK" ) ) parity = SerialPort.PARITY_MARK;
-			if ( newParity.equals( "PARITY_NONE" ) ) parity = SerialPort.PARITY_NONE;
-			if ( newParity.equals( "PARITY_ODD" ) ) parity = SerialPort.PARITY_ODD;
-			if ( newParity.equals( "PARITY_SPACE" ) ) parity = SerialPort.PARITY_SPACE;
+			if ( newParity.equals( "PARITY_EVEN" ) ) {parity = SerialPort.PARITY_EVEN;}
+			if ( newParity.equals( "PARITY_MARK" ) ) {parity = SerialPort.PARITY_MARK;}
+			if ( newParity.equals( "PARITY_NONE" ) ) {parity = SerialPort.PARITY_NONE;}
+			if ( newParity.equals( "PARITY_ODD" ) ) {parity = SerialPort.PARITY_ODD;}
+			if ( newParity.equals( "PARITY_SPACE" ) ) {parity = SerialPort.PARITY_SPACE;}
 		}
 
 		String newflowControlMode = addressBean.getPredicateValue( "flowcontrolmode" );
@@ -201,11 +201,11 @@ public class SerialWrapper extends AbstractWrapper implements SerialPortEventLis
 			String modes[] = newflowControlMode.split( "\\|" );
 
 			for ( int i = 0 ; i < modes.length ; i++ ) {
-				if ( modes[ i ].equals( "FLOWCONTROL_NONE" ) ) flowControlMode |= SerialPort.FLOWCONTROL_NONE;
-				if ( modes[ i ].equals( "FLOWCONTROL_RTSCTS_IN" ) ) flowControlMode |= SerialPort.FLOWCONTROL_RTSCTS_IN;
-				if ( modes[ i ].equals( "FLOWCONTROL_RTSCTS_OUT" ) ) flowControlMode |= SerialPort.FLOWCONTROL_RTSCTS_OUT;
-				if ( modes[ i ].equals( "FLOWCONTROL_XONXOFF_IN" ) ) flowControlMode |= SerialPort.FLOWCONTROL_XONXOFF_IN;
-				if ( modes[ i ].equals( "FLOWCONTROL_XONXOFF_OUT" ) ) flowControlMode |= SerialPort.FLOWCONTROL_XONXOFF_OUT;
+				if ( modes[ i ].equals( "FLOWCONTROL_NONE" ) ) {flowControlMode |= SerialPort.FLOWCONTROL_NONE;}
+				if ( modes[ i ].equals( "FLOWCONTROL_RTSCTS_IN" ) ) {flowControlMode |= SerialPort.FLOWCONTROL_RTSCTS_IN;}
+				if ( modes[ i ].equals( "FLOWCONTROL_RTSCTS_OUT" ) ) {flowControlMode |= SerialPort.FLOWCONTROL_RTSCTS_OUT;}
+				if ( modes[ i ].equals( "FLOWCONTROL_XONXOFF_IN" ) ) {flowControlMode |= SerialPort.FLOWCONTROL_XONXOFF_IN;}
+				if ( modes[ i ].equals( "FLOWCONTROL_XONXOFF_OUT" ) ) {flowControlMode |= SerialPort.FLOWCONTROL_XONXOFF_OUT;}
 			}
 
 			if ( flowControlMode == 0 ) {
@@ -394,12 +394,13 @@ public class SerialWrapper extends AbstractWrapper implements SerialPortEventLis
 	}
 
 	public boolean sendToWrapper ( Object dataItem ) throws OperationNotSupportedException {
-		if ( logger.isDebugEnabled( ) ) logger.debug( "Serial wrapper received a serial port sending..." );
-		if ( !wnetPort.isOpen( ) ) throw new OperationNotSupportedException( "The connection is closed." );
+		if ( logger.isDebugEnabled( ) ) {logger.debug( "Serial wrapper received a serial port sending..." );}
+		if ( !wnetPort.isOpen( ) ) {throw new OperationNotSupportedException( "The connection is closed." );}
 		try {
-			if ( logger.isDebugEnabled( ) ) logger.debug( "Serial wrapper performing a serial port sending." );
-			if ( dataItem instanceof byte [ ] )
+			if ( logger.isDebugEnabled( ) ) {logger.debug( "Serial wrapper performing a serial port sending." );}
+			if ( dataItem instanceof byte [ ] ){
 				wnetPort.getOutputStream( ).write( ( byte [ ] ) dataItem );
+			}
 			else { // general case, writes using the printwriter.
 				PrintWriter pw = new PrintWriter( wnetPort.getOutputStream( ) );
 				pw.write( dataItem.toString( ) );
@@ -456,12 +457,16 @@ public class SerialWrapper extends AbstractWrapper implements SerialPortEventLis
 			// messageAreaIn.append("\n--- BREAK RECEIVED ---\n");
 		}
 
-		if ( logger.isDebugEnabled( ) ) 
+		if ( logger.isDebugEnabled( ) ){
 			logger.debug( new StringBuilder( "Serial port wrapper processed a serial port event, stringbuffer is now : " ).append( new String(inputBuffer) ).toString( ) );
+		} 
 		if ( useInputSeparator ) {
-			for ( String chunk : new String(inputBuffer).split( inputSeparator ) ) 
-				if ( chunk.length( ) > 0 ) 
+			for ( String chunk : new String(inputBuffer).split( inputSeparator ) ){
+				if ( chunk.length( ) > 0 ) {
 					post_item(chunk);
+				}
+			} 
+
 		} else { //without separator character.
 			post_item(new String(inputBuffer) );
 		}

@@ -133,11 +133,11 @@ public class PushRemoteWrapper extends AbstractWrapper {
                     logger.debug("Connection established for: " + initParams.getRemoteContactPoint());
                     break;
                 } else {
-                    if (sc == HttpStatus.SC_UNAUTHORIZED)
+                    if (sc == HttpStatus.SC_UNAUTHORIZED){
                         authState = (AuthState) localContext.getAttribute(ClientContext.TARGET_AUTH_STATE); // Target host authentication required
-                    else if (sc == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED)
+                    } else if (sc == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED) {
                         authState = (AuthState) localContext.getAttribute(ClientContext.PROXY_AUTH_STATE); // Proxy authentication required
-                    else {
+                    } else {
                         logger.error(new StringBuilder()
                                 .append("Unexpected POST status code returned: ")
                                 .append(sc)
@@ -172,9 +172,9 @@ public class PushRemoteWrapper extends AbstractWrapper {
             }
         }
         
-        if (structure == null)
+        if (structure == null){
             throw new RuntimeException("Cannot connect to the remote host.");
-
+        }
         return structure;
     }
 
@@ -193,8 +193,10 @@ public class PushRemoteWrapper extends AbstractWrapper {
             // If the stream element was inserted succesfully, we wait for the next,
             // otherwise, we return false.
             boolean status = postStreamElement(streamElement);
-            if (status)
+            if (status){
                 lastReceivedTimestamp = streamElement.getTimeStamp();
+            }
+                
             return status;
         }
         catch (SQLException e) {

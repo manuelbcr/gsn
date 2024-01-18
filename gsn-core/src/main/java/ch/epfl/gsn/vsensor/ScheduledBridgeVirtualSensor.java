@@ -46,18 +46,19 @@ public class ScheduledBridgeVirtualSensor extends AbstractScheduledVirtualSensor
 	class MyTimerTask extends TimerTask {
 
 		public void run() {
-			if(dataItem == null)
+			if(dataItem == null){
 				return;	
-			
+			}
 			dataItem.setTimeStamp(System.currentTimeMillis());
 			logger.warn(getVirtualSensorConfiguration().getName() + " Timer Event ");
 			try {
 				ContainerImpl.getInstance().publishData(ScheduledBridgeVirtualSensor.this, dataItem);
 			} catch (SQLException e) {
-				if (e.getMessage().toLowerCase().contains("duplicate entry"))
+				if (e.getMessage().toLowerCase().contains("duplicate entry")){
 					logger.info(e.getMessage(), e);
-				else
+				} else {
 					logger.error(e.getMessage(), e);
+				}
 			}
 	
 		}

@@ -41,10 +41,7 @@ import java.util.TimeZone;
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
 
-import ch.epfl.gsn.beans.BeansInitializer;
 import ch.epfl.gsn.beans.ContainerConfig;
-import ch.epfl.gsn.beans.SlidingConfig;
-import ch.epfl.gsn.beans.StorageConfig;
 import ch.epfl.gsn.utils.KeyValueImp;
 
 
@@ -223,18 +220,24 @@ public class ContainerConfig {
 		if ( isdatabaseSystemInitialzied == false ) {
 			isdatabaseSystemInitialzied = true;
 
-			for ( int i = 0 ; i < JDBC_URLS_PREFIX.length ; i++ )
+			for ( int i = 0 ; i < JDBC_URLS_PREFIX.length ; i++ ){
 				if ( storage.getJdbcURL().toLowerCase( ).trim( ).startsWith( JDBC_URLS_PREFIX[ i ] ) ) {
 					setdatabaseSystem( JDBC_SYSTEMS[ i ] );
 					break;
 				}
+			}
+
 		}
 		return this.databaseSystem;
 	}
 
 	private String convertToDriver ( String dbSys ) {
-		for ( int i = 0 ; i < JDBC_SYSTEMS.length ; i++ )
-			if ( JDBC_SYSTEMS[ i ].equals( dbSys ) ) return JDBC_DRIVERS[ i ];
+		for ( int i = 0 ; i < JDBC_SYSTEMS.length ; i++ ){
+			if ( JDBC_SYSTEMS[ i ].equals( dbSys ) ){ 
+				return JDBC_DRIVERS[ i ];
+			}
+		}
+			
 		return "";
 	}
 
@@ -271,10 +274,14 @@ public class ContainerConfig {
 	public HashMap<String, String> getMsrMap() {
 		if (msrMapCached==null) {
 			msrMapCached = new HashMap<String, String>();
-			if (msrMap==null)
+			if (msrMap==null){
 				return msrMapCached;
-			for (KeyValueImp kv : msrMap)
+			}
+				
+			for (KeyValueImp kv : msrMap){
 				msrMapCached.put(kv.getKey().toLowerCase().trim(), kv.getValue());
+			}
+				
 		}
 		return msrMapCached;
 	}
@@ -300,8 +307,10 @@ public class ContainerConfig {
 	}
 	
 	public AccessControlConfig getAcConfig() {
-    	if (accessControl == null)
-    		accessControl = new AccessControlConfig();
+    	if (accessControl == null){
+			accessControl = new AccessControlConfig();
+		}
+    		
         return accessControl;
     }
 }

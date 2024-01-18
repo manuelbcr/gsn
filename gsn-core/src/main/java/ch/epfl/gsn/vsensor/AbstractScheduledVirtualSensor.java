@@ -138,11 +138,13 @@ public abstract class AbstractScheduledVirtualSensor extends AbstractVirtualSens
 			StringBuilder exceptionMessage = new StringBuilder( ).append( "The streamElement produced by :" ).append( getVirtualSensorConfiguration( ).getName( ) ).append(
 			" Virtual Sensor is not compatible with the defined streamElement.\n" );
 			exceptionMessage.append( "The expected stream element structure (specified in " ).append( getVirtualSensorConfiguration( ).getFileName( ) ).append( " is [" );
-			for ( DataField df : getVirtualSensorConfiguration( ).getOutputStructure( ) ) 
+			for ( DataField df : getVirtualSensorConfiguration( ).getOutputStructure( ) ){
 				exceptionMessage.append( df.getName( ) ).append( " (" ).append( DataTypes.TYPE_NAMES[ df.getDataTypeID( ) ] ).append( ") , " );
+			} 
 			exceptionMessage.append( "] but the actual stream element received from the " + getVirtualSensorConfiguration( ).getName( ) ).append( " has the [" );
-			for ( int i = 0 ; i < streamElement.getFieldNames( ).length ; i++ )
+			for ( int i = 0 ; i < streamElement.getFieldNames( ).length ; i++ ){
 				exceptionMessage.append( streamElement.getFieldNames( )[ i ] ).append( "(" ).append( DataTypes.TYPE_NAMES[ streamElement.getFieldTypes( )[ i ] ] ).append( ")," );
+			}
 			exceptionMessage.append(" ] thus the stream element dropped !!!" );
 			throw new RuntimeException( exceptionMessage.toString( ) );
 		}
@@ -171,8 +173,9 @@ public abstract class AbstractScheduledVirtualSensor extends AbstractVirtualSens
 		for (DataField field: outputStructure) {
 			Serializable value = se.getData(field.getName());
 			i++;
-			if (value==null)
+			if (value==null){
 				continue;
+			}
 			if ( ( (  field.getDataTypeID() == DataTypes.BIGINT ||
 					field.getDataTypeID() == DataTypes.DOUBLE ||
 					field.getDataTypeID() == DataTypes.FLOAT ||

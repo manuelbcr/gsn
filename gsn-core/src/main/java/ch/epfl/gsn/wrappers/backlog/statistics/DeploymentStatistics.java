@@ -23,15 +23,17 @@ public class DeploymentStatistics {
 	}
 
 	protected CoreStationStatistics newStatisticsClass(String coreStationAddress) throws IOException {
-		if (!coreStationToCoreStationStatsList.containsKey(coreStationAddress))
+		if (!coreStationToCoreStationStatsList.containsKey(coreStationAddress)){
 			coreStationToCoreStationStatsList.put(coreStationAddress, new CoreStationStatistics(coreStationAddress));
+		}
 		
 		return coreStationToCoreStationStatsList.get(coreStationAddress);
 	}
 
 	protected void removeCoreStationStatsInstance(String coreStationAddress) throws IOException {
-		if (!coreStationToCoreStationStatsList.containsKey(coreStationAddress))
+		if (!coreStationToCoreStationStatsList.containsKey(coreStationAddress)){
 			throw new IOException("CoreStation " + coreStationAddress + " does not exist in the statistics");
+		}
 		coreStationToCoreStationStatsList.remove(coreStationAddress);
 	}
 	
@@ -47,16 +49,18 @@ public class DeploymentStatistics {
 	
 	
 	public Map<Integer, Boolean> isConnectedList() {
-		if (coreStationToCoreStationStatsList.isEmpty())
+		if (coreStationToCoreStationStatsList.isEmpty()){
 			return null;
+		}
 		Map<Integer, Boolean> map = new Hashtable<Integer, Boolean>();
 		synchronized (coreStationToCoreStationStatsList){
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
 				Integer id = csstat.getDeviceId();
 				Boolean val = csstat.isConnected();
-				if (id != null && val != null)
+				if (id != null && val != null){
 					map.put(id, val);
+				}
 			}
 		}
 		return map;
@@ -64,80 +68,91 @@ public class DeploymentStatistics {
 
 	
 	public Map<Integer, Long> getTotalMsgRecvCounter() {
-		if (coreStationToCoreStationStatsList.isEmpty())
+		if (coreStationToCoreStationStatsList.isEmpty()){
 			return null;
+		}
 		Map<Integer, Long> map = new Hashtable<Integer, Long>();
 		synchronized (coreStationToCoreStationStatsList){
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
 				Integer id = csstat.getDeviceId();
 				Long val = csstat.getTotalMsgRecvCounter();
-				if (id != null && val != null)
+				if (id != null && val != null){
 					map.put(id, val);
+				}	
 			}
 		}
 		return map;
 	}
 	
 	public Map<Integer, Long> getMsgRecvCounterList(int type) {
-		if (coreStationToCoreStationStatsList.isEmpty())
+		if (coreStationToCoreStationStatsList.isEmpty()){
 			return null;
+		}
 		Map<Integer, Long> map = new Hashtable<Integer, Long>();
 		synchronized (coreStationToCoreStationStatsList){
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
 				Integer id = csstat.getDeviceId();
 				Long val = csstat.getMsgRecvCounter(type);
-				if (id != null && val != null)
+				if (id != null && val != null){
 					map.put(id, val);
+				}
+					
 			}
 		}
 		return map;
 	}
 	
 	public Map<Integer, Long> getTotalRecvByteCounter() {
-		if (coreStationToCoreStationStatsList.isEmpty())
+		if (coreStationToCoreStationStatsList.isEmpty()){
 			return null;
+		}
 		Map<Integer, Long> map = new Hashtable<Integer, Long>();
 		synchronized (coreStationToCoreStationStatsList){
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
 				Integer id = csstat.getDeviceId();
 				Long val = csstat.getTotalRecvByteCounter();
-				if (id != null && val != null)
+				if (id != null && val != null){
 					map.put(id, val);
+				}	
 			}
 		}
 		return map;
 	}
 	
 	public Map<Integer, Long> getTotalMsgRecvByteCounter() {
-		if (coreStationToCoreStationStatsList.isEmpty())
+		if (coreStationToCoreStationStatsList.isEmpty()){
 			return null;
+		}
 		Map<Integer, Long> map = new Hashtable<Integer, Long>();
 		synchronized (coreStationToCoreStationStatsList){
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
 				Integer id = csstat.getDeviceId();
 				Long val = csstat.getTotalMsgRecvByteCounter();
-				if (id != null && val != null)
+				if (id != null && val != null){
 					map.put(id, val);
+				}	
 			}
 		}
 		return map;
 	}
 	
 	public Map<Integer, Long> getMsgRecvByteCounterList(int type) {
-		if (coreStationToCoreStationStatsList.isEmpty())
+		if (coreStationToCoreStationStatsList.isEmpty()){
 			return null;
+		}
 		Map<Integer, Long> map = new Hashtable<Integer, Long>();
 		synchronized (coreStationToCoreStationStatsList){
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
 				Integer id = csstat.getDeviceId();
 				Long val = csstat.getMsgRecvByteCounter(type);
-				if (id != null && val != null)
+				if (id != null && val != null){
 					map.put(id, val);
+				}
 			}
 		}
 		return map;
@@ -145,80 +160,91 @@ public class DeploymentStatistics {
 
 	
 	public Map<Integer, Long> getTotalMsgSendCounter() {
-		if (coreStationToCoreStationStatsList.isEmpty())
+		if (coreStationToCoreStationStatsList.isEmpty()){
 			return null;
+		}
 		Map<Integer, Long> map = new Hashtable<Integer, Long>();
 		synchronized (coreStationToCoreStationStatsList){
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
 				Integer id = csstat.getDeviceId();
 				Long val = csstat.getTotalMsgSendCounter();
-				if (id != null && val != null)
+				if (id != null && val != null){
 					map.put(id, val);
+				}
 			}
 		}
 		return map;
 	}
 	
 	public Map<Integer, Long> getMsgSendCounterList(int type) {
-		if (coreStationToCoreStationStatsList.isEmpty())
+		if (coreStationToCoreStationStatsList.isEmpty()){
 			return null;
+		}
 		Map<Integer, Long> map = new Hashtable<Integer, Long>();
 		synchronized (coreStationToCoreStationStatsList){
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
 				Integer id = csstat.getDeviceId();
 				Long val = csstat.getMsgSendCounter(type);
-				if (id != null && val != null)
+				if (id != null && val != null){
 					map.put(id, val);
+				}
 			}
 		}
 		return map;
 	}
 	
 	public Map<Integer, Long> getTotalSendByteCounter() {
-		if (coreStationToCoreStationStatsList.isEmpty())
+		if (coreStationToCoreStationStatsList.isEmpty()){
 			return null;
+		}
 		Map<Integer, Long> map = new Hashtable<Integer, Long>();
 		synchronized (coreStationToCoreStationStatsList){
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
 				Integer id = csstat.getDeviceId();
 				Long val = csstat.getTotalSendByteCounter();
-				if (id != null && val != null)
+				if (id != null && val != null){
 					map.put(id, val);
+				}
 			}
 		}
 		return map;
 	}
 	
 	public Map<Integer, Long> getTotalMsgSendByteCounter() {
-		if (coreStationToCoreStationStatsList.isEmpty())
+		if (coreStationToCoreStationStatsList.isEmpty()){
 			return null;
+		}
 		Map<Integer, Long> map = new Hashtable<Integer, Long>();
 		synchronized (coreStationToCoreStationStatsList){
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
 				Integer id = csstat.getDeviceId();
 				Long val = csstat.getTotalMsgSendByteCounter();
-				if (id != null && val != null)
+				if (id != null && val != null){
 					map.put(id, val);
+				}	
 			}
 		}
 		return map;
 	}
 	
 	public Map<Integer, Long> getMsgSendByteCounterList(int type) {
-		if (coreStationToCoreStationStatsList.isEmpty())
+		if (coreStationToCoreStationStatsList.isEmpty()){
 			return null;
+		}
 		Map<Integer, Long> map = new Hashtable<Integer, Long>();
 		synchronized (coreStationToCoreStationStatsList){
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
 				Integer id = csstat.getDeviceId();
 				Long val = csstat.getMsgSendByteCounter(type);
-				if (id != null && val != null)
-					map.put(id, val);
+				if (id != null && val != null){
+					map.put(id, val);				
+				}
+					
 			}
 		}
 		return map;

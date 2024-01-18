@@ -45,11 +45,14 @@ public class CleanDB {
     Class.forName(sc.getJdbcDriver());
     StorageManager sm = StorageManagerFactory.getInstance(sc.getJdbcDriver ( ) , sc.getJdbcUsername ( ) , sc.getJdbcPassword ( ) , sc.getJdbcURL ( ), Main.DEFAULT_MAX_DB_CONNECTIONS);
     ArrayList<String> tables = sm.getInternalTables();
-    for (String t : tables) 
+    for (String t : tables){
       sm.executeDropTable(t);
+    } 
     tables = sm.getInternalTables();
-    for (String t : tables) 
+    for (String t : tables) {
       sm.executeDropView(new StringBuilder(t));
+    }
+      
       
   }
 }

@@ -72,8 +72,9 @@ public class DPPMessageMultiplexer implements BackLogMessageListener {
 	    vec.addElement(listener);
 	    msgTypeListener.put(msgTypeInt, vec);
 
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("Listener for DPP message type " + msgType + " registered");
+		}
 	}
 
 	
@@ -94,11 +95,13 @@ public class DPPMessageMultiplexer implements BackLogMessageListener {
 		}
 		// Remove all occurrences
 		while (vec.removeElement(listener));
-		if (vec.size() == 0)
+		if (vec.size() == 0){
 			msgTypeListener.remove(msgTypeInt);
-
-		if (logger.isDebugEnabled())
+		}
+		if (logger.isDebugEnabled()){
 			logger.debug("Listener for DPP message type " + msgTypeInt + " deregistered");
+		}
+			
 		
 		if (msgTypeListener.size() == 0) {
 			dispose();
@@ -141,8 +144,10 @@ public class DPPMessageMultiplexer implements BackLogMessageListener {
 					logger.error(e.getMessage());
 				}
 				// send the message to the listener
-				if (temp.messageReceived(deviceID, message.getTimestamp(), message.getPayload()) == true)
+				if (temp.messageReceived(deviceID, message.getTimestamp(), message.getPayload()) == true){
 					ReceiverCount++;
+				}
+					
 			}
 			if (ReceiverCount == 0) {
 				logger.warn("Received message with type " + type + ", but none of the registered listeners did process it. Skip message.");

@@ -84,10 +84,11 @@ public class ValidityTools {
 		}catch ( Exception e ) {
 			logger.info(e.getMessage(),e);
 		}finally{
-			if (socket !=null )
+			if (socket !=null ){
 				try{
 					socket.close();
 				}catch(Exception e){}
+			}
 		}
 		return toReturn;
 	}
@@ -95,7 +96,7 @@ public class ValidityTools {
 	public static void checkAccessibilityOfDirs ( String ... args ) {
 		for ( String name : args ) {
 			File f = new File( name );
-			if ( f.canRead( ) && f.canWrite( ) && f.isDirectory( ) ) continue;
+			if ( f.canRead( ) && f.canWrite( ) && f.isDirectory( ) ) {continue;}
 			else {
 				logger.error( "The required directory : " + f.getAbsolutePath( ) + " is not accessible." );
 				System.exit( 1 );
@@ -106,7 +107,7 @@ public class ValidityTools {
 	public static void checkAccessibilityOfFiles ( String... args ) {
 		for ( String name : args ) {
 			File f = new File( name );
-			if ( f.canRead( ) && f.canWrite( ) && f.isFile( ) ) continue;
+			if ( f.canRead( ) && f.canWrite( ) && f.isFile( ) ) {continue;}
 			else {
 				logger.error( "The required file : " + f.getAbsolutePath( ) + " is not accessible." );
 				System.exit( 1 );
@@ -155,10 +156,14 @@ public class ValidityTools {
 		// this allows us to be ipv6 compatible (we simply remove the port)
 		try {
 			InetAddress hostAddress = InetAddress.getByName( host );
-			if (hostAddress==null)
+			if (hostAddress==null){
 				return false;
-			for ( InetAddress address : NETWORK_LOCAL_INETADDRESSES )
-				if ( address.equals( hostAddress ) ) return true;
+			}	
+			for ( InetAddress address : NETWORK_LOCAL_INETADDRESSES ){
+				if ( address.equals( hostAddress ) ) {
+					return true;
+				}
+			}
 			return hostAddress.isLoopbackAddress();
 		} catch ( UnknownHostException e ) {
 			logger.debug( e.getMessage() );
@@ -206,16 +211,22 @@ public class ValidityTools {
 
 
 	public static boolean isValidJavaVariable(CharSequence string) {
-		if (string ==null)
+		if (string ==null){
 			return false;
+		}
 		StringBuilder sb = new StringBuilder(string);
-		if (sb.length()==0)
+		if (sb.length()==0){
 			return false;
-		if (!Character.isJavaIdentifierStart(sb.charAt(0)) && string.charAt(0)!='\"' )
+		}	
+		if (!Character.isJavaIdentifierStart(sb.charAt(0)) && string.charAt(0)!='\"' ){
 			return false;
-		for (int i=1;i<sb.length();i++)
-			if (!Character.isJavaIdentifierPart(sb.charAt(i)) && (i==sb.length()-1 && string.charAt(sb.length()-1)!='\"'))
+		}
+		for (int i=1;i<sb.length();i++){
+			if (!Character.isJavaIdentifierPart(sb.charAt(i)) && (i==sb.length()-1 && string.charAt(sb.length()-1)!='\"')){
 				return false;
+			}
+		}
+			
 		return true;
 	}
 	

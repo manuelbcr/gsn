@@ -55,14 +55,14 @@ public class SQLUtils {
 		Pattern pattern = Pattern.compile( "(\"[^\"]*\")|((\\w+)(\\.((\\w+)|\\*)))" , Pattern.CASE_INSENSITIVE );
 		Matcher matcher = pattern.matcher( query );
 		StringBuffer result = new StringBuffer( );
-		if ( !( renameMapping.comparator( ) instanceof CaseInsensitiveComparator ) ) throw new RuntimeException( "Query rename needs case insensitive treemap." );
+		if ( !( renameMapping.comparator( ) instanceof CaseInsensitiveComparator ) ) {throw new RuntimeException( "Query rename needs case insensitive treemap." );}
 		while ( matcher.find( ) ) {
-			if ( matcher.group( 2 ) == null ) continue;
+			if ( matcher.group( 2 ) == null ){ continue;}
 			String tableName = matcher.group( 3 );
 			CharSequence replacement = renameMapping.get( tableName );
 			// $4 means that the 4th group of the match should be appended to the
 			// string (the forth group contains the field name).
-			if ( replacement != null ) matcher.appendReplacement( result , new StringBuilder( replacement ).append( "$4" ).toString( ) );
+			if ( replacement != null ){ matcher.appendReplacement( result , new StringBuilder( replacement ).append( "$4" ).toString( ) );}
 		}
 		String toReturn = matcher.appendTail( result ).toString( ).toLowerCase( );
 
@@ -75,11 +75,13 @@ public class SQLUtils {
 		Matcher fromClauseMather = fromClausePattern.matcher( selection );
 		result = new StringBuffer( );
 		while ( fromClauseMather.find( ) ) {
-			if ( fromClauseMather.group( 1 ) == null ) continue;
+			if ( fromClauseMather.group( 1 ) == null ){ continue;}
 			String tableName = fromClauseMather.group( 1 );
 			CharSequence replacement = renameMapping.get( tableName );
-			if ( replacement != null ) 
+			if ( replacement != null ) {
 				fromClauseMather.appendReplacement( result , replacement.toString( ) + " ");         
+			}
+				
 		}
 		String cleanFromClause = fromClauseMather.appendTail( result ).toString( );
 		//String finalResult = StringUtils.replace( toReturn , selection , cleanFromClause );
@@ -103,9 +105,13 @@ public class SQLUtils {
 	public static String getTableName ( String query ) {
 		String q = SQLValidator.removeSingleQuotes(SQLValidator.removeQuotes(query)).toLowerCase();
 		StringTokenizer tokens = new StringTokenizer(q," ");
-		while(tokens.hasMoreElements())
-			if (tokens.nextToken().equalsIgnoreCase("from") && tokens.hasMoreTokens()) 
+		while(tokens.hasMoreElements()){
+			if (tokens.nextToken().equalsIgnoreCase("from") && tokens.hasMoreTokens()) {
 				return tokens.nextToken();
+			}
+
+		}
+			
 		return null;
 	}
 	public static StringBuilder newRewrite ( CharSequence query , CharSequence tableNameToRename, CharSequence replaceTo ) {
@@ -115,12 +121,12 @@ public class SQLUtils {
 		Matcher matcher = pattern.matcher( query );
 		StringBuffer result = new StringBuffer( );
 		while ( matcher.find( ) ) {
-			if ( matcher.group( 2 ) == null ) continue;
+			if ( matcher.group( 2 ) == null ) {continue;}
 			String tableName = matcher.group( 3 );
 			if(tableName.equals(tableNameToRename)){
 				// $4 means that the 4th group of the match should be appended to the
 				// string (the forth group contains the field name).
-				if ( replaceTo != null ) matcher.appendReplacement( result , new StringBuilder( replaceTo ).append( "$4" ).toString( ) );
+				if ( replaceTo != null ) {matcher.appendReplacement( result , new StringBuilder( replaceTo ).append( "$4" ).toString( ) );}
 			}
 		}
 		String toReturn = matcher.appendTail( result ).toString( ).toLowerCase( );
@@ -131,10 +137,11 @@ public class SQLUtils {
 		Matcher fromClauseMather = fromClausePattern.matcher( selection );
 		result = new StringBuffer( );
 		while ( fromClauseMather.find( ) ) {
-			if ( fromClauseMather.group( 1 ) == null ) continue;
+			if ( fromClauseMather.group( 1 ) == null ) {continue;}
 			String tableName = fromClauseMather.group( 1 );
-			if (tableName.equals(tableNameToRename) && replaceTo != null)
+			if (tableName.equals(tableNameToRename) && replaceTo != null){
 				fromClauseMather.appendReplacement( result , replaceTo.toString( ) + " ");
+			}
 		}
 		String cleanFromClause = fromClauseMather.appendTail( result ).toString( );
 		//String finalResult = StringUtils.replace( toReturn , selection , cleanFromClause );
@@ -151,8 +158,9 @@ public class SQLUtils {
 
 	public static String extractWhereClause(String pQuery) {
 		int indexOfWhere = pQuery.toLowerCase().indexOf( " where " ) ;
-		if (indexOfWhere<0)
+		if (indexOfWhere<0) {
 			return " true ";
+		}
 		String toReturn = pQuery.substring(indexOfWhere+" where".length(),pQuery.length());
 		return toReturn;
 	}

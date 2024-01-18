@@ -9,8 +9,10 @@ public class Selfpotential implements Converter {
 	
 	
 	public String convert(Serializable signal_name, String value, Serializable input) {
-		if (signal_name == null)
+		if (signal_name == null){
 			return null;
+		}
+			
 		
 		String result = null;
 		int v = ((Integer) signal_name).intValue();

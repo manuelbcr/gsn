@@ -65,9 +65,11 @@ public class EmailService {
         try {
             email.setSubject(object);
             email.setMsg(message);
-            if (to != null)
-                for (String _to : to)
+            if (to != null){
+                for (String _to : to){
                     email.addTo(_to);
+                }
+            }
             sendCustomEmail(email);
             return true;
         }

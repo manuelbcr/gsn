@@ -95,9 +95,11 @@ public abstract class AbstractHCIProtocol {
 	}
 	
 	public AbstractHCIQuery getQuery(String queryName) {
-		for(String key: queries.keySet())
-			if(key.equals(queryName))
+		for(String key: queries.keySet()){
+			if(key.equals(queryName)){
 				return queries.get(key);
+			}
+		}
 		return null;
 	}
    
@@ -107,9 +109,9 @@ public abstract class AbstractHCIProtocol {
 	 */
 	public byte[] buildRawQuery(String queryName, Vector<Object> params) {
 		AbstractHCIQuery query = queries.get(queryName);
-		if (query == null)
+		if (query == null){
 			return null;
-		else {
+		} else {
 			logger.debug("Protocol " + getName() + " has built a raw query of type " + query.getName());
 			return query.buildRawQuery( params );
 		}

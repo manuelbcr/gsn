@@ -82,9 +82,12 @@ public class HttpGetWrapper extends AbstractWrapper {
 		return false;
 	}
       inputRate = this.addressBean.getPredicateValue( "rate" );
-      if ( inputRate == null || inputRate.trim( ).length( ) == 0 ) rate = DEFAULT_RATE;
-      else
+      if ( inputRate == null || inputRate.trim( ).length( ) == 0 ) {
+         rate = DEFAULT_RATE;
+      } else {
          rate = Integer.parseInt( inputRate );
+      }
+         
       logger.debug( "AXISWirelessCameraWrapper is now running @" + rate + " Rate." );
       return true;
    }
@@ -98,12 +101,13 @@ public class HttpGetWrapper extends AbstractWrapper {
             Thread.sleep( rate );
 			httpURLConnection = (HttpURLConnection) url.openConnection();
 		    httpURLConnection.connect();
-			if ( httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_ACCEPTED ) continue;
+			if ( httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_ACCEPTED ){ continue;}
 		    content = new BufferedInputStream(httpURLConnection.getInputStream(),4096);
 		    arrayOutputStream.reset();
 		    int readIndex = -1;
-		    while ( (readIndex= content.read(buffer))!=-1)
-		    	arrayOutputStream.write(buffer, 0, readIndex);
+		    while ( (readIndex= content.read(buffer))!=-1){
+            arrayOutputStream.write(buffer, 0, readIndex);
+          }
 		    postStreamElement(  arrayOutputStream.toByteArray());
          } catch ( InterruptedException e ) {
             logger.error( e.getMessage( ) , e );

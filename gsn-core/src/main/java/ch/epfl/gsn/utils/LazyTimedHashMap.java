@@ -72,7 +72,7 @@ public class LazyTimedHashMap {
    
    public Object get ( Object key ) {
       Long insertionTime = keyToTimeMapping.get( key );
-      if ( insertionTime == null ) return null;
+      if ( insertionTime == null ) {return null;}
       if ( System.currentTimeMillis( ) - insertionTime > lifeTimeOfEachElement ) {
          remove( key );
          return null;
@@ -93,7 +93,7 @@ public class LazyTimedHashMap {
       while ( it.hasNext( ) ) {
          Object key = it.next( );
          Object value = keyToValueMapping.get( key );
-         if ( value != null ) arrayList.add( key );
+         if ( value != null ) {arrayList.add( key );}
       }
       return arrayList;
    }
@@ -104,7 +104,7 @@ public class LazyTimedHashMap {
       while ( it.hasNext( ) ) {
          Object key = it.next( );
          Object value = keyToValueMapping.get( key );
-         if ( value != null ) arrayList.add( value );
+         if ( value != null ) {arrayList.add( value );}
       }
       return arrayList;
    }
@@ -118,8 +118,9 @@ public class LazyTimedHashMap {
    }
    
    public void fireChange ( String changeAction , Object changedKey , Object changedValue ) {
-      for ( ChangeListener cl : changeListeners )
+      for ( ChangeListener cl : changeListeners ){
          cl.changeHappended( changeAction , changedKey , changedValue );
+      }       
    }
    
    public static final String ITEM_REMOVED = "REMOVED";
@@ -128,7 +129,8 @@ public class LazyTimedHashMap {
    
    public void update ( ) {
       Iterator it = keyToValueMapping.keySet( ).iterator( );
-      while ( it.hasNext( ) )
+      while ( it.hasNext( ) ){
          get( it.next( ) );
+      }   
    }
 }

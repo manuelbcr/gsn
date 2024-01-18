@@ -37,8 +37,9 @@ public class ZeroMQWrapperAsync extends AbstractWrapper {
 				    byte[] rec = requester.recv();
 				    if (rec != null){
 				        structure =  kryo.readObjectOrNull(new Input(new ByteArrayInputStream(rec)),DataField[].class);
-				        if (structure != null)
-				            requester.close();
+				        if (structure != null){
+							requester.close();
+						}    
 				        return structure;
 				    }
 				}
@@ -58,8 +59,10 @@ public class ZeroMQWrapperAsync extends AbstractWrapper {
 		int dport = addressBean.getPredicateValueAsInt("data_port",Main.getContainerConfig().getZMQProxyPort());
 		int mport = addressBean.getPredicateValueAsInt("meta_port", Main.getContainerConfig().getZMQMetaPort());
 		vsensor = addressBean.getPredicateValue ( "vsensor" ).toLowerCase();
-		if ( address == null || address.trim().length() == 0 ) 
+		if ( address == null || address.trim().length() == 0 ) {
 			throw new RuntimeException( "The >address< parameter is missing from the ZeroMQWrapper wrapper." ); 
+		}
+			
 		
 		try {
             isLocal = new URI(address).getScheme().equals("inproc");
@@ -87,8 +90,10 @@ public class ZeroMQWrapperAsync extends AbstractWrapper {
 		    byte[] rec = requester.recv();
 		    if (rec != null){
 		        structure =  kryo.readObjectOrNull(new Input(new ByteArrayInputStream(rec)),DataField[].class);
-		        if (structure != null)
-		            requester.close();
+		        if (structure != null){
+					requester.close();
+				}
+		           
 		    }
 		}
 		

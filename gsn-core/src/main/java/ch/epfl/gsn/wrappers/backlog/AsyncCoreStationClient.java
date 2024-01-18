@@ -60,20 +60,21 @@ public class AsyncCoreStationClient extends Thread  {
 	
 	@SuppressWarnings("unused")
 	public synchronized static AsyncCoreStationClient getSingletonObject() throws Exception {
-		if( RECONNECT_TIMEOUT_SEC <= 0 )
+		if( RECONNECT_TIMEOUT_SEC <= 0 ){
 			throw new Exception("RECONNECT_TIMEOUT_SEC must be a positive integer");
-		
-		if (singletonObject == null)
+		} 
+		if (singletonObject == null) {
 			singletonObject = new AsyncCoreStationClient();
-		
+		}		
 		return singletonObject;
 	}
 	
 	
 	public void run()
 	{
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("thread started");
+		}
 		SelectionKey key;
 
 	    while (!dispose) {
@@ -85,24 +86,30 @@ public class AsyncCoreStationClient extends Thread  {
 	    				switch(change.type) {
 	    				case ChangeRequest.TYPE_CHANGEOPS:
 	    					key = change.socket.keyFor(selector);
-	    					if (key == null || !key.isValid())
-	    						continue;
+	    					if (key == null || !key.isValid()){
+								continue;
+							}	
 	    					if (!change.socket.isConnectionPending()) {
 	    						key.interestOps(change.ops);
 	    						key.attach(change);
 	    					}
 	    					break;
 	    				case ChangeRequest.TYPE_REGISTER:
-	    					if (logger.isDebugEnabled())
-	    						logger.debug("Selector:register");
+	    					if (logger.isDebugEnabled()){
+								logger.debug("Selector:register");
+							}
     						change.socket.register(selector, change.ops, change);
 	    					break;
 	    				case ChangeRequest.TYPE_RECONNECT:
 	    					try {
-		    					if (logger.isDebugEnabled())
-		    						logger.debug("Selector:reconnect");
-		    					if (change.socket.keyFor(selector) != null && change.socket.keyFor(selector).isValid())
-		    						closeConnection(change.socket.keyFor(selector), change.socket);
+		    					if (logger.isDebugEnabled()){
+									logger.debug("Selector:reconnect");
+								}
+		    						
+		    					if (change.socket.keyFor(selector) != null && change.socket.keyFor(selector).isValid()) {
+									closeConnection(change.socket.keyFor(selector), change.socket);
+								}
+		    						
 		    					CoreStationListener listener;
 
 		    					synchronized(listenerToSocketList) {
@@ -122,8 +129,10 @@ public class AsyncCoreStationClient extends Thread  {
 	    			changeRequests.clear();
 	    		}
 	    		
-	    		if (selector.select() == 0)
-	    			continue;
+	    		if (selector.select() == 0){
+					continue;
+				}
+	    			
 	    		
 	    		Set<SelectionKey> readyKeys = selector.selectedKeys();
 	    		Iterator<SelectionKey> iterator = readyKeys.iterator();
@@ -141,16 +150,18 @@ public class AsyncCoreStationClient extends Thread  {
 		    				} else if (key.isWritable()) {
 		    					this.write(key);
 		    				} else if (key.isConnectable()) {
-		    					if (logger.isDebugEnabled())
-		    						logger.debug("Selector:connect");
+		    					if (logger.isDebugEnabled()){
+									logger.debug("Selector:connect");
+								}
 		    					this.finishConnection(key);
 		    				}
 		    			} catch (IOException e) {
 		    	    		logger.error(e.getMessage(), e);
 		    			}
 	    			} else {
-	    				if (logger.isDebugEnabled())
-	    					logger.debug("no handler for " + key.channel().getClass().getName());
+	    				if (logger.isDebugEnabled()){
+							logger.debug("no handler for " + key.channel().getClass().getName());
+						}	
 	    			}
 	    		}
 	    	} catch (Exception e) {
@@ -175,12 +186,14 @@ public class AsyncCoreStationClient extends Thread  {
 	
 		        numRead = socketChannel.read(pData.readBuffer);
 		        if (numRead == -1) {
-					if (logger.isDebugEnabled())
+					if (logger.isDebugEnabled()){
 						logger.debug("connection closed");
+					}
 		        	// Remote entity shut the socket down cleanly. Do the
 		        	// same from our end and cancel the channel.
-					if (!dispose && socketToListenerList.containsKey(socketChannel))
+					if (!dispose && socketToListenerList.containsKey(socketChannel)){
 						reconnect(socketToListenerList.get(socketChannel));
+					}	
 					return;
 		        }
 		        data = pData.readBuffer.array();
@@ -189,18 +202,21 @@ public class AsyncCoreStationClient extends Thread  {
 		    // Hand the data over to our listener thread
 			socketToListenerList.get(socketChannel).processData(data, numRead);
 	    } catch (IOException e) {
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()) {
 				logger.debug("connection closed: " + e.getMessage());
+			}
 	    	// The remote forcibly closed the connection
-			if (!dispose && socketToListenerList.containsKey(socketChannel))
+			if (!dispose && socketToListenerList.containsKey(socketChannel)){
 				reconnect(socketToListenerList.get(socketChannel));
+			}
 	    }
 	}
 	
 	
 	private void closeConnection(SelectionKey key, SocketChannel sc) {
-		if (key != null)
+		if (key != null){
 			key.cancel();
+		}
     	if (sc != null) {
 			synchronized (this.pendingData) {
 				this.pendingData.remove(sc);
@@ -224,8 +240,9 @@ public class AsyncCoreStationClient extends Thread  {
 				PriorityData pData = this.pendingData.get(socketChannel);
 
 				while (pData.writeBuffer.hasRemaining()) {
-					if (socketChannel.write(pData.writeBuffer) == 0)
+					if (socketChannel.write(pData.writeBuffer) == 0){
 						return;
+					}	
 				}
 		      
 				// Write until there's not more data ...
@@ -241,8 +258,9 @@ public class AsyncCoreStationClient extends Thread  {
 					
 					pData.writeBuffer.flip();
 					while (pData.writeBuffer.hasRemaining()) {
-						if (socketChannel.write(pData.writeBuffer) == 0)
+						if (socketChannel.write(pData.writeBuffer) == 0){
 							return;
+						}	
 					}
 				}
 				
@@ -254,11 +272,13 @@ public class AsyncCoreStationClient extends Thread  {
 				}
 			}
 	    } catch (IOException e) {
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()){
 				logger.debug("connection closed: " + e.getMessage());
+			}
 	    	// The remote forcibly closed the connection
-			if (!dispose && socketToListenerList.containsKey(socketChannel))
+			if (!dispose && socketToListenerList.containsKey(socketChannel)){
 				reconnect(socketToListenerList.get(socketChannel));
+			}	
 	    }
 	}
 	
@@ -294,11 +314,13 @@ public class AsyncCoreStationClient extends Thread  {
 	
 	public void registerListener(CoreStationListener listener) throws IOException
 	{
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("register core station: " + listener.getCoreStationName());
+		}
 		try {
-			if (!this.isAlive())
+			if (!this.isAlive()){
 				this.start();
+			}
 		} catch (IllegalThreadStateException e) {
 			logger.debug("thread already running");
 		}
@@ -349,15 +371,18 @@ public class AsyncCoreStationClient extends Thread  {
 			}
 		}
 		
-		if (socketToListenerList.isEmpty())
+		if (socketToListenerList.isEmpty()){
 			dispose();
+		}
+			
 	}
 
 
 	public void addDeviceId(String deployment, Integer id, CoreStationListener listener) {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("adding DeviceId " + id + " for " + deployment + " deployment");
 
+		}
 		try {
 			if (!deploymentToIdListenerMapList.containsKey(deployment)) {
 				deploymentToIdListenerMapList.put(deployment, new HashMap<Integer, CoreStationListener>());
@@ -371,8 +396,9 @@ public class AsyncCoreStationClient extends Thread  {
 
 
 	public void removeDeviceId(String deployment, Integer id) {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("removing DeviceId: " + id + " for " + deployment + " deployment");
+		}
 		try {
 			if (deployment != null) {
 				Map<Integer, CoreStationListener> list = deploymentToIdListenerMapList.get(deployment);
@@ -380,16 +406,18 @@ public class AsyncCoreStationClient extends Thread  {
 					logger.error("there is no core station listener for deployment " + deployment);
 					return;
 				}
-				if (id != null)
+				if (id != null){
 					list.remove(id);
-				else
+				} else {
 					logger.error("id is null for " + deployment + " deployment");
+				}	
 			
-				if (list.isEmpty())
+				if (list.isEmpty()){
 					deploymentToIdListenerMapList.remove(deployment);
-			}
-			else
+				}	
+			} else {
 				logger.error("deployment is null");
+			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
@@ -413,8 +441,9 @@ public class AsyncCoreStationClient extends Thread  {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			for (int i=0; i<message.length; i++) {
 				baos.write(message[i]);
-				if (message[i] == BackLogMessageMultiplexer.STUFFING_BYTE)
+				if (message[i] == BackLogMessageMultiplexer.STUFFING_BYTE){
 					baos.write(message[i]);
+				}	
 			}
 			return baos.toByteArray();
 		} catch (Exception e) {
@@ -432,22 +461,26 @@ public class AsyncCoreStationClient extends Thread  {
 		}
 		Map<Integer, CoreStationListener> corestationMap = null;
 		corestationMap = deploymentToIdListenerMapList.get(deployment);
-		if (corestationMap == null)
+		if (corestationMap == null){
 			throw new IOException("The " + deployment + " deployment is not connected or does not exist");
+		}
 			
 		if (id != null) {
 			if (id == 65535) {
 				Iterator<Integer> iter = corestationMap.keySet().iterator();
 				while (iter.hasNext()) {
 					Serializable[] tmp = send(corestationMap.get(iter.next()), priority, data, true);
-					if((Boolean) tmp[0])
+					if((Boolean) tmp[0]){
 						ret = tmp;
+					}	
 				}
 			}
 			else {
 				listener = corestationMap.get(id);
-				if (listener == null)
+				if (listener == null){
 					throw new IOException("The DeviceId " + id + " is not connected or does not exist for the " + deployment + " deployment");
+				}
+					
 				
 				ret = send(listener, priority, data, true);
 			}
@@ -460,8 +493,9 @@ public class AsyncCoreStationClient extends Thread  {
 
 
 	private Serializable[] send(CoreStationListener listener, int priority, byte[] data, boolean stuff) throws IOException {
-		if (data.length > PACKET_SIZE-4)
+		if (data.length > PACKET_SIZE-4){
 			throw new IOException("packet size limited to " + (PACKET_SIZE-4) + " bytes");
+		}
 		
 		SocketChannel socketChannel;
 		socketChannel = listenerToSocketList.get(listener);
@@ -510,8 +544,9 @@ public class AsyncCoreStationClient extends Thread  {
 
 
 	public Serializable[] sendHelloMsg(CoreStationListener listener) throws IOException {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("send hello message");
+		}
 		byte[] data = {BackLogMessageMultiplexer.STUFFING_BYTE, BackLogMessageMultiplexer.HELLO_BYTE};
 		
 		return send(listener, 1, data, false);
@@ -523,8 +558,9 @@ public class AsyncCoreStationClient extends Thread  {
 		if (sc != null) {
 			try {
 				synchronized (changeRequests) {
-					if (logger.isDebugEnabled())
+					if (logger.isDebugEnabled()){
 						logger.debug("add reconnect request");
+					}
 					// Indicate we want the interest ops set changed
 					changeRequests.add(new ChangeRequest(sc, ChangeRequest.TYPE_RECONNECT, -1));
 				}
@@ -532,15 +568,17 @@ public class AsyncCoreStationClient extends Thread  {
 			} catch (Exception e) {
 				logger.error(e.getMessage(), e);
 			}
-		}
-		else
+		} else {
 			logger.warn("no socket for listener (" + listener.getCoreStationName() + ") in list");
+		}
+			
 	}
 	
 	
 	private void timeReconnect(CoreStationListener listener) {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()){
 			logger.debug("trying to reconnect to " + listener.getCoreStationName() + " CoreStation in " + RECONNECT_TIMEOUT_SEC + " seconds");
+		}
 		Timer timer = new Timer("ReconnectTimer-" + listener.getCoreStationName());
 		timer.schedule(new ReconnectTimerTask(this, listener), RECONNECT_TIMEOUT_SEC*1000);
 	}
@@ -597,15 +635,18 @@ class PriorityDataElement implements Comparable<PriorityDataElement>
 	
 	@Override
 	public int compareTo(PriorityDataElement obj) {
-		if (obj == null)
+		if (obj == null) {
 			throw new NullPointerException();
+		}
+			
 		
-		if (priority < obj.priority)
+		if (priority < obj.priority){
 			return -1;
-		else if (priority > obj.priority)
+		} else if (priority > obj.priority) {
 			return 1;
-		else
+		} else {
 			return 0;
+		}	
 	}
 }
 

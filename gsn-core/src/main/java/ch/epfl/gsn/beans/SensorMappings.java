@@ -18,8 +18,9 @@ public class SensorMappings {
 		Iterator<SensorMap> iter = mappings.iterator();
 		while (iter.hasNext()) {
 			SensorMap map = iter.next();
-			if (map.end == null && map.begin.compareTo(sensorMap.begin) == 0)
+			if (map.end == null && map.begin.compareTo(sensorMap.begin) == 0){
 				iter.remove();
+			}	
 		}
 		mappings.add(sensorMap);
 	}

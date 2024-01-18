@@ -146,7 +146,7 @@ public class PostgresStorageManager extends StorageManager {
         result.append(" (PK serial PRIMARY KEY NOT NULL , timed BIGINT NOT NULL, "); //TODO: add auto increment AUTO_INCREMENT
 
         for (DataField field : structure) {
-            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) continue;
+            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) {continue;}
             result.append(field.getName().toUpperCase()).append(' ');
             result.append(convertGSNTypeToLocalType(field));
             result.append(" ,");
@@ -169,10 +169,11 @@ public class PostgresStorageManager extends StorageManager {
             case DataTypes.VARCHAR:
                 // Because the parameter for the varchar is not
                 // optional.
-                if (gsnType.getType().trim().equalsIgnoreCase("string"))
+                if (gsnType.getType().trim().equalsIgnoreCase("string")){
                     convertedType = "TEXT";
-                else
+                } else {
                     convertedType = gsnType.getType();
+                }                   
                 break;
             case DataTypes.BINARY:
                 convertedType = "BYTEA";

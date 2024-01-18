@@ -89,8 +89,10 @@ public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySys
 			return false;
 		}
 
-		if (query == null) 
+		if (query == null) {
 			query = "select * from "+vsName;
+		}
+			
 
 		long lastVisited = -1;
 		boolean continuous = false;
@@ -138,8 +140,9 @@ public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySys
 
 		try {
 			vsName = SQLValidator.getInstance().validateQuery(query);
-			if(vsName==null) //while the other instance is not loaded.
+			if(vsName==null){ //while the other instance is not loaded.
 				return false;
+			}
 			
 			vSensorConfig = Mappings.getConfig(vsName);
 			
@@ -169,8 +172,10 @@ public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySys
 					Main.getStorage(vSensorConfig).close(conn);
 				}
 			}
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()){
 				logger.debug("lastVisited=" + String.valueOf(lastVisited));
+			}
+				
 
 
 			query = SQLUtils.newRewrite(query, vsName, vsName.toLowerCase()).toString();

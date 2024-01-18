@@ -110,8 +110,8 @@ public class DataDistributerRest implements VirtualSensorDataListener, VSensorSt
     					DataEnumerator dataEnum;
     					PreparedStatement prepareStatement = null;
     					try {
-    						while  (true)
-    							try {
+    						while  (true){
+								try {
     								ListenerEntry listener= DataUpdateQueue.take();
     								logger.debug("Fetching data for listener: " + listener.request.toString()+".");
     								synchronized (MyListeners) {
@@ -172,6 +172,9 @@ public class DataDistributerRest implements VirtualSensorDataListener, VSensorSt
     							} catch (InterruptedException e) {
     								logger.error(e.getMessage(), e);
     							}
+
+							}
+
     					}catch (RuntimeException e) {
     						ByteArrayOutputStream baos = new ByteArrayOutputStream();
     						e.printStackTrace(new PrintStream(baos));
@@ -198,8 +201,10 @@ public class DataDistributerRest implements VirtualSensorDataListener, VSensorSt
     }
 
     public static int getKeepAlivePeriod() {
-        if (keepAlivePeriod == -1)
-            keepAlivePeriod = System.getProperty("remoteKeepAlivePeriod") == null ? KEEP_ALIVE_PERIOD : Integer.parseInt(System.getProperty("remoteKeepAlivePeriod"));
+        if (keepAlivePeriod == -1){
+			keepAlivePeriod = System.getProperty("remoteKeepAlivePeriod") == null ? KEEP_ALIVE_PERIOD : Integer.parseInt(System.getProperty("remoteKeepAlivePeriod"));
+		}
+           
         return keepAlivePeriod;
     }
 
@@ -211,10 +216,12 @@ public class DataDistributerRest implements VirtualSensorDataListener, VSensorSt
                 boolean needsAnd = SQLValidator.removeSingleQuotes(SQLValidator.removeQuotes(request.getQuery())).indexOf(" where ") > 0;
                 //String query = SQLValidator.addPkField(listener.getQuery());
                 String query = request.getQuery();
-                if (needsAnd)
-                    query += " AND ";
-                else
+                if (needsAnd){
+					query += " AND ";
+				} else {
                     query += " WHERE ";
+				}
+
                 //query += " timed > " + listener.getStartTime() + " and pk > ? order by timed asc ";
                 query += " timed > ? order by timed asc ";
                 newListener.query = query;
@@ -265,14 +272,18 @@ public class DataDistributerRest implements VirtualSensorDataListener, VSensorSt
 
     public void consume(StreamElement se, VSensorConfig config) {
         synchronized (MyListeners) {
-            for ( ListenerEntry listener : MyListeners)
+            for ( ListenerEntry listener : MyListeners){
                 if (listener.request.getVSensorConfig() == config) {
                     logger.debug("sending stream element " + (se == null ? "second-chance-se" : se.toString()) + " produced by " + config.getName() + " to listener =>" + listener.request.toString());
-                    if (listener.current_queue == null)
-                    	moveListenerToQueue(listener, DataUpdateQueue);
-                    else
-                        listener.check_for_new_data = true;
+                    if (listener.current_queue == null){
+						moveListenerToQueue(listener, DataUpdateQueue);
+					} else {
+						listener.check_for_new_data = true;
+					}
+                       
                 }
+			}
+
         }
     }
 
@@ -303,8 +314,10 @@ public class DataDistributerRest implements VirtualSensorDataListener, VSensorSt
     					synchronized (MyListeners) {
     						i.remove();
     						listener.releaseResources();
-       						if (listener.removed)
-    							continue;
+       						if (listener.removed){
+								continue;
+							}
+    							
        						listener.current_queue = null;
        						if (logger.isDebugEnabled()) {
        							logger.debug("deliverycount = "+ listener.delivery_count);
@@ -371,9 +384,12 @@ public class DataDistributerRest implements VirtualSensorDataListener, VSensorSt
 
     public boolean contains(DeliverySystem delivery) {
         synchronized (MyListeners) {
-            for (ListenerEntry listener : MyListeners)
-                if (listener.request.getDeliverySystem().equals(delivery))
+            for (ListenerEntry listener : MyListeners){
+                if (listener.request.getDeliverySystem().equals(delivery)){
                     return true;
+				}
+			}
+
             return false;
 		}
 	}
@@ -407,8 +423,9 @@ public class DataDistributerRest implements VirtualSensorDataListener, VSensorSt
     
     private ListenerEntry getListenerEntry(DistributionRequest request) {
     	for (ListenerEntry listener: MyListeners) {
-    		if (listener.request.equals(request))
+    		if (listener.request.equals(request)){
     			return listener;
+			}
     	}
     	return null;
     }
@@ -448,8 +465,9 @@ public class DataDistributerRest implements VirtualSensorDataListener, VSensorSt
 
 		public void releaseResources() {
     		// close datenum
-    		if (dataEnum != null)
+    		if (dataEnum != null){
     			dataEnum.close();
+			}
     		// close statement
     		Main.getStorage(request.getVSensorConfig()).close(statement);
     	}

@@ -225,7 +225,7 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
 
     public void consume(StreamElement se, VSensorConfig config) {
         synchronized (listeners) {
-            for (DistributionRequest listener : listeners)
+            for (DistributionRequest listener : listeners){
                 if (listener.getVSensorConfig() == config) {
                     logger.debug("sending stream element " + (se == null ? "second-chance-se" : se.toString()) + " produced by " + config.getName() + " to listener =>" + listener.toString());
                     if (!candidateListeners.containsKey(listener)) {
@@ -234,6 +234,7 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
                         candidatesForNextRound.put(listener, Boolean.TRUE);
                     }
                 }
+            }
         }
     }
 
@@ -327,15 +328,19 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
             }
                 
         }
-        if (keepAliveTimer != null)
+        if (keepAliveTimer != null){
             keepAliveTimer.stop();
+        }
+            
     }
 
     public boolean contains(DeliverySystem delivery) {
         synchronized (listeners) {
-            for (DistributionRequest listener : listeners)
-                if (listener.getDeliverySystem().equals(delivery))
+            for (DistributionRequest listener : listeners){
+                if (listener.getDeliverySystem().equals(delivery)){
                     return true;
+                }  
+            }
             return false;
 		}
 

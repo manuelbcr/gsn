@@ -129,8 +129,10 @@ public static final String DEFAULT_QUERY = "select * from wrapper";
   }
   
   public  AddressBean [] getAddressing ( ) {
-    if (addressing==null)
+    if (addressing==null){
       addressing=EMPTY_ADDRESS_BEAN;
+    }
+      
     return addressing;
   }
   
@@ -163,13 +165,17 @@ public static final String DEFAULT_QUERY = "select * from wrapper";
   
   
   public void setSamplingRate (float newRate ) {
-    if (cachedSqlQuery!=null) 
+    if (cachedSqlQuery!=null) {
       throw new GSNRuntimeException("Sampling rate can't be changed anymore !");
+    }
+      
     
-    if (newRate>=0 && newRate<=1)
+    if (newRate>=0 && newRate<=1){
       this.samplingRate=newRate;
-    else
+    } else{
       throw new GSNRuntimeException("Invalid sampling rate is provided. Sampling rate is between 0 and 1.");
+    }
+      
   }
   
   /**
@@ -190,13 +196,15 @@ public static final String DEFAULT_QUERY = "select * from wrapper";
    * @return Returns the sqlQuery.
    */
   public String getSqlQuery ( ) {
-    if (sqlQuery==null || sqlQuery.trim( ).length( ) == 0 ) sqlQuery = DEFAULT_QUERY;
+    if (sqlQuery==null || sqlQuery.trim( ).length( ) == 0 ){ sqlQuery = DEFAULT_QUERY;}
     return sqlQuery;
   }
   
   public void setWrapper ( AbstractWrapper wrapper  ) throws SQLException {
-    if (validate()==false)
+    if (validate()==false){
       throw new GSNRuntimeException("Can't set the wrapper when the stream source is invalid.");
+    }
+      
     this.wrapper = wrapper;
     this.activeAddressBean = wrapper.getActiveAddressBean();
     wrapper.addListener(this);
@@ -206,8 +214,10 @@ public static final String DEFAULT_QUERY = "select * from wrapper";
    * @return Returns the activeSourceProducer.
    */
   public AbstractWrapper getWrapper ( ) {
-    if (wrapper==null) 
+    if (wrapper==null){
       throw new GSNRuntimeException("The wrapper for stream source is not set !.");
+    } 
+      
     return wrapper;
   }
   
@@ -231,13 +241,15 @@ public static final String DEFAULT_QUERY = "select * from wrapper";
    * @return
    */
   public boolean validate ( ) {
-    if (isValidated==true)
+    if (isValidated==true){
       return validationResult;
+    }
+      
     windowingType = DEFAULT_WINDOW_TYPE;
     isValidated=true;
-    if (samplingRate <=0 ) 
+    if (samplingRate <=0 ) {
       logger.warn("The sampling rate is set to zero (or negative) which means no results. StreamSource = " + getAlias( ));
-    else if(samplingRate > 1){
+    } else if(samplingRate > 1){
     	samplingRate = 1;
     	logger.warn("The provided sampling rate is greater than 1, resetting it to 1. StreamSource = " + getAlias( ));
     }
@@ -247,7 +259,7 @@ public static final String DEFAULT_QUERY = "select * from wrapper";
     }
     if ( this.rawHistorySize != null ) {
       this.rawHistorySize = this.rawHistorySize.replace( " " , "" ).trim( ).toLowerCase( );
-      if ( this.rawHistorySize.equalsIgnoreCase( "" ) ) return validationResult = true;
+      if ( this.rawHistorySize.equalsIgnoreCase( "" ) ){ return validationResult = true;}
       final int second = 1000;
       final int minute = second * 60;
       final int hour = minute * 60;
@@ -263,19 +275,26 @@ public static final String DEFAULT_QUERY = "select * from wrapper";
           logger.error( "The storage size, " + this.rawHistorySize + ", specified for the Stream Source : " + this.getAlias( ) + " is not valid.", e );
           return (validationResult= false);
         }
-      } else
+      } else{
         try {
           final StringBuilder shs = new StringBuilder( this.rawHistorySize );
-          if ( mIndex >= 0 && mIndex == shs.length() - 1) this.parsedStorageSize = Long.parseLong(shs.deleteCharAt( mIndex ).toString( ) ) * minute;
-          else if ( hIndex >= 0 && hIndex == shs.length() - 1) this.parsedStorageSize = Long.parseLong( shs.deleteCharAt( hIndex ).toString( ) ) * hour;
-          else if ( sIndex >= 0 && sIndex == shs.length() - 1) this.parsedStorageSize = Long.parseLong( shs.deleteCharAt( sIndex ).toString( ) ) * second;
-          else Long.parseLong("");
+          if ( mIndex >= 0 && mIndex == shs.length() - 1){
+             this.parsedStorageSize = Long.parseLong(shs.deleteCharAt( mIndex ).toString( ) ) * minute;
+          }else if ( hIndex >= 0 && hIndex == shs.length() - 1){
+            this.parsedStorageSize = Long.parseLong( shs.deleteCharAt( hIndex ).toString( ) ) * hour;
+          } else if ( sIndex >= 0 && sIndex == shs.length() - 1){
+             this.parsedStorageSize = Long.parseLong( shs.deleteCharAt( sIndex ).toString( ) ) * second;
+          } else {
+            Long.parseLong("");
+          }
           this.isStorageCountBased = false;
           windowingType = WindowType.TIME_BASED;
         } catch ( NumberFormatException e ) {
           logger.error("The storage size, "+rawHistorySize+", specified for the Stream Source : "+this.getAlias()+" is not valid: "+ e.getMessage());
           return (validationResult=false);
         }
+      }
+       
     }
     //Parsing slide value
     if(this.rawSlideValue == null){
@@ -301,25 +320,36 @@ public static final String DEFAULT_QUERY = "select * from wrapper";
             if(parsedSlideValue == 1){//We consider this as a special case
             	windowingType = (windowingType == WindowType.TIME_BASED) ? WindowType.TIME_BASED_SLIDE_ON_EACH_TUPLE : WindowType.TUPLE_BASED_SLIDE_ON_EACH_TUPLE;
             }
-            else if(windowingType == WindowType.TIME_BASED)
-            	windowingType = WindowType.TIME_BASED_WIN_TUPLE_BASED_SLIDE;
+            else if(windowingType == WindowType.TIME_BASED){
+              windowingType = WindowType.TIME_BASED_WIN_TUPLE_BASED_SLIDE;
+            }
+            	
           } catch ( final NumberFormatException e ) {
             logger.error("The slide value, " + rawSlideValue + ", specified for the Stream Source : " + getAlias() + " is not valid.", e );
             return (validationResult= false);
           }
-        } else
+        } else {
           try {
             final StringBuilder shs = new StringBuilder( this.rawSlideValue );
-            if ( mIndex >= 0 && mIndex == shs.length() - 1) this.parsedSlideValue = Long.parseLong( shs.deleteCharAt( mIndex ).toString( ) ) * minute;
-            else if ( hIndex >= 0 && hIndex == shs.length() - 1) this.parsedSlideValue = Long.parseLong( shs.deleteCharAt( hIndex ).toString( ) ) * hour;
-            else if ( sIndex >= 0 && sIndex == shs.length() - 1) this.parsedSlideValue = Long.parseLong( shs.deleteCharAt( sIndex ).toString( ) ) * second;
-            else Long.parseLong("");
-            if(windowingType == WindowType.TUPLE_BASED)
-            	windowingType = WindowType.TUPLE_BASED_WIN_TIME_BASED_SLIDE;
+            if ( mIndex >= 0 && mIndex == shs.length() - 1) {
+              this.parsedSlideValue = Long.parseLong( shs.deleteCharAt( mIndex ).toString( ) ) * minute;
+            }else if ( hIndex >= 0 && hIndex == shs.length() - 1) {
+              this.parsedSlideValue = Long.parseLong( shs.deleteCharAt( hIndex ).toString( ) ) * hour;
+            }else if ( sIndex >= 0 && sIndex == shs.length() - 1) {
+              this.parsedSlideValue = Long.parseLong( shs.deleteCharAt( sIndex ).toString( ) ) * second;
+            }else{
+              Long.parseLong("");
+            } 
+            if(windowingType == WindowType.TUPLE_BASED){
+              windowingType = WindowType.TUPLE_BASED_WIN_TIME_BASED_SLIDE;
+            }
+            	
           } catch ( NumberFormatException e ) {
             logger.error("The slide value, "+rawSlideValue+", specified for the Stream Source : "+getAlias()+" is not valid: "+e.getMessage());
             return (validationResult=false);
           }
+        }
+
     }
     return validationResult=true;
   }
@@ -368,8 +398,9 @@ public static final String DEFAULT_QUERY = "select * from wrapper";
   }
   
   public StringBuilder getUIDStr() {
-    if (validate()==false)
+    if (validate()==false){
       return null;
+    }
     if (uidS==null) {
       uid    = Main.getWindowStorage().tableNameGenerator( );
       uidS   = Main.getWindowStorage().tableNameGeneratorInString( uid );
@@ -399,49 +430,60 @@ public static final String DEFAULT_QUERY = "select * from wrapper";
    * @return
    */
   public StringBuilder toSql() {
-    if (cachedSqlQuery!=null)
+    if (cachedSqlQuery!=null){
       return cachedSqlQuery;
-    if (getWrapper()==null)
+    }
+
+    if (getWrapper()==null){
       throw new GSNRuntimeException("Wrapper object is null, most probably a bug, please report it !");
-    if (validate()==false)
+    }     
+    if (validate()==false){
       throw new GSNRuntimeException("Validation of this object the stream source failed, please check the logs.");
+    }
+      
     CharSequence wrapperAlias = getWrapper().getDBAliasInStr();
-    if (samplingRate==0 || (isStorageCountBased && getParsedStorageSize()==0))
+    if (samplingRate==0 || (isStorageCountBased && getParsedStorageSize()==0)){
       return cachedSqlQuery = new StringBuilder("select * from ").append(wrapperAlias).append(" where 1=0");
+    }
+      
     TreeMap < CharSequence , CharSequence > rewritingMapping = new TreeMap < CharSequence , CharSequence >(new CaseInsensitiveComparator() );
     rewritingMapping.put("wrapper", wrapperAlias);
     StringBuilder toReturn = new StringBuilder(getSqlQuery());
-    if (getSqlQuery().toLowerCase().indexOf(" where ")<0)
+    if (getSqlQuery().toLowerCase().indexOf(" where ")<0){
       toReturn.append(" where " );
-    else
+    } else {
       toReturn.append(" and " );
+    }
+      
 //  Applying the ** START  AND END TIME ** for all types of windows based windows
 // toReturn.append(" wrapper.timed >=").append(getStartDate().getTime()).append(" and timed <=").append(getEndDate().getTime()).append(" and ");
     
     if (isStorageCountBased()) {
-  		if (Main.getWindowStorage().isH2()||Main.getWindowStorage().isMysqlDB())
-  			toReturn.append("timed >= (select distinct(timed) from ").append(wrapperAlias).append(" order by timed desc limit 1 offset " ).append(getParsedStorageSize()-1).append( " )" );
-  		else if (Main.getWindowStorage().isSqlServer())
-  			toReturn.append("timed >= (select min(timed) from (select TOP ").append(getParsedStorageSize()).append(" timed from (select distinct(timed) from ").append(wrapperAlias).append(") as x  order by timed desc ) as y )" );
+  		if (Main.getWindowStorage().isH2()||Main.getWindowStorage().isMysqlDB()){
+        toReturn.append("timed >= (select distinct(timed) from ").append(wrapperAlias).append(" order by timed desc limit 1 offset " ).append(getParsedStorageSize()-1).append( " )" );
+      } else if (Main.getWindowStorage().isSqlServer()){
+        toReturn.append("timed >= (select min(timed) from (select TOP ").append(getParsedStorageSize()).append(" timed from (select distinct(timed) from ").append(wrapperAlias).append(") as x  order by timed desc ) as y )" );
+      }
+  			
     }else { //time based
       toReturn.append("(wrapper.timed >");
-      if ( Main.getWindowStorage().isH2( ) )
+      if ( Main.getWindowStorage().isH2( ) ){
         toReturn.append( " (NOW_MILLIS()");
-      else if ( Main.getWindowStorage().isMysqlDB( ) )
+      } else if ( Main.getWindowStorage().isMysqlDB( ) ){
         toReturn.append(" (UNIX_TIMESTAMP()*1000");
-
-      else if (Main.getWindowStorage().isPostgres())
+      } else if (Main.getWindowStorage().isPostgres()){
         toReturn.append(" (extract(epoch FROM now())*1000");
-
-      else if (Main.getWindowStorage().isSqlServer()) {
+      } else if (Main.getWindowStorage().isSqlServer()) {
     	  // NOTE1 : The value retuend is in seconds (hence 1000)
     	  // NOTE2 : There is no time in the date for the epoch, maybe doesn't match with the current system time, needs checking.
     	  toReturn.append(" (convert(bigint,datediff(second,'1/1/1970',current_timestamp))*1000 )");
       }
       toReturn.append(" - ").append(getParsedStorageSize()).append(" ) ) ");
     }
-    if ( samplingRate !=1  )
+    if ( samplingRate !=1  ){
       toReturn.append( " and ( mod( timed , 100)< " ).append( samplingRate*100 ).append( ")" );
+    }
+      
     toReturn = new StringBuilder(SQLUtils.newRewrite(toReturn, rewritingMapping));
    // toReturn.append(" order by timed desc ");
     logger.debug("The original query : " + getSqlQuery());
@@ -450,13 +492,16 @@ public static final String DEFAULT_QUERY = "select * from wrapper";
   }
   
   public StreamSource setInputStream(InputStream is) throws GSNRuntimeException{
-    if (alias==null)
+    if (alias==null){
       throw new NullPointerException("Alias can't be null!");
-    if (this.inputStream!=null && is!=this.inputStream)
+    }
+    if (this.inputStream!=null && is!=this.inputStream){
       throw new GSNRuntimeException("Can't reset the input stream variable !.");
+    } 
     this.inputStream=is;
-    if (validate()==false)
+    if (validate()==false){
       throw new GSNRuntimeException("You can't set the input stream on an invalid stream source. ");
+    } 
     return this;
   }
 

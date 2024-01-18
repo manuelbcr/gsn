@@ -103,7 +103,7 @@ public final class StreamElement implements Serializable {
 			this.fieldNames[ i ] = outputStructure[ i ].getName( ).toLowerCase( );
 			this.fieldTypes[ i ] = outputStructure[ i ].getDataTypeID( );
 		}
-		if ( this.fieldNames.length != data.length ) throw new IllegalArgumentException( "The length of dataFileNames and the actual data provided in the constructor of StreamElement doesn't match." );
+		if ( this.fieldNames.length != data.length ){ throw new IllegalArgumentException( "The length of dataFileNames and the actual data provided in the constructor of StreamElement doesn't match." );}
 		this.verifyTypesCompatibility( this.fieldTypes , data );
 		this.fieldValues = data;
 		this.volume = null;
@@ -114,9 +114,10 @@ public final class StreamElement implements Serializable {
 	}
 
 	public StreamElement ( final String [ ] dataFieldNames , final Byte [ ] dataFieldTypes , final Serializable [ ] data , final long timeStamp ) {
-		if ( dataFieldNames.length != dataFieldTypes.length )
+		if ( dataFieldNames.length != dataFieldTypes.length ){
 			throw new IllegalArgumentException( "The length of dataFileNames and dataFileTypes provided in the constructor of StreamElement doesn't match." );
-		if ( dataFieldNames.length != data.length ) throw new IllegalArgumentException( "The length of dataFileNames and the actual data provided in the constructor of StreamElement doesn't match." );
+		}	
+		if ( dataFieldNames.length != data.length ){ throw new IllegalArgumentException( "The length of dataFileNames and the actual data provided in the constructor of StreamElement doesn't match." );}
 		this.timeStamp = timeStamp;
 		this.timestampProvided=true;
 		this.fieldTypes = dataFieldTypes;
@@ -128,8 +129,9 @@ public final class StreamElement implements Serializable {
 
 	public StreamElement(TreeMap<String, Serializable> output,DataField[] fields) {
 		int nbFields = output.keySet().size();
-		if(output.containsKey("timed"))
+		if(output.containsKey("timed")){
 			nbFields--;
+		}
 		String fieldNames[]  = new String[nbFields];
 		Byte fieldTypes[]  = new Byte[nbFields];
 		Serializable fieldValues[] = new Serializable[nbFields];
@@ -147,8 +149,9 @@ public final class StreamElement implements Serializable {
 				fieldNames[idx] = key;
 				fieldValues[idx] = value;
 				for (int i=0;i<fields.length;i++) {
-					if (fields[i].getName().equalsIgnoreCase(key))
+					if (fields[i].getName().equalsIgnoreCase(key)){
 						fieldTypes[idx] = fields[i].getDataTypeID();
+					}		
 				}
 				indexedFieldNames.put(key, idx);
 				idx++;
@@ -213,50 +216,66 @@ public final class StreamElement implements Serializable {
 	 * @throws IllegalArgumentException
 	 */
 	private void verifyTypeCompatibility ( Byte fieldType , Serializable data) throws IllegalArgumentException {
-			if ( data == null ) return;
+			if ( data == null ){ return;}
 			switch ( fieldType ) {
 			case DataTypes.TINYINT :
-				if ( !( data instanceof Byte ) )
+				if ( !( data instanceof Byte ) ){
 					throw new IllegalArgumentException( "The field is defined as " + DataTypes.TYPE_NAMES[ fieldType ]
-					                                    + " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+					+ " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+				}
+					
 				break;
 			case DataTypes.SMALLINT :
-				if ( !( data instanceof Short ) )
+				if ( !( data instanceof Short ) ){
 					throw new IllegalArgumentException( "The field is defined as " + DataTypes.TYPE_NAMES[ fieldType ]
-					                                    + " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+					+ " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+				}
+					
 				break;
 			case DataTypes.BIGINT :
-				if ( !( data instanceof Long ) ) 
+				if ( !( data instanceof Long ) ){
 					throw new IllegalArgumentException( "The field is defined as " + DataTypes.TYPE_NAMES[ fieldType ] 
 							                            + " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" ); 
+				} 
+					
 				break;
 			case DataTypes.CHAR :
 			case DataTypes.VARCHAR :
-				if ( !( data instanceof String ) ) 
-                    throw new IllegalArgumentException( "The field is defined as " + DataTypes.TYPE_NAMES[ fieldType ] 
-                    		                            + " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+				if ( !( data instanceof String ) ) {
+					throw new IllegalArgumentException( "The field is defined as " + DataTypes.TYPE_NAMES[ fieldType ] 
+					+ " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+				}
+                    
 				break;
 			case DataTypes.INTEGER :
-				if ( !( data instanceof Integer)) 
-                    throw new IllegalArgumentException( "The field is defined as " + DataTypes.TYPE_NAMES[ fieldType ] 
-                    		                            + " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" ); 
+				if ( !( data instanceof Integer)) {
+					throw new IllegalArgumentException( "The field is defined as " + DataTypes.TYPE_NAMES[ fieldType ] 
+					+ " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" ); 
+				}
+                    
 				break;
 			case DataTypes.DOUBLE :
-				if ( !( data instanceof Double || data instanceof Float ) )
+				if ( !( data instanceof Double || data instanceof Float ) ){
 					throw new IllegalArgumentException( "The field is defined as " + DataTypes.TYPE_NAMES[ fieldType ]
-	                                                    + " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+					+ " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+				}
+					
 				break;
 			case DataTypes.FLOAT :
-				if ( !( data instanceof Float ) )
+				if ( !( data instanceof Float ) ){
 					throw new IllegalArgumentException( "The field is defined as " + DataTypes.TYPE_NAMES[ fieldType ]
-	                                                    + " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+					+ " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+				}
+					
 				break;
 			case DataTypes.BINARY :
 				// if ( data[ i ] instanceof String ) data[ i ] = ( ( String )
 				// data[ i ] ).getBytes( );
-				if ( !( data instanceof byte [ ] || data instanceof String ) )
+				if ( !( data instanceof byte [ ] || data instanceof String ) ){
 					throw new IllegalArgumentException( "The field is defined as " + DataTypes.TYPE_NAMES[ fieldType ]
-                                                        + " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+					+ " while the actual data in the field is of type : *" + data.getClass( ).getCanonicalName( ) + "*" );
+				}
+					
 				break;
 			}
 		}
@@ -280,8 +299,10 @@ public final class StreamElement implements Serializable {
 	public String toString ( ) {
 		final StringBuffer output = new StringBuffer( "timed = " );
 		output.append( this.getTimeStamp( ) ).append( "\t" );
-		for ( int i = 0 ; i < this.fieldNames.length ; i++ )
+		for ( int i = 0 ; i < this.fieldNames.length ; i++ ){
 			output.append( "," ).append( this.fieldNames[ i ] ).append( "/" ).append( this.fieldTypes[ i ] ).append( " = " ).append( this.fieldValues[ i ] );
+		}
+			
 		return output.toString( );
 	}
 
@@ -310,8 +331,10 @@ public final class StreamElement implements Serializable {
 
 	public StringBuilder getFieldTypesInString ( ) {
 		final StringBuilder stringBuilder = new StringBuilder( );
-		for ( final byte i : this.getFieldTypes( ) )
+		for ( final byte i : this.getFieldTypes( ) ){
 			stringBuilder.append( DataTypes.TYPE_NAMES[ i ] ).append( " , " );
+		}
+			
 		return stringBuilder;
 	}
 
@@ -332,10 +355,12 @@ public final class StreamElement implements Serializable {
 	 * negative, it is considered non valid and zero will be placed.
 	 */
 	public void setTimeStamp ( long timeStamp ) {
-		if ( timeStamp <= 0 )
+		if ( timeStamp <= 0 ){
 			timeStamp = 0;
-		else
+		}else{
 			this.timeStamp = timeStamp;
+		}
+			
 	}
 
 	/**
@@ -366,8 +391,9 @@ public final class StreamElement implements Serializable {
 		generateIndex();
 		Integer index = indexedFieldNames.get( fieldName );
 		if (index == null) {
-			if(logger.isDebugEnabled())
+			if(logger.isDebugEnabled()){
 				logger.warn("There is a request for type of field "+fieldName+" for StreamElement: "+this.toString()+". As the requested field doesn't exist, GSN returns Null to the callee.");
+			}
 			return null;
 		}
 		return this.fieldTypes[ index ];
@@ -393,20 +419,28 @@ public final class StreamElement implements Serializable {
 	 * @return true, if both StreamElements are the same, otherwise false.
 	 */
 	public boolean equalsIgnoreTimedAndFields(StreamElement se, String[] fieldNamesToBeIgnored) {
-		if (se == null)
+		if (se == null){
 			return false;
-		if (this.getFieldNames().length != se.getFieldNames().length)
+		}
+			
+		if (this.getFieldNames().length != se.getFieldNames().length){
 			return false;
+		}
+			
 		
 		Serializable[] fieldValues = se.getData();
 		String[] fieldNames = se.getFieldNames();
 		Byte[] fieldTypes = se.getFieldTypes();
 		
 		for (int i=0; i<this.getFieldNames().length; i++) {
-			if (this.fieldTypes[i].compareTo(fieldTypes[i]) != 0)
+			if (this.fieldTypes[i].compareTo(fieldTypes[i]) != 0){
 				return false;
-			if (this.fieldNames[i].compareToIgnoreCase(fieldNames[i]) != 0)
+			}
+				
+			if (this.fieldNames[i].compareToIgnoreCase(fieldNames[i]) != 0){
 				return false;
+			}
+				
 			
 			boolean cont = false;
 			if (fieldNamesToBeIgnored != null) {
@@ -417,44 +451,60 @@ public final class StreamElement implements Serializable {
 					}
 				}
 			}
-			if (cont)
+			if (cont){
 				continue;
+			}
+				
 			
-			if (this.fieldValues[i] == null && fieldValues[i] != null)
+			if (this.fieldValues[i] == null && fieldValues[i] != null){
 				return false;
-			if (this.fieldValues[i] != null && fieldValues[i] == null)
+			}
+				
+			if (this.fieldValues[i] != null && fieldValues[i] == null){
 				return false;
+			}
+				
 
 			if (!(this.fieldValues[i] == null && fieldValues[i] == null)) {
 				switch ( fieldTypes[ i ] ) {
 					case DataTypes.DOUBLE :
-						if (((Double)this.fieldValues[i]).compareTo((Double)fieldValues[i]) != 0)
+						if (((Double)this.fieldValues[i]).compareTo((Double)fieldValues[i]) != 0){
 							return false;
+						}	
 						break;
 					case DataTypes.BIGINT :
-						if (((Long)this.fieldValues[i]).compareTo((Long)fieldValues[i]) != 0)
+						if (((Long)this.fieldValues[i]).compareTo((Long)fieldValues[i]) != 0){
 							return false;
+						}
 						break;
 					case DataTypes.TINYINT :
-						if (((Byte)this.fieldValues[i]).compareTo((Byte)fieldValues[i]) != 0)
+						if (((Byte)this.fieldValues[i]).compareTo((Byte)fieldValues[i]) != 0){
 							return false;
+						}
+
 						break;
 					case DataTypes.SMALLINT :
-						if (((Short)this.fieldValues[i]).compareTo((Short)fieldValues[i]) != 0)
+						if (((Short)this.fieldValues[i]).compareTo((Short)fieldValues[i]) != 0){
 							return false;
+						}
+
 						break;
 					case DataTypes.INTEGER :
-						if (((Integer)this.fieldValues[i]).compareTo((Integer)fieldValues[i]) != 0)
+						if (((Integer)this.fieldValues[i]).compareTo((Integer)fieldValues[i]) != 0){
 							return false;
+						}
 						break;
 					case DataTypes.CHAR :
 					case DataTypes.VARCHAR :
-						if (((String)this.fieldValues[i]).compareTo((String)fieldValues[i]) != 0)
+						if (((String)this.fieldValues[i]).compareTo((String)fieldValues[i]) != 0){
 							return false;
+						}
+
 						break;
 					case DataTypes.BINARY :
-						if (!Arrays.equals((byte[])this.fieldValues[i], (byte[])fieldValues[i]))
+						if (!Arrays.equals((byte[])this.fieldValues[i], (byte[])fieldValues[i])){
 							return false;
+						}
 						break;
 					default :
 						logger.error( "Type can't be converted : TypeID : " + fieldTypes[ i ] );
@@ -522,7 +572,7 @@ public final class StreamElement implements Serializable {
 		DataField[] df = new DataField[jn.get("fields").size()-1];
 		int i = 0;
 		for(JsonNode f : jn.get("fields")){
-			if (f.get("name").asText().equals("timestamp")) continue; 
+			if (f.get("name").asText().equals("timestamp")){ continue;} 
 			df[i] = new DataField(f.get("name").asText(),f.get("type").asText());
 			i++;
 		}
@@ -575,9 +625,13 @@ public final class StreamElement implements Serializable {
 	 * @return
 	 */
 	private static byte findIndexInDataField(DataField[] outputFormat, String fieldName) {
-		for (int i=0;i<outputFormat.length;i++) 
-			if (outputFormat[i].getName( ).equalsIgnoreCase( fieldName ))
+		for (int i=0;i<outputFormat.length;i++){
+			if (outputFormat[i].getName( ).equalsIgnoreCase( fieldName )){
 				return outputFormat[i].getDataTypeID( );
+			}
+		} 
+
+				
 
 		return -1;
 	}
@@ -639,8 +693,10 @@ public final class StreamElement implements Serializable {
 					break;
 				}
 			}
-			if (found==false)
+			if (found==false){
 				continue;
+			}
+				
 
 			switch ( findIndexInDataField( outputFormat ,fieldNames[i] ) ) {
 			case DataTypes.DOUBLE :
@@ -679,8 +735,10 @@ public final class StreamElement implements Serializable {
 			}
 
 		}
-		if (timestamp==-1)
+		if (timestamp==-1){
 			timestamp=System.currentTimeMillis();
+		}
+			
 		return new StreamElement( outputFormat , values.toArray(new Serializable[] {}) , timestamp );
 	}
 	public StreamElement4Rest toRest() {
@@ -695,8 +753,10 @@ public final class StreamElement implements Serializable {
 	private void generateIndex(){
 		if ( indexedFieldNames == null ) {
 			indexedFieldNames = new TreeMap < String , Integer >( new CaseInsensitiveComparator( ) );
-			for ( int i = 0 ; i < this.fieldNames.length ; i++ )
+			for ( int i = 0 ; i < this.fieldNames.length ; i++ ){
 				this.indexedFieldNames.put( fieldNames[ i ] , i );
+			}
+				
 		}
 	}
 	
@@ -751,7 +811,7 @@ public final class StreamElement implements Serializable {
 		if (volume == null) {
 			volume = (long) 0;
 			for ( int i = 0 ; i < fieldNames.length ; i++ ) {
-				if ( fieldValues[ i ] == null ) continue;
+				if ( fieldValues[ i ] == null ){ continue;}
 				switch ( fieldTypes[ i ] ) {
 				case DataTypes.TINYINT :
 					volume += 1;
@@ -772,16 +832,20 @@ public final class StreamElement implements Serializable {
 					volume += 4;
 					break;
 				case DataTypes.DOUBLE:
-					if (fieldValues[ i ] instanceof Float)
+					if (fieldValues[ i ] instanceof Float){
 						volume += 4;
-					else if(fieldValues[ i ] instanceof Double)
+					} else if(fieldValues[ i ] instanceof Double){
 						volume += 8;
+					}
+						
 					break;
 				case DataTypes.BINARY :
-					if ( fieldValues[ i ] instanceof byte [ ])
+					if ( fieldValues[ i ] instanceof byte [ ]){
 						volume += ((byte[])fieldValues[ i ]).length;
-					else if (fieldValues[ i ] instanceof String)
+					} else if (fieldValues[ i ] instanceof String) {
 						volume += ((String)fieldValues[ i ]).getBytes().length;
+					}
+						
 					break;
 				}
 			}
