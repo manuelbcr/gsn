@@ -1,7 +1,7 @@
 lazy val commonSettings = Seq(
   organization := "ch.epfl.gsn",
   version := "2.0.3",
-  scalaVersion := "2.12.4",
+  scalaVersion := "2.12.18",
   Compile / compile / javacOptions ++= Seq("-source", "11", "-target", "11"),
   resolvers ++= Seq(
     DefaultMavenRepository,
@@ -55,7 +55,7 @@ lazy val gsn2 = (project in file(".")).
 lazy val core = (project in file("gsn-core")).
   dependsOn(tools).
   settings(commonSettings: _*).
-  enablePlugins(JavaServerAppPackaging, DebianPlugin)
+  enablePlugins(JavaServerAppPackaging, DebianPlugin, SystemdPlugin)
 
 //lazy val extra = (project in file("gsn-extra")).
 //  dependsOn(core).
@@ -68,7 +68,7 @@ lazy val services = (project in file("gsn-services")).
     coverageExcludedPackages := "<empty>;views.*;router.*;models.gsn.data"
   ).
   settings(commonSettings: _*).
-  enablePlugins(PlayJava, PlayEbean, DebianPlugin)
+  enablePlugins(PlayJava, PlayEbean, DebianPlugin, SystemdPlugin)
 
 lazy val tools = (project in file("gsn-tools")).
   settings(commonSettings: _*)

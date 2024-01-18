@@ -9,7 +9,7 @@ import spray.revolver.RevolverPlugin._
 Revolver.settings
 
 val buildSettings = Seq(
-   javaOptions += "-Xmx128m",
+   javaOptions += "-Xmx512m",
    javaOptions += "-Xms64m"
 )
 
@@ -18,13 +18,14 @@ doc / sources := Seq.empty
 
 libraryDependencies ++= Seq(
   "be.objectify"  %% "deadbolt-java"     % "2.6.4",
-  "be.objectify"  %% "deadbolt-scala"     % "2.6.0",
-  "be.objectify" %% "deadbolt-java-gs" % "2.6.0",
+  "be.objectify"  %% "deadbolt-scala"    % "2.6.0",
+  "be.objectify"  %% "deadbolt-java-gs"  % "2.6.0",
   // Comment the next line for local development of the Play Authentication core:
   // Use the latest release version when copying this code, e.g. "0.9.0"
   "com.feth"      %% "play-authenticate" % "0.9.0",
   "org.postgresql" % "postgresql" % "9.3-1102-jdbc41",
   "com.h2database" % "h2" % "1.4.195",
+//  "com.h2database" % "h2" % "2.2.220",
   cacheApi,
   ehcache,
   "com.google.inject" % "guice" % "4.2.1",
