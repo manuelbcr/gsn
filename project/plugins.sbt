@@ -4,8 +4,8 @@ resolvers += Resolver.typesafeRepo("releases")
 
 // Use the Play sbt plugin for Play projects 2.6.0
 //addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.0")
-//addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.7.9")
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.25")
+//addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.7.9")
 
 //addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.4.0")
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.2.4")
@@ -13,9 +13,9 @@ addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "5.2.4")
 
 // for autoplugins
 //addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.2")
+//addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.8.0")
 addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.9.6")
 //addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.9.16")
-//addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.8.0")
 
 //addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
 addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.1.2")
