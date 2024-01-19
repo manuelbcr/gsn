@@ -39,33 +39,34 @@ import ch.epfl.gsn.vsensor.SQLValidatorIntegration;
 
 import org.slf4j.Logger;
 
-public class SQLValidatorIntegration implements VSensorStateChangeListener{
-	
+public class SQLValidatorIntegration implements VSensorStateChangeListener {
+
 	private SQLValidator validator;
-	
+
 	public SQLValidatorIntegration(SQLValidator validator) throws SQLException {
 		this.validator = validator;
 	}
-	
 
 	private static final transient Logger logger = LoggerFactory.getLogger(SQLValidatorIntegration.class);
 
 	public boolean vsLoading(VSensorConfig config) {
 		try {
-            String ddl = Main.getValidationStorage().getStatementCreateTable(config.getName(), config.getOutputStructure(), validator.getSampleConnection()).toString();
+			String ddl = Main.getValidationStorage().getStatementCreateTable(config.getName(),
+					config.getOutputStructure(), validator.getSampleConnection()).toString();
 			validator.executeDDL(ddl);
-		}catch (Exception e) {
-			logger.error(e.getMessage(),e);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 		}
 		return true;
 	}
 
 	public boolean vsUnLoading(VSensorConfig config) {
 		try {
-			String ddl = Main.getValidationStorage().getStatementDropTable(config.getName(), validator.getSampleConnection()).toString();
+			String ddl = Main.getValidationStorage()
+					.getStatementDropTable(config.getName(), validator.getSampleConnection()).toString();
 			validator.executeDDL(ddl);
-		}catch (Exception e) {
-			logger.error(e.getMessage(),e);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 			return false;
 		}
 		return true;
@@ -73,6 +74,6 @@ public class SQLValidatorIntegration implements VSensorStateChangeListener{
 
 	public void release() throws Exception {
 		validator.release();
-		
+
 	}
 }

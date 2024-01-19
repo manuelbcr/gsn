@@ -40,7 +40,6 @@ import ch.epfl.gsn.wrappers.AbstractWrapper;
 
 import org.slf4j.Logger;
 
-
 /**
  * This class implements a generic finite state machine
  * for HostControllerInterface Protocols.
@@ -49,26 +48,26 @@ import org.slf4j.Logger;
  * instance with the appropriate Protocol object and
  * then call the method sendQuery.
  * 
- *  Warning: other methods of this class may be refactored soon,
- *  and more states could be added.
- *  
- *  @see AbstractHCIProtocol
+ * Warning: other methods of this class may be refactored soon,
+ * and more states could be added.
+ * 
+ * @see AbstractHCIProtocol
  */
 public class ProtocolManager {
-	private static final transient Logger logger = LoggerFactory.getLogger( ProtocolManager.class );
+	private static final transient Logger logger = LoggerFactory.getLogger(ProtocolManager.class);
 	private AbstractHCIProtocol protocol;
 	private ProtocolStates currentState;
 	private AbstractHCIQuery lastExecutedQuery = null;
-	private Vector < Object > lastParams;
+	private Vector<Object> lastParams;
 	private AbstractWrapper outputWrapper;
 
 	private Timer timer;
 	private TimerTask answerTimeout = new TimerTask() {
 
-		public synchronized void run ( ) {
+		public synchronized void run() {
 			lastExecutedQuery = null;
 			currentState = ProtocolStates.READY;
-		} 
+		}
 	};
 
 	public enum ProtocolStates {
@@ -92,35 +91,36 @@ public class ProtocolManager {
 	 */
 	public synchronized byte[] sendQuery(String queryName, Vector<Object> params) {
 		byte[] answer = null;
-		if(currentState == ProtocolStates.READY) {
-			AbstractHCIQuery query = protocol.getQuery( queryName );
-			
-			if(query != null) {
-				logger.debug( "Retrieved query " + queryName + ", trying to build raw query.");
+		if (currentState == ProtocolStates.READY) {
+			AbstractHCIQuery query = protocol.getQuery(queryName);
 
-				byte[] queryBytes = query.buildRawQuery( params );
-				if(queryBytes != null) {
+			if (query != null) {
+				logger.debug("Retrieved query " + queryName + ", trying to build raw query.");
+
+				byte[] queryBytes = query.buildRawQuery(params);
+				if (queryBytes != null) {
 					try {
 						logger.debug("Built query, it looks like: " + new String(queryBytes));
-						outputWrapper.sendToWrapper(null,null,new Object[] {queryBytes});
+						outputWrapper.sendToWrapper(null, null, new Object[] { queryBytes });
 						lastExecutedQuery = query;
 						lastParams = params;
 						answer = queryBytes;
 						logger.debug("Query succesfully sent!");
-						if(query.needsAnswer( params )) {
+						if (query.needsAnswer(params)) {
 							logger.debug("Now entering wait mode for answer.");
 							timer = new Timer();
 							currentState = ProtocolStates.WAITING;
-							timer.schedule( answerTimeout , new Date());
+							timer.schedule(answerTimeout, new Date());
 						}
-					} catch( OperationNotSupportedException e ) {
+					} catch (OperationNotSupportedException e) {
 						logger.debug("Query could not be sent ! See error message.");
-						logger.error( e.getMessage( ) , e );
+						logger.error(e.getMessage(), e);
 						currentState = ProtocolStates.READY;
 					}
 				}
 			} else {
-				logger.warn("Query " + queryName + " found but no bytes produced to send to device. Implementation may be missing.");
+				logger.warn("Query " + queryName
+						+ " found but no bytes produced to send to device. Implementation may be missing.");
 			}
 
 		}
@@ -135,7 +135,7 @@ public class ProtocolManager {
 	 */
 	public synchronized Object[] getAnswer(byte[] rawData) {
 		Object[] answer = null;
-		if(currentState == ProtocolStates.WAITING) {
+		if (currentState == ProtocolStates.WAITING) {
 			answer = lastExecutedQuery.getAnswers(rawData);
 		}
 		return answer;
@@ -145,7 +145,7 @@ public class ProtocolManager {
 	 * @return
 	 */
 	public String getProtocolName() {
-		if(protocol != null){
+		if (protocol != null) {
 			return protocol.getName();
 		}
 		return null;
@@ -156,7 +156,7 @@ public class ProtocolManager {
 	 * @return
 	 */
 	public AbstractHCIQuery getQuery(String string) {
-		if(protocol != null){
+		if (protocol != null) {
 			return protocol.getQuery(string);
 		}
 		return null;
@@ -166,10 +166,9 @@ public class ProtocolManager {
 	 * @return
 	 */
 	public Collection<AbstractHCIQuery> getQueries() {
-		if(protocol != null){
+		if (protocol != null) {
 			return protocol.getQueries();
 		}
 		return null;
 	}
 }
-

@@ -25,19 +25,16 @@
 
 package ch.epfl.gsn.vsensor;
 
-
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.TimerTask;
 
 import ch.epfl.gsn.ContainerImpl;
 
-
 public class ScheduledBridgeVirtualSensor extends AbstractScheduledVirtualSensor {
 
-	
 	public boolean initialize() {
-		super.initialize(); 		//get the timer settings
+		super.initialize(); // get the timer settings
 		TimerTask timerTask = new MyTimerTask();
 		timer0.scheduleAtFixedRate(timerTask, new Date(startTime), clock_rate);
 		return true;
@@ -46,27 +43,26 @@ public class ScheduledBridgeVirtualSensor extends AbstractScheduledVirtualSensor
 	class MyTimerTask extends TimerTask {
 
 		public void run() {
-			if(dataItem == null){
-				return;	
+			if (dataItem == null) {
+				return;
 			}
 			dataItem.setTimeStamp(System.currentTimeMillis());
 			logger.warn(getVirtualSensorConfiguration().getName() + " Timer Event ");
 			try {
 				ContainerImpl.getInstance().publishData(ScheduledBridgeVirtualSensor.this, dataItem);
 			} catch (SQLException e) {
-				if (e.getMessage().toLowerCase().contains("duplicate entry")){
+				if (e.getMessage().toLowerCase().contains("duplicate entry")) {
 					logger.info(e.getMessage(), e);
 				} else {
 					logger.error(e.getMessage(), e);
 				}
 			}
-	
+
 		}
 	}
 
 	public void dispose() {
 		timer0.cancel();
-		
 
 	}
 

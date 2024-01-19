@@ -40,20 +40,20 @@ import java.sql.Connection;
 
 public class DataSources {
 
-    private static final transient Logger logger = LoggerFactory.getLogger( DataSources.class );
+    private static final transient Logger logger = LoggerFactory.getLogger(DataSources.class);
 
     public static BasicDataSource getDataSource(DBConnectionInfo dci) {
         BasicDataSource ds = null;
         try {
-            ds = (BasicDataSource)GSNContext.getMainContext().lookup(Integer.toString(dci.hashCode()));
+            ds = (BasicDataSource) GSNContext.getMainContext().lookup(Integer.toString(dci.hashCode()));
             if (ds == null) {
                 ds = new BasicDataSource();
                 ds.setDriverClassName(dci.getDriverClass());
                 ds.setUsername(dci.getUserName());
                 ds.setPassword(dci.getPassword());
                 ds.setUrl(dci.getUrl());
-		//ds.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-                //ds.setAccessToUnderlyingConnectionAllowed(true); 
+                // ds.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+                // ds.setAccessToUnderlyingConnectionAllowed(true);
                 GSNContext.getMainContext().bind(Integer.toString(dci.hashCode()), ds);
                 logger.info("Created a DataSource to: " + ds.getUrl());
             }

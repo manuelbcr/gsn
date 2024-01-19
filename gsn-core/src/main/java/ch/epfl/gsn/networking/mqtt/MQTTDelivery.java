@@ -13,26 +13,25 @@ import ch.epfl.gsn.beans.StreamElement;
 import ch.epfl.gsn.delivery.DeliverySystem;
 
 public class MQTTDelivery implements DeliverySystem {
-	
+
 	private final transient Logger logger = LoggerFactory.getLogger(MQTTDelivery.class);
-	
+
 	private MqttClient client;
 	private String serverURI;
 	private String topic;
 	private String vsname;
 	private boolean closed = false;
-	private MqttConnectOptions options  = new MqttConnectOptions();
+	private MqttConnectOptions options = new MqttConnectOptions();
 
 	public MQTTDelivery(String serverURI, String clientID, String topic, String vsname) {
-		try{
-		    client = new MqttClient(serverURI, clientID);
-		    options.setAutomaticReconnect(true);
-		    client.connect(options);
-		}catch (Exception e){
+		try {
+			client = new MqttClient(serverURI, clientID);
+			options.setAutomaticReconnect(true);
+			client.connect(options);
+		} catch (Exception e) {
 			logger.error("Unable to instanciate delivery system MQTT.", e);
 		}
 	}
-
 
 	@Override
 	public void writeStructure(DataField[] fields) throws IOException {
@@ -40,7 +39,7 @@ public class MQTTDelivery implements DeliverySystem {
 		try {
 			client.publish(topic, se.toJSON(vsname).getBytes(), 0, true);
 		} catch (MqttException e) {
-			logger.error("Unable to publish stream element to topic " + topic + " on "+ serverURI);
+			logger.error("Unable to publish stream element to topic " + topic + " on " + serverURI);
 		}
 	}
 
@@ -49,7 +48,7 @@ public class MQTTDelivery implements DeliverySystem {
 		try {
 			client.publish(topic, se.toJSON(vsname).getBytes(), 0, false);
 		} catch (MqttException e) {
-			logger.error("Unable to publish stream element to topic " + topic + " on "+ serverURI);
+			logger.error("Unable to publish stream element to topic " + topic + " on " + serverURI);
 			return false;
 		}
 		return true;
@@ -57,7 +56,7 @@ public class MQTTDelivery implements DeliverySystem {
 
 	@Override
 	public boolean writeKeepAliveStreamElement() {
-		//The client takes care of keep-alive
+		// The client takes care of keep-alive
 		return true;
 	}
 
@@ -69,7 +68,7 @@ public class MQTTDelivery implements DeliverySystem {
 			closed = true;
 		} catch (MqttException e) {
 			logger.warn("Error while closing the MQTT client.", e);
-		}	
+		}
 	}
 
 	@Override

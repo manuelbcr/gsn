@@ -62,8 +62,8 @@ public class SQLServerStorageManager extends StorageManager {
                 convertedType = gsnType.getType();
                 break;
             case DataTypes.FLOAT:
-            	convertedType = "REAL";
-            	break;
+                convertedType = "REAL";
+                break;
             default:
                 convertedType = DataTypes.TYPE_NAMES[gsnType.getDataTypeID()];
                 break;
@@ -87,10 +87,10 @@ public class SQLServerStorageManager extends StorageManager {
             case Types.CHAR:
                 return DataTypes.CHAR;
             case Types.DOUBLE:
-            case Types.DECIMAL:    // This is needed for doing aggregates in datadownload servlet.
+            case Types.DECIMAL: // This is needed for doing aggregates in datadownload servlet.
                 return DataTypes.DOUBLE;
             case Types.REAL:
-            	return DataTypes.FLOAT;
+                return DataTypes.FLOAT;
             case Types.BINARY:
             case Types.BLOB:
             case Types.VARBINARY:
@@ -105,8 +105,8 @@ public class SQLServerStorageManager extends StorageManager {
 
     @Override
     public String getStatementDropIndex() {
-        //if (isSqlServer()) return "DROP TABLE #NAME";
-        //another: return "DROP INDEX #NAME";
+        // if (isSqlServer()) return "DROP TABLE #NAME";
+        // another: return "DROP INDEX #NAME";
         return "DROP INDEX #NAME ON #TABLE";
     }
 
@@ -118,7 +118,7 @@ public class SQLServerStorageManager extends StorageManager {
 
     @Override
     public int getTableNotExistsErrNo() {
-        return 208; //java.sql.SQLException: Invalid object name
+        return 208; // java.sql.SQLException: Invalid object name
     }
 
     @Override
@@ -144,7 +144,9 @@ public class SQLServerStorageManager extends StorageManager {
         StringBuilder result = new StringBuilder("CREATE TABLE ").append(tableName);
         result.append(" (PK BIGINT NOT NULL IDENTITY, timed BIGINT NOT NULL, ");
         for (DataField field : structure) {
-            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) {continue;}
+            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) {
+                continue;
+            }
             result.append(field.getName().toUpperCase()).append(' ');
             result.append(convertGSNTypeToLocalType(field));
             result.append(" ,");
@@ -186,6 +188,5 @@ public class SQLServerStorageManager extends StorageManager {
                 .append(".timed DESC ) as x ) ");
 
     }
-
 
 }

@@ -18,14 +18,14 @@ import ch.epfl.gsn.wrappers.backlog.statistics.StatisticListener;
 import ch.epfl.gsn.wrappers.backlog.statistics.StatisticsMain;
 
 public class BackLogStatsWrapper extends AbstractWrapper implements StatisticListener {
-	private final transient Logger logger = LoggerFactory.getLogger( BackLogStatsWrapper.class );
-	
+	private final transient Logger logger = LoggerFactory.getLogger(BackLogStatsWrapper.class);
+
 	private final static int DEFAULT_SAMPLING_RATE_MS = 30000;
-	
+
 	private final static DataField[] outputStructure = new DataField[] {
 			new DataField("generation_time", DataTypes.BIGINT),
 			new DataField("device_id", DataTypes.INTEGER),
-		
+
 			new DataField("connected", DataTypes.TINYINT),
 
 			new DataField("in_total_counter", DataTypes.BIGINT),
@@ -34,21 +34,21 @@ public class BackLogStatsWrapper extends AbstractWrapper implements StatisticLis
 			new DataField("out_total_counter", DataTypes.BIGINT),
 			new DataField("out_total_stuffed", DataTypes.BIGINT),
 			new DataField("out_total_unstuffed", DataTypes.BIGINT),
-			
+
 			new DataField("in_ack_counter", DataTypes.BIGINT),
 			new DataField("in_ack_volume", DataTypes.BIGINT),
 			new DataField("in_ping_counter", DataTypes.BIGINT),
 			new DataField("in_ping_volume", DataTypes.BIGINT),
 			new DataField("in_ping_ack_counter", DataTypes.BIGINT),
 			new DataField("in_ping_ack_volume", DataTypes.BIGINT),
-			
+
 			new DataField("out_ack_counter", DataTypes.BIGINT),
 			new DataField("out_ack_volume", DataTypes.BIGINT),
 			new DataField("out_ping_counter", DataTypes.BIGINT),
 			new DataField("out_ping_volume", DataTypes.BIGINT),
 			new DataField("out_ping_ack_counter", DataTypes.BIGINT),
 			new DataField("out_ping_ack_volume", DataTypes.BIGINT),
-			
+
 			new DataField("out_queue_limit_counter", DataTypes.BIGINT),
 			new DataField("out_queue_limit_volume", DataTypes.BIGINT),
 			new DataField("out_queue_ready_counter", DataTypes.BIGINT),
@@ -63,25 +63,24 @@ public class BackLogStatsWrapper extends AbstractWrapper implements StatisticLis
 	@Override
 	public boolean initialize() {
 		String deployment = getActiveAddressBean().getVirtualSensorName().split("_")[0].toLowerCase();
-		
+
 		stats = StatisticsMain.getDeploymentStatsInstance(deployment, this);
-		
+
 		String predicate = getActiveAddressBean().getPredicateValue("sampling-rate");
-		if ( predicate != null ) {
+		if (predicate != null) {
 			try {
-				sampling_rate = Integer.parseInt(predicate)*1000;
+				sampling_rate = Integer.parseInt(predicate) * 1000;
 			} catch (NumberFormatException e) {
-				logger.warn("sampling-rate is not parsable, set to default ("+DEFAULT_SAMPLING_RATE_MS+"ms)");
+				logger.warn("sampling-rate is not parsable, set to default (" + DEFAULT_SAMPLING_RATE_MS + "ms)");
 			}
 		}
 
 		return true;
 	}
-	
-	
+
 	public void run() {
 		long timestamp;
-		
+
 		while (!stopped) {
 			timestamp = System.currentTimeMillis();
 
@@ -89,16 +88,16 @@ public class BackLogStatsWrapper extends AbstractWrapper implements StatisticLis
 
 			if (connected != null) {
 				Iterator<Integer> iter = connected.keySet().iterator();
-				
+
 				if (iter != null) {
 					for (; iter.hasNext();) {
 						int deviceid = iter.next();
-						
+
 						generateStreamElement(timestamp, deviceid, connected);
 					}
 				}
 			}
-			
+
 			try {
 				synchronized (event) {
 					event.wait(sampling_rate);
@@ -108,27 +107,25 @@ public class BackLogStatsWrapper extends AbstractWrapper implements StatisticLis
 			}
 		}
 	}
-	
-	
+
 	private void generateStreamElement(long timestamp, int deviceid, Map<Integer, Boolean> connectedList) {
 		Serializable[] output = new Serializable[outputStructure.length];
 		output[0] = timestamp;
 		output[1] = deviceid;
-		
-		if (connectedList.get(deviceid)){
-			output[2] = (byte)1;
+
+		if (connectedList.get(deviceid)) {
+			output[2] = (byte) 1;
 		} else {
-			output[2] = (byte)0;
+			output[2] = (byte) 0;
 		}
-		
+
 		int counter = 3;
-		for (Iterator<Map<Integer, Long>> it = getStatsList().iterator(); it.hasNext();){
+		for (Iterator<Map<Integer, Long>> it = getStatsList().iterator(); it.hasNext();) {
 			output[counter++] = it.next().get(deviceid);
 		}
 		postStreamElement(new StreamElement(outputStructure, output));
 	}
-	
-	
+
 	@SuppressWarnings("unchecked")
 	private List<Map<Integer, Long>> getStatsList() {
 		return Arrays.asList(
@@ -138,14 +135,14 @@ public class BackLogStatsWrapper extends AbstractWrapper implements StatisticLis
 				stats.getTotalMsgSendCounter(),
 				stats.getTotalSendByteCounter(),
 				stats.getTotalMsgSendByteCounter(),
-				
+
 				stats.getMsgRecvCounterList(BackLogMessage.ACK_MESSAGE_TYPE),
 				stats.getMsgRecvByteCounterList(BackLogMessage.ACK_MESSAGE_TYPE),
 				stats.getMsgRecvCounterList(BackLogMessage.PING_MESSAGE_TYPE),
 				stats.getMsgRecvByteCounterList(BackLogMessage.PING_MESSAGE_TYPE),
 				stats.getMsgRecvCounterList(BackLogMessage.PING_ACK_MESSAGE_TYPE),
 				stats.getMsgRecvByteCounterList(BackLogMessage.PING_ACK_MESSAGE_TYPE),
-				
+
 				stats.getMsgSendCounterList(BackLogMessage.ACK_MESSAGE_TYPE),
 				stats.getMsgSendByteCounterList(BackLogMessage.ACK_MESSAGE_TYPE),
 				stats.getMsgSendCounterList(BackLogMessage.PING_MESSAGE_TYPE),
@@ -158,25 +155,21 @@ public class BackLogStatsWrapper extends AbstractWrapper implements StatisticLis
 				stats.getMsgSendByteCounterList(BackLogMessage.MESSAGE_QUEUE_READY_MESSAGE_TYPE));
 	}
 
-
 	@Override
 	public void connectionStatusChanged(int deviceId) {
 		generateStreamElement(System.currentTimeMillis(), deviceId, stats.isConnectedList());
 	}
 
-	
 	@Override
 	public DataField[] getOutputFormat() {
 		return outputStructure;
 	}
 
-	
 	@Override
 	public String getWrapperName() {
 		return "StatisticsWrapper";
 	}
 
-	
 	@Override
 	public void dispose() {
 		stopped = true;

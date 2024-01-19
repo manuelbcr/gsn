@@ -67,9 +67,8 @@ public class StatsBridgeVirtualSensor extends AbstractVirtualSensor {
 
     public void dataAvailable(String inputStreamName, StreamElement data) {
 
-
         if (logging_counter % logging_interval == 0) {
-            logger.warn( vsname + " , " + logging_counter + " , " + System.currentTimeMillis());
+            logger.warn(vsname + " , " + logging_counter + " , " + System.currentTimeMillis());
         }
 
         logging_counter++;

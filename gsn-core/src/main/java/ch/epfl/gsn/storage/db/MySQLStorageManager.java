@@ -61,11 +61,11 @@ public class MySQLStorageManager extends StorageManager {
             case DataTypes.VARCHAR:
                 // Because the parameter for the varchar is not
                 // optional.
-                if (gsnType.getType().trim().equalsIgnoreCase("string")){
+                if (gsnType.getType().trim().equalsIgnoreCase("string")) {
                     convertedType = "TEXT";
-                }else{
+                } else {
                     convertedType = gsnType.getType();
-                }   
+                }
                 break;
             case DataTypes.BINARY:
                 convertedType = "LONGBLOB";
@@ -74,7 +74,7 @@ public class MySQLStorageManager extends StorageManager {
                 convertedType = "double precision";
                 break;
             case DataTypes.FLOAT:
-            	convertedType = "FLOAT(23)"; //just to be sure it doesn't map to double
+                convertedType = "FLOAT(23)"; // just to be sure it doesn't map to double
                 break;
             default:
                 convertedType = DataTypes.TYPE_NAMES[gsnType.getDataTypeID()];
@@ -95,15 +95,15 @@ public class MySQLStorageManager extends StorageManager {
             case Types.TINYINT:
                 return DataTypes.TINYINT;
             case Types.VARCHAR:
-            case Types.LONGVARCHAR: // This is needed because of the string type in CSV wrapper. 	
+            case Types.LONGVARCHAR: // This is needed because of the string type in CSV wrapper.
                 return DataTypes.VARCHAR;
             case Types.CHAR:
                 return DataTypes.CHAR;
-            case Types.FLOAT:      
-            case Types.REAL:      
-            	return DataTypes.FLOAT;
-            case Types.DOUBLE:	
-            case Types.DECIMAL:    // This is needed for doing aggregates in datadownload servlet.
+            case Types.FLOAT:
+            case Types.REAL:
+                return DataTypes.FLOAT;
+            case Types.DOUBLE:
+            case Types.DECIMAL: // This is needed for doing aggregates in datadownload servlet.
                 return DataTypes.DOUBLE;
             case Types.BINARY:
             case Types.BLOB:
@@ -111,10 +111,10 @@ public class MySQLStorageManager extends StorageManager {
             case Types.LONGVARBINARY:
                 return DataTypes.BINARY;
             default:
-                if (jdbcType == Types.NULL){
-                    logger.error("The type can't be converted to GSN form : 0. (Found  type in JDBC format is \"Null\")");
-                }
-                else {
+                if (jdbcType == Types.NULL) {
+                    logger.error(
+                            "The type can't be converted to GSN form : 0. (Found  type in JDBC format is \"Null\")");
+                } else {
                     logger.error("The type can't be converted to GSN form : " + jdbcType);
                 }
                 break;
@@ -124,7 +124,7 @@ public class MySQLStorageManager extends StorageManager {
 
     @Override
     public String getStatementDropIndex() {
-        //if (AbstractStorageManager.isMysqlDB()) return "DROP INDEX #NAME IF EXISTS";
+        // if (AbstractStorageManager.isMysqlDB()) return "DROP INDEX #NAME IF EXISTS";
         return "DROP TABLE IF EXISTS #NAME";
     }
 
@@ -170,14 +170,18 @@ public class MySQLStorageManager extends StorageManager {
         StringBuilder result = new StringBuilder("CREATE TABLE ").append(tableName);
         result.append(" (PK BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT, timed BIGINT NOT NULL, ");
         for (DataField field : structure) {
-            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")){ continue;}
+            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) {
+                continue;
+            }
             result.append(field.getName().toUpperCase()).append(' ');
             result.append(convertGSNTypeToLocalType(field));
             result.append(" ,");
         }
         result.delete(result.length() - 2, result.length());
         result.append(")");
-        if (tableName.contains("_")) {logger.warn(result.toString());}
+        if (tableName.contains("_")) {
+            logger.warn(result.toString());
+        }
         return result;
     }
 
@@ -225,15 +229,15 @@ public class MySQLStorageManager extends StorageManager {
         try {
             c = getConnection();
             ResultSet rs = executeQueryWithResultSet(new StringBuilder("show tables"), c);
-            if (rs != null){
-                while (rs.next()){
-                    if (rs.getString(1).startsWith("_")){
+            if (rs != null) {
+                while (rs.next()) {
+                    if (rs.getString(1).startsWith("_")) {
                         toReturn.add(rs.getString(1));
                     }
                 }
 
             }
-               
+
         } finally {
             close(c);
         }
@@ -241,7 +245,8 @@ public class MySQLStorageManager extends StorageManager {
     }
 
     @Override
-    public DataEnumerator streamedExecuteQuery(String query, boolean binaryFieldsLinked, Connection conn) throws SQLException {
+    public DataEnumerator streamedExecuteQuery(String query, boolean binaryFieldsLinked, Connection conn)
+            throws SQLException {
         PreparedStatement ps = null;
         // Support streamed queries for MySQL -- see MySQL Implementation notes:
         // http://dev.mysql.com/doc/refman/5.0/en/connector-j-reference-implementation-notes.html

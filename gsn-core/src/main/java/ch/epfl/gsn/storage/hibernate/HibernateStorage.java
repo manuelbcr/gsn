@@ -57,20 +57,22 @@ public class HibernateStorage implements VirtualSensorStorage {
 
     private static final int PAGE_SIZE = 1000;
 
-    public static HibernateStorage newInstance(DBConnectionInfo dbInfo, String identifier, DataField[] structure, boolean unique) {
+    public static HibernateStorage newInstance(DBConnectionInfo dbInfo, String identifier, DataField[] structure,
+            boolean unique) {
         try {
             return new HibernateStorage(dbInfo, identifier, structure, unique);
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             logger.error(e.getMessage());
             return null;
         }
     }
 
-    private HibernateStorage(DBConnectionInfo dbInfo, String identifier, DataField[] structure, boolean unique) throws RuntimeException {
+    private HibernateStorage(DBConnectionInfo dbInfo, String identifier, DataField[] structure, boolean unique)
+            throws RuntimeException {
         String em = generateEntityMapping(identifier, structure, unique);
-        this.sf = HibernateUtil.getSessionFactory(dbInfo.getDriverClass(), dbInfo.getUrl(), dbInfo.getUserName(), dbInfo.getPassword(), em);
-        if (this.sf == null){
+        this.sf = HibernateUtil.getSessionFactory(dbInfo.getDriverClass(), dbInfo.getUrl(), dbInfo.getUserName(),
+                dbInfo.getPassword(), em);
+        if (this.sf == null) {
             throw new RuntimeException("Unable to instanciate the Storage for:" + identifier);
         }
         this.identifier = identifier.toLowerCase();
@@ -81,13 +83,11 @@ public class HibernateStorage implements VirtualSensorStorage {
         return true;
     }
 
-
     public Serializable saveStreamElement(StreamElement se) throws GSNRuntimeException {
-        // Create the dynamic map 
+        // Create the dynamic map
         try {
             return storeElement(se2dm(se));
-        }
-        catch (org.hibernate.exception.ConstraintViolationException e) {
+        } catch (org.hibernate.exception.ConstraintViolationException e) {
             StringBuilder sb = new StringBuilder();
             sb.append("Error occurred on inserting data to the database, an stream element dropped due to: ")
                     .append(e.getMessage())
@@ -96,8 +96,7 @@ public class HibernateStorage implements VirtualSensorStorage {
                     .append(")");
             logger.warn(sb.toString());
             throw new GSNRuntimeException(e.getMessage());
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             throw new GSNRuntimeException(e.getMessage());
         }
     }
@@ -112,9 +111,9 @@ public class HibernateStorage implements VirtualSensorStorage {
             return dm2se(dm);
         } catch (RuntimeException e) {
             try {
-                if (tx != null){
+                if (tx != null) {
                     tx.rollback();
-                }                   
+                }
             } catch (RuntimeException ex) {
                 logger.error("Couldn't roll back transaction.");
             }
@@ -135,9 +134,9 @@ public class HibernateStorage implements VirtualSensorStorage {
 
         } catch (RuntimeException e) {
             try {
-                if (tx != null){
+                if (tx != null) {
                     tx.rollback();
-                }                   
+                }
             } catch (RuntimeException ex) {
                 logger.error("Couldn't roll back transaction.");
             }
@@ -145,7 +144,8 @@ public class HibernateStorage implements VirtualSensorStorage {
         }
     }
 
-    public DataEnumeratorIF getStreamElements(int pageSize, Order order, Criterion[] crits, int maxResults) throws GSNRuntimeException {
+    public DataEnumeratorIF getStreamElements(int pageSize, Order order, Criterion[] crits, int maxResults)
+            throws GSNRuntimeException {
         return new PaginatedDataEnumerator(pageSize, order, crits, maxResults);
     }
 
@@ -165,7 +165,7 @@ public class HibernateStorage implements VirtualSensorStorage {
             return pk;
         } catch (RuntimeException e) {
             try {
-                if (tx != null){
+                if (tx != null) {
                     tx.rollback();
                 }
             } catch (RuntimeException ex) {
@@ -177,14 +177,13 @@ public class HibernateStorage implements VirtualSensorStorage {
 
     protected void finalize() throws Throwable {
         try {
-            if (sf != null){
+            if (sf != null) {
                 HibernateUtil.closeSessionFactory(sf);
-            }  
+            }
         } finally {
             super.finalize();
         }
     }
-
 
     //
 
@@ -220,29 +219,33 @@ public class HibernateStorage implements VirtualSensorStorage {
         ArrayList<Serializable> data = new ArrayList<Serializable>();
         long timed = (Long) dm.get("timed");
         for (DataField df : structure) {
-            if (!"timed".equalsIgnoreCase(df.getName())){
+            if (!"timed".equalsIgnoreCase(df.getName())) {
                 data.add(dm.get(df.getName()));
-            }               
+            }
         }
-        return new StreamElement(structure, data.toArray(new Serializable[]{data.size()}), timed);
+        return new StreamElement(structure, data.toArray(new Serializable[] { data.size() }), timed);
     }
 
     private Map<String, Serializable> se2dm(StreamElement se) {
         Map<String, Serializable> dm = new HashMap<String, Serializable>();
         dm.put("timed", se.getTimeStamp());
         for (String fieldName : se.getFieldNames()) {
-            if (!"timed".equalsIgnoreCase(fieldName)){
+            if (!"timed".equalsIgnoreCase(fieldName)) {
                 dm.put(fieldName, se.getData(fieldName));
-            }     
+            }
         }
         return dm;
     }
 
     /**
-     * Create the Hibernate mapping configuration file for the specified virtual sensor, according to the structure.
-     * The <code>pk</code> and <code>timed</code> are added by default to the mapping. Moreover, an index on
-     * the <code>timed</code> field is created. Finally, an optional <code>UNIQUE</code> clause is added to the
-     * <code>timed</code> column, iff the parameter <code>unique</code> is set to <code>true</code>.
+     * Create the Hibernate mapping configuration file for the specified virtual
+     * sensor, according to the structure.
+     * The <code>pk</code> and <code>timed</code> are added by default to the
+     * mapping. Moreover, an index on
+     * the <code>timed</code> field is created. Finally, an optional
+     * <code>UNIQUE</code> clause is added to the
+     * <code>timed</code> column, iff the parameter <code>unique</code> is set to
+     * <code>true</code>.
      *
      * @param identifier
      * @param structure
@@ -260,7 +263,7 @@ public class HibernateStorage implements VirtualSensorStorage {
                 .append("\" table=\"")
                 .append(identifier.toLowerCase())
                 .append("\">\n");
-        //sb.append("<cache usage=\"read-only\"/>");
+        // sb.append("<cache usage=\"read-only\"/>");
         // PK field
         sb.append("<id type=\"long\" column=\"PK\" name=\"pk\" >\n");
         sb.append("<generator class=\"native\"/>\n");
@@ -317,30 +320,32 @@ public class HibernateStorage implements VirtualSensorStorage {
             this.order = order;
             this.crits = crits;
             currentPage = 0;
-            pci = null;             //page content iterator
-            if (maxResults == 0){
+            pci = null; // page content iterator
+            if (maxResults == 0) {
                 close();
-            }       
+            }
             hasMoreElements();
         }
 
         /**
-         * This method checks if there is one or more {@link ch.epfl.gsn.beans.StreamElement} available in the DataEnumerator.
+         * This method checks if there is one or more
+         * {@link ch.epfl.gsn.beans.StreamElement} available in the DataEnumerator.
          * If the current page is empty, it tries to load the next page.
+         * 
          * @return
          */
         public boolean hasMoreElements() {
 
             // Check if the DataEnumerator is closed
-            if (closed){
+            if (closed) {
                 return false;
             }
 
             // Check if there is still data in the current pageContent
-            if (pci != null && pci.hasNext()){
+            if (pci != null && pci.hasNext()) {
                 return true;
             }
-                
+
             // Compute the next number of elements to fetch
             int offset = currentPage * pageSize;
             int mr = pageSize;
@@ -372,36 +377,35 @@ public class HibernateStorage implements VirtualSensorStorage {
 
             } catch (RuntimeException e) {
                 try {
-                    if (tx != null){
+                    if (tx != null) {
                         tx.rollback();
-                    }    
+                    }
                 } catch (RuntimeException ex) {
                     logger.error("Couldn't roll back transaction.");
                 }
                 throw e;
             }
-            if(pci != null &&  pci.hasNext()) {
+            if (pci != null && pci.hasNext()) {
                 return true;
-            }
-            else {
+            } else {
                 close();
                 return false;
             }
         }
 
         public StreamElement nextElement() throws RuntimeException {
-            if ( ! hasMoreElements()){
-                throw new IndexOutOfBoundsException("The DataEnumerator has no more StreamElement or is closed."); 
+            if (!hasMoreElements()) {
+                throw new IndexOutOfBoundsException("The DataEnumerator has no more StreamElement or is closed.");
             } else {
                 return dm2se(pci.next());
-            }   
+            }
         }
 
         public void close() {
-            if (! closed){
+            if (!closed) {
                 closed = true;
             }
-                 
+
         }
     }
 }

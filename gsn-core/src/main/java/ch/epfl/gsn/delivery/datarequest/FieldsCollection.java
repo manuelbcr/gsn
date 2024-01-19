@@ -39,10 +39,10 @@ public class FieldsCollection {
 
 		wantTimed = false;
 		for (int j = 0; j < _fields.length; j++) {
-			if (_fields[j].compareToIgnoreCase("timed") == 0){
+			if (_fields[j].compareToIgnoreCase("timed") == 0) {
 				wantTimed = true;
 			}
-				
+
 		}
 		String[] tmp = _fields;
 		if (!wantTimed) {

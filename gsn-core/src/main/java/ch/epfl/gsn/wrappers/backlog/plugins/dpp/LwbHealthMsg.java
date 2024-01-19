@@ -6,21 +6,21 @@ import java.nio.ByteBuffer;
 import ch.epfl.gsn.beans.DataField;
 
 public class LwbHealthMsg extends AbstractMsg {
-	
+
 	private static DataField[] dataField = {
-			new DataField("BOOTSTRAP_CNT", "SMALLINT"),		/* Sync lost counter */
-			new DataField("SLEEP_CNT", "SMALLINT"),			/* Deepsleep counter */
-			new DataField("FSR", "INTEGER"),				/* Flood success rate [10^-2 %] */
-			new DataField("T_TO_RX", "INTEGER"),			/* Listen time to start of packet reception [us] */
-			new DataField("T_FLOOD", "INTEGER"),			/* Flood duration [us] */
-			new DataField("N_TX", "SMALLINT"),				/* TX count of last Glossy flood */
-			new DataField("N_RX", "SMALLINT"),				/* RX count of last Glossy flood */
-			new DataField("N_HOPS", "SMALLINT"),			/* Average hop count of first received packet of a flood */
-			new DataField("N_HOPS_MAX", "SMALLINT"),		/* Max. hop count of first received packet of a flood */
-			new DataField("UNSYNCED_CNT", "SMALLINT"),		/* Lost sync counter */
-			new DataField("DRIFT", "SMALLINT"),				/* Estimated drift [ppm] */
-			new DataField("BUS_LOAD", "SMALLINT")				/* Bus utilization [%] */
-			};
+			new DataField("BOOTSTRAP_CNT", "SMALLINT"), /* Sync lost counter */
+			new DataField("SLEEP_CNT", "SMALLINT"), /* Deepsleep counter */
+			new DataField("FSR", "INTEGER"), /* Flood success rate [10^-2 %] */
+			new DataField("T_TO_RX", "INTEGER"), /* Listen time to start of packet reception [us] */
+			new DataField("T_FLOOD", "INTEGER"), /* Flood duration [us] */
+			new DataField("N_TX", "SMALLINT"), /* TX count of last Glossy flood */
+			new DataField("N_RX", "SMALLINT"), /* RX count of last Glossy flood */
+			new DataField("N_HOPS", "SMALLINT"), /* Average hop count of first received packet of a flood */
+			new DataField("N_HOPS_MAX", "SMALLINT"), /* Max. hop count of first received packet of a flood */
+			new DataField("UNSYNCED_CNT", "SMALLINT"), /* Lost sync counter */
+			new DataField("DRIFT", "SMALLINT"), /* Estimated drift [ppm] */
+			new DataField("BUS_LOAD", "SMALLINT") /* Bus utilization [%] */
+	};
 
 	@Override
 	public Serializable[] receivePayload(ByteBuffer payload) throws Exception {
@@ -36,7 +36,7 @@ public class LwbHealthMsg extends AbstractMsg {
 		Short unsynced_cnt = null;
 		Short drift = null;
 		Short bus_load = null;
-		
+
 		try {
 			bootstrap_cnt = convertUINT8(payload);
 			sleep_cnt = convertUINT8(payload);
@@ -52,8 +52,9 @@ public class LwbHealthMsg extends AbstractMsg {
 			bus_load = convertUINT8(payload);
 		} catch (Exception e) {
 		}
-        
-		return new Serializable[]{bootstrap_cnt, sleep_cnt, fsr, t_to_rx, t_flood, n_tx, n_rx, n_hops, n_hops_max, unsynced_cnt, drift, bus_load};
+
+		return new Serializable[] { bootstrap_cnt, sleep_cnt, fsr, t_to_rx, t_flood, n_tx, n_rx, n_hops, n_hops_max,
+				unsynced_cnt, drift, bus_load };
 	}
 
 	@Override

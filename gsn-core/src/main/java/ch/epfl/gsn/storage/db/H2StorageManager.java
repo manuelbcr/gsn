@@ -56,58 +56,58 @@ public class H2StorageManager extends StorageManager {
     @Override
     public String convertGSNTypeToLocalType(DataField gsnType) {
         String convertedType = null;
-                switch (gsnType.getDataTypeID()) {
-                    case DataTypes.CHAR:
-                    case DataTypes.VARCHAR:
-                        // Because the parameter for the varchar is not
-                        // optional.
-                    	if (gsnType.getType().trim().equalsIgnoreCase("string")){
-                            convertedType = "TEXT";
-                        } else {
-                            convertedType = gsnType.getType();
-                        }
-                            
-                        break;
-                    case DataTypes.FLOAT:
-                    	convertedType = "REAL"; // Warning! The type FLOAT in H2 is a synonym of DOUBLE !!
-                        break;
-                    default:
-                        convertedType = DataTypes.TYPE_NAMES[gsnType.getDataTypeID()];
-                        break;
+        switch (gsnType.getDataTypeID()) {
+            case DataTypes.CHAR:
+            case DataTypes.VARCHAR:
+                // Because the parameter for the varchar is not
+                // optional.
+                if (gsnType.getType().trim().equalsIgnoreCase("string")) {
+                    convertedType = "TEXT";
+                } else {
+                    convertedType = gsnType.getType();
                 }
-                return convertedType;
+
+                break;
+            case DataTypes.FLOAT:
+                convertedType = "REAL"; // Warning! The type FLOAT in H2 is a synonym of DOUBLE !!
+                break;
+            default:
+                convertedType = DataTypes.TYPE_NAMES[gsnType.getDataTypeID()];
+                break;
+        }
+        return convertedType;
     }
 
     @Override
     public byte convertLocalTypeToGSN(int jdbcType, int precision) {
         switch (jdbcType) {
-                    case Types.BIGINT:
-                        return DataTypes.BIGINT;
-                    case Types.INTEGER:
-                        return DataTypes.INTEGER;
-                    case Types.SMALLINT:
-                        return DataTypes.SMALLINT;
-                    case Types.TINYINT:
-                        return DataTypes.TINYINT;
-                    case Types.VARCHAR:
-                        return DataTypes.VARCHAR;
-                    case Types.CHAR:
-                        return DataTypes.CHAR;
-                    case Types.DOUBLE:
-                    case Types.DECIMAL:    // This is needed for doing aggregates in datadownload servlet.
-                        return DataTypes.DOUBLE;
-                    case Types.REAL:       // Warning! The type FLOAT in H2 is a synonym of DOUBLE !!
-                    	return DataTypes.FLOAT;
-                    case Types.BINARY:
-                    case Types.BLOB:
-                    case Types.VARBINARY:
-                    case Types.LONGVARBINARY:
-                        return DataTypes.BINARY;
-                    default:
-                        logger.error("The type can't be converted to GSN form : " + jdbcType);
-                        break;
-                }
-                return -100;
+            case Types.BIGINT:
+                return DataTypes.BIGINT;
+            case Types.INTEGER:
+                return DataTypes.INTEGER;
+            case Types.SMALLINT:
+                return DataTypes.SMALLINT;
+            case Types.TINYINT:
+                return DataTypes.TINYINT;
+            case Types.VARCHAR:
+                return DataTypes.VARCHAR;
+            case Types.CHAR:
+                return DataTypes.CHAR;
+            case Types.DOUBLE:
+            case Types.DECIMAL: // This is needed for doing aggregates in datadownload servlet.
+                return DataTypes.DOUBLE;
+            case Types.REAL: // Warning! The type FLOAT in H2 is a synonym of DOUBLE !!
+                return DataTypes.FLOAT;
+            case Types.BINARY:
+            case Types.BLOB:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+                return DataTypes.BINARY;
+            default:
+                logger.error("The type can't be converted to GSN form : " + jdbcType);
+                break;
+        }
+        return -100;
     }
 
     @Override
@@ -140,7 +140,7 @@ public class H2StorageManager extends StorageManager {
 
     @Override
     public String getStatementDifferenceTimeInMillis() {
-        return "call NOW_MILLIS()";    
+        return "call NOW_MILLIS()";
     }
 
     @Override
@@ -155,7 +155,9 @@ public class H2StorageManager extends StorageManager {
         StringBuilder result = new StringBuilder("CREATE TABLE ").append(tableName);
         result.append(" (PK BIGINT NOT NULL IDENTITY, timed BIGINT NOT NULL, ");
         for (DataField field : structure) {
-            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) {continue;}
+            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) {
+                continue;
+            }
             result.append(field.getName().toUpperCase()).append(' ');
             result.append(convertGSNTypeToLocalType(field));
             result.append(" ,");

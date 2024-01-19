@@ -34,7 +34,7 @@ import ch.epfl.gsn.beans.StreamElement;
 import ch.epfl.gsn.storage.StorageManager;
 import ch.epfl.gsn.vsensor.AbstractVirtualSensor;
 
-public class ContainerImpl  {
+public class ContainerImpl {
 
 	/**
 	 * The <code> waitingVirtualSensors</code> contains the virtual sensors that
@@ -49,7 +49,8 @@ public class ContainerImpl  {
 	private static ContainerImpl singleton;
 	private static final Object psLock = new Object();
 
-	private ContainerImpl() {}
+	private ContainerImpl() {
+	}
 
 	public static ContainerImpl getInstance() {
 		if (singleton == null) {
@@ -59,12 +60,12 @@ public class ContainerImpl  {
 	}
 
 	public void publishData(AbstractVirtualSensor sensor, StreamElement data) throws SQLException {
-		String name = sensor.getVirtualSensorConfiguration().getName( ).toLowerCase();
+		String name = sensor.getVirtualSensorConfiguration().getName().toLowerCase();
 		StorageManager storageMan = Main.getStorage(sensor.getVirtualSensorConfiguration().getName());
-		synchronized(psLock) {
-			storageMan.executeInsert( name ,sensor.getVirtualSensorConfiguration().getOutputStructure(), data );
+		synchronized (psLock) {
+			storageMan.executeInsert(name, sensor.getVirtualSensorConfiguration().getOutputStructure(), data);
 		}
-		
+
 		for (VirtualSensorDataListener listener : dataListeners) {
 			listener.consume(data, sensor.getVirtualSensorConfiguration());
 		}

@@ -6,17 +6,17 @@ import java.nio.ByteBuffer;
 import ch.epfl.gsn.beans.DataField;
 
 public class WgpsStatusMsg extends AbstractMsg {
-	
+
 	private static DataField[] dataField = {
-			new DataField("INC_X", "INTEGER"),					/* Inclinometer X raw data */
-			new DataField("INC_Y", "INTEGER"),					/* Inclinometer Y raw data */
-			new DataField("GNSS_SV_QUEUE", "INTEGER"),			/* Number of gnss_sv messages in queue */
-			new DataField("WGPS_STATUS_QUEUE", "INTEGER"),		/* Number of wgps_status messages in queue */
-			new DataField("APP_HEALTH_QUEUE", "INTEGER"),		/* Number of app_health messages in queue */
-			new DataField("EVENT_QUEUE", "INTEGER"),			/* Number of events in queue */
-			new DataField("CARD_USAGE", "BIGINT"),				/* Card usage [kB] */
-			new DataField("STATUS", "INTEGER")					/* Bit0: gps power state (on/off) */
-			};
+			new DataField("INC_X", "INTEGER"), /* Inclinometer X raw data */
+			new DataField("INC_Y", "INTEGER"), /* Inclinometer Y raw data */
+			new DataField("GNSS_SV_QUEUE", "INTEGER"), /* Number of gnss_sv messages in queue */
+			new DataField("WGPS_STATUS_QUEUE", "INTEGER"), /* Number of wgps_status messages in queue */
+			new DataField("APP_HEALTH_QUEUE", "INTEGER"), /* Number of app_health messages in queue */
+			new DataField("EVENT_QUEUE", "INTEGER"), /* Number of events in queue */
+			new DataField("CARD_USAGE", "BIGINT"), /* Card usage [kB] */
+			new DataField("STATUS", "INTEGER") /* Bit0: gps power state (on/off) */
+	};
 
 	@Override
 	public Serializable[] receivePayload(ByteBuffer payload) throws Exception {
@@ -28,7 +28,7 @@ public class WgpsStatusMsg extends AbstractMsg {
 		Integer event_queue = null;
 		Long card_usage = null;
 		Integer status = null;
-		
+
 		try {
 			inc_x = convertINT16(payload);
 			inc_y = convertINT16(payload);
@@ -40,8 +40,9 @@ public class WgpsStatusMsg extends AbstractMsg {
 			status = convertUINT16(payload);
 		} catch (Exception e) {
 		}
-        
-		return new Serializable[]{inc_x, inc_y, gnss_sv_queue, wgps_status_queue, app_health_queue, event_queue, card_usage, status};
+
+		return new Serializable[] { inc_x, inc_y, gnss_sv_queue, wgps_status_queue, app_health_queue, event_queue,
+				card_usage, status };
 	}
 
 	@Override

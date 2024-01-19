@@ -47,17 +47,17 @@ public class BridgeVirtualSensor extends AbstractVirtualSensor {
         TreeMap<String, String> params = vsensor.getMainClassInitialParams();
 
         String allow_nulls_str = params.get("allow-nulls");
-        if (allow_nulls_str != null){
+        if (allow_nulls_str != null) {
             allow_nulls = allow_nulls_str.equalsIgnoreCase("true");
         }
         return true;
     }
 
     public void dataAvailable(String inputStreamName, StreamElement data) {
-        if (allow_nulls){
+        if (allow_nulls) {
             dataProduced(data);
         } else {
-            if (!areAllFieldsNull(data)){
+            if (!areAllFieldsNull(data)) {
                 dataProduced(data);
             } else {
                 logger.debug("Nulls received for timestamp (" + data.getTimeStamp() + "), discarded");
@@ -68,13 +68,12 @@ public class BridgeVirtualSensor extends AbstractVirtualSensor {
 
     public boolean areAllFieldsNull(StreamElement data) {
         boolean allFieldsNull = false;
-        for (int i = 0; i < data.getData().length; i++){
+        for (int i = 0; i < data.getData().length; i++) {
             if (data.getData()[i] == null) {
                 allFieldsNull = true;
                 break;
             }
         }
-
 
         return allFieldsNull;
     }

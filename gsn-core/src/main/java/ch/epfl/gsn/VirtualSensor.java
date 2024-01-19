@@ -79,11 +79,13 @@ public class VirtualSensor {
      * @param o
      */
     public synchronized void returnVS(AbstractVirtualSensor o) {
-        if (o == null) {return;}
-        if (++noOfCallsToReturnVS % GARBAGE_COLLECTOR_INTERVAL == 0){
+        if (o == null) {
+            return;
+        }
+        if (++noOfCallsToReturnVS % GARBAGE_COLLECTOR_INTERVAL == 0) {
             DoUselessDataRemoval();
         }
-            
+
     }
 
     public synchronized void closePool() {
@@ -96,18 +98,19 @@ public class VirtualSensor {
     }
 
     public void start() throws VirtualSensorInitializationFailedException {
-        
+
         /*
-         *  Starting wrapper threads and storing their ids and names in AbstractVirtualSensor's 
-         *  HashMap threads for monitoring
+         * Starting wrapper threads and storing their ids and names in
+         * AbstractVirtualSensor's
+         * HashMap threads for monitoring
          */
-        
-        Map <Long, String> threads = new HashMap <Long, String>();
+
+        Map<Long, String> threads = new HashMap<Long, String>();
         for (InputStream inputStream : config.getInputStreams()) {
             for (StreamSource streamSource : inputStream.getSources()) {
                 AbstractWrapper wrapper = streamSource.getWrapper();
                 wrapper.start();
-                threads.put(wrapper.getId(),wrapper.getName());
+                threads.put(wrapper.getId(), wrapper.getName());
             }
         }
         borrowVS();
@@ -134,14 +137,17 @@ public class VirtualSensor {
 
     // apply the storage size parameter to the virtual sensor table
     public void DoUselessDataRemoval() {
-        if (config.getParsedStorageSize() == VSensorConfig.STORAGE_SIZE_NOT_SET){ return;}
+        if (config.getParsedStorageSize() == VSensorConfig.STORAGE_SIZE_NOT_SET) {
+            return;
+        }
         StringBuilder query;
 
         if (config.isStorageCountBased()) {
-            query = Main.getStorage(config.getName()).getStatementRemoveUselessDataCountBased(config.getName(), config.getParsedStorageSize());
-        }
-        else {
-            query = Main.getStorage(config.getName()).getStatementRemoveUselessDataTimeBased(config.getName(), config.getParsedStorageSize());
+            query = Main.getStorage(config.getName()).getStatementRemoveUselessDataCountBased(config.getName(),
+                    config.getParsedStorageSize());
+        } else {
+            query = Main.getStorage(config.getName()).getStatementRemoveUselessDataTimeBased(config.getName(),
+                    config.getParsedStorageSize());
         }
 
         int effected = 0;
@@ -149,9 +155,8 @@ public class VirtualSensor {
             logger.debug("Enforcing the limit size on the VS table by : " + query);
             effected = Main.getStorage(config.getName()).executeUpdate(query);
         } catch (SQLException e) {
-            logger.error("Error in executing: " + query + ". "+ e.getMessage());
+            logger.error("Error in executing: " + query + ". " + e.getMessage());
         }
         logger.debug("There were " + effected + " old rows dropped from " + config.getName());
     }
 }
-

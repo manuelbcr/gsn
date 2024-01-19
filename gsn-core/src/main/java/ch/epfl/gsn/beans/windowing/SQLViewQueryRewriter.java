@@ -45,8 +45,9 @@ public abstract class SQLViewQueryRewriter extends QueryRewriter {
 
     private static final transient Logger logger = LoggerFactory.getLogger(SQLViewQueryRewriter.class);
     protected static StorageManager storageManager = Main.getWindowStorage();
-    public static final CharSequence VIEW_HELPER_TABLE = Main.getWindowStorage().tableNameGeneratorInString("_SQL_VIEW_HELPER_".toLowerCase());
-    private static DataField[] viewHelperFields = new DataField[]{new DataField("u_id", "varchar(17)")};
+    public static final CharSequence VIEW_HELPER_TABLE = Main.getWindowStorage()
+            .tableNameGeneratorInString("_SQL_VIEW_HELPER_".toLowerCase());
+    private static DataField[] viewHelperFields = new DataField[] { new DataField("u_id", "varchar(17)") };
 
     static {
         try {
@@ -68,7 +69,7 @@ public abstract class SQLViewQueryRewriter extends QueryRewriter {
         try {
             // Initializing view helper table entry for this stream source
             storageManager.executeInsert(VIEW_HELPER_TABLE, viewHelperFields, new StreamElement(viewHelperFields,
-                    new Serializable[]{streamSource.getUIDStr().toString()}, -1));
+                    new Serializable[] { streamSource.getUIDStr().toString() }, -1));
 
             storageManager.executeCreateView(streamSource.getUIDStr(), createViewSQL());
         } catch (SQLException e) {
@@ -101,13 +102,14 @@ public abstract class SQLViewQueryRewriter extends QueryRewriter {
     @Override
     public boolean dataAvailable(long timestamp) {
         try {
-            //TODO : can we use prepareStatement instead of creating a new query each time
+            // TODO : can we use prepareStatement instead of creating a new query each time
             StringBuilder query = new StringBuilder("update ").append(VIEW_HELPER_TABLE);
             query.append(" set timed=").append(timestamp).append(" where u_id='").append(streamSource.getUIDStr());
             query.append("' ");
             storageManager.executeUpdate(query);
             if (storageManager.isThereAnyResult(new StringBuilder("select * from ").append(streamSource.getUIDStr()))) {
-                logger.debug(streamSource.getWrapper().getWrapperName() + " - Output stream produced/received from a wrapper " + streamSource.toString());
+                logger.debug(streamSource.getWrapper().getWrapperName()
+                        + " - Output stream produced/received from a wrapper " + streamSource.toString());
                 return streamSource.windowSlided();
             }
         } catch (SQLException e) {
