@@ -47,7 +47,6 @@ libraryDependencies ++= Seq(
   "org.httpunit" % "httpunit" % "1.7.2" % "test" exclude("xerces","xercesImpl") exclude("xerces","xmlParserAPIs") exclude("javax.servlet","servlet-api")
 )
 
-
 mainClass in Compile := Some("ch.epfl.gsn.Main")
 
 enablePlugins(JavaServerAppPackaging)
@@ -59,14 +58,7 @@ NativePackagerKeys.packageDescription := "Global Sensor Networks Core"
 NativePackagerKeys.maintainer in Linux := "LSIR EPFL <gsn@epfl.ch>"
 NativePackagerKeys.maintainer in Windows := "LSIR EPFL <gsn@epfl.ch>"
 
-// Define Debian package dependencies
-DebianPlugin.autoImport.debianPackageDependencies in Debian += "java11-runtime"
-DebianPlugin.autoImport.debianPackageRecommends in Debian ++= Seq("postgresql", "munin-node", "gsn-services")
-
-// Define daemon user for Linux
-LinuxPlugin.autoImport.daemonUser in Linux := "gsn"
-
-// Define mappings for Universal package
+//mappings for config file in Universal package
 mappings in Universal ++= Seq(
   (sourceDirectory.value / "templates" / "gsn-core") -> "bin/gsn-core",
   (sourceDirectory.value / "main" / "resources" / "log4j2.xml") -> "conf/log4j2.xml",
@@ -74,16 +66,38 @@ mappings in Universal ++= Seq(
   (sourceDirectory.value / "main" / "resources" / "wrappers.properties") -> "conf/wrappers.properties"
 )
 
-// Define additional Linux package mappings for Debian for virtual sensors
-LinuxPlugin.autoImport.linuxPackageMappings in Debian += packageMapping(
-  (baseDirectory.value / ".." / "virtual-sensors" / "packaged") -> "/usr/share/gsn-core/conf/virtual-sensors"
-) withUser "gsn" withGroup "root" withPerms "0775" withContents()
-
-// Define your mappings for Universal package
+// mappings for virtual-sensors in Universal package
 mappings in Universal ++= {
   val sampleFiles = (baseDirectory.value / ".." / "virtual-sensors" / "samples" * "").get
   sampleFiles.map(file => file -> ("virtual-sensors-samples/" + file.getName))
 }
+
+// Define daemon user for Linux
+daemonUser in Linux := "gsn"
+
+// Define Debian package dependencies
+debianPackageDependencies in Debian += "java11-runtime"
+debianPackageRecommends in Debian ++= Seq("postgresql", "munin-node", "gsn-services")
+
+// mappings for config files in Debian package including access permissions
+linuxPackageMappings := {
+  val mappings = linuxPackageMappings.value
+  mappings map { 
+    case linuxPackage if linuxPackage.fileData.config equals "true" =>
+      val newFileData = linuxPackage.fileData.copy(
+        user = "gsn"
+      )
+      linuxPackage.copy(
+        fileData = newFileData
+      )
+    case linuxPackage => linuxPackage
+  }
+}
+
+// mappings for virtual sensors in Debian package including access permissions
+linuxPackageMappings in Debian += packageMapping(
+  (baseDirectory.value / ".." / "virtual-sensors" / "packaged") -> "/usr/share/gsn-core/conf/virtual-sensors"
+) withUser "gsn" withGroup "root" withPerms "0775" withContents()
 
 // Set reStart arguments using sbt-revolver
 mainClass in reStart := Some("ch.epfl.gsn.Main")

@@ -55,20 +55,11 @@ NativePackagerKeys.packageDescription := "Global Sensor Networks Services"
 NativePackagerKeys.maintainer in Linux := "LSIR EPFL <gsn@epfl.ch>"
 NativePackagerKeys.maintainer in Windows := "LSIR EPFL <gsn@epfl.ch>"
 
-debianPackageDependencies in Debian += "java11-runtime"
+daemonUser in Linux := "gsn"
 
+debianPackageDependencies in Debian += "java11-runtime"
 debianPackageRecommends in Debian ++= Seq("postgresql", "gsn-core", "nginx")
 
-// Define Debian package dependencies
-DebianPlugin.autoImport.debianPackageDependencies in Debian += "java11-runtime"
-DebianPlugin.autoImport.debianPackageRecommends in Debian ++= Seq("postgresql", "gsn-core", "nginx")
-
 serverLoading in Debian := Some(ServerLoader.Systemd)
-
-enablePlugins(DebianPlugin)
-
-enablePlugins(SystemdPlugin)
-
-daemonUser in Linux := "gsn"
 
 javaOptions in Test += "-Dconfig.file=conf/test.conf"

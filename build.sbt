@@ -25,8 +25,7 @@ lazy val commonSettings = Seq(
 
   pomIncludeRepository := { _ => false },
   crossPaths := false,
-  parallelExecution in Test := false,
-  EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
+  parallelExecution in Test := false
 )
 
 // PGP key hex setting
@@ -40,7 +39,7 @@ lazy val root = (project in file(".")).
 lazy val core = (project in file("gsn-core")).
   dependsOn(tools).
   settings(commonSettings: _*).
-  enablePlugins(JavaServerAppPackaging, DebianPlugin)
+  enablePlugins(JavaServerAppPackaging, DebianPlugin, SystemdPlugin)
 
 // Services project definition
 lazy val services = (project in file("gsn-services")).
@@ -50,7 +49,7 @@ lazy val services = (project in file("gsn-services")).
     coverageExcludedPackages := "<empty>;views.*;router.*;models.gsn.data"
   ).
   settings(commonSettings: _*).
-  enablePlugins(PlayJava, PlayEbean, DebianPlugin)
+  enablePlugins(PlayJava, PlayEbean, DebianPlugin, SystemdPlugin)
 
 // Tools project definition
 lazy val tools = (project in file("gsn-tools")).
