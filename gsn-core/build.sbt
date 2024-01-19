@@ -18,10 +18,10 @@ libraryDependencies ++= Seq(
   //"mysql" % "mysql-connector-java" % "5.1.29",
   "mysql" % "mysql-connector-java" % "8.0.33",
   "org.postgresql" % "postgresql" % "9.3-1102-jdbc41",
-  "org.apache.logging.log4j" % "log4j-api" % "2.20.0",
-  "org.apache.logging.log4j" % "log4j-core" % "2.20.0",
-  "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.20.0",
-  "org.apache.logging.log4j" % "log4j-web" % "2.20.0",
+  "org.apache.logging.log4j" % "log4j-api" % "2.3",
+  "org.apache.logging.log4j" % "log4j-core" % "2.3",
+  "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.3",
+  "org.apache.logging.log4j" % "log4j-web" % "2.3",
   "org.apache.commons"  % "commons-dbcp2" % "2.0",
   "org.apache.httpcomponents" % "httpclient" % "4.3.2",
   "org.apache.commons"  % "commons-email" % "1.4",
@@ -83,7 +83,7 @@ Linux / daemonUser := "gsn"
 // old for zip/tar
 //mappings in Universal += (sourceDirectory.value / "templates" / "gsn-core") -> "bin/gsn-core"
 //mappings in Universal += (sourceDirectory.value / "main" / "resources" / "log4j2.xml") -> "conf/log4j2.xml"
-//mappings in Universal += (baseDirectory.value / ".." / "conf" / "gsn.xml") -> "conf/gsn.xml"
+//mappings in Universal += (baseDirectory.value / ".." / "conf" / "gsn.xm-l") -> "conf/gsn.xml"
 //mappings in Universal += (sourceDirectory.value / "main" / "resources" / "wrappers.properties") -> "conf/wrappers.properties"
 //mappings in Universal ++= ((baseDirectory.value / ".." / "virtual-sensors" / "samples").***).pair(file => Some("virtual-sensors-samples/" + file.name))
 
@@ -101,7 +101,6 @@ Debian / linuxPackageMappings += packageMapping(
 Debian / linuxPackageMappings += packageMapping(
   (sourceDirectory.value / "templates" / "gsn-core") -> "/usr/share/gsn-core/bin/gsn-core"
 ) withUser "gsn" withGroup "root" withPerms "0755" //withContents()
-
 
 linuxPackageMappings := {
   val mappings = linuxPackageMappings.value
