@@ -38,7 +38,7 @@ public class StorageConfig {
     private String identifier;
 
     private String storageSize;
-
+    private String storageDirectory;
     public String getJdbcDriver() {
         return jdbcDriver;
     }
@@ -106,6 +106,12 @@ public class StorageConfig {
         return isJdbcDefined() || isIdentifierDefined();
     }
 
-    
+    public void setStorageDirectory(String storageDirectory) {
+        this.storageDirectory = storageDirectory;
+    }
+    public String getStorageDirectory() {
+        return storageDirectory;
+    }
+
 
 }

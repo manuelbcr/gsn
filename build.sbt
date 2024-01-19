@@ -1,6 +1,6 @@
 lazy val commonSettings = Seq(
   organization := "ch.epfl.gsn",
-  version := "2.0.3",
+  version := "2.0.4",
   scalaVersion := "2.12.18",
   Compile / compile / javacOptions ++= Seq("-source", "11", "-target", "11"),
   resolvers ++= Seq(
