@@ -135,15 +135,16 @@ public class ZeroMQWrapperSync extends AbstractWrapper {
 					if (rs.next()) {
 						long max_time = rs.getLong(1);
 						if(startTimeLong < max_time){
-							startTimeLong = max_time;
-							logger.info("newest local timed: " + max_time + " is newer than requested start time: " + startTime + " -> using timed as start time");
+							startTimeLong = max_time + 1;
+							logger.info("newest local timed: " + max_time + " is newer than requested start time: " + startTime + " -> using local timed as start time");
 							requestString = requestString + "?" + startTimeLong;
+							logger.info("using: " + startTime);
 						}else{
 							logger.info("newest local timed: " + max_time + " is older than requested start time: " + startTime + " -> using start time");
 							requestString = requestString + "?" + startTime;
 						}
 					}else{
-						logger.info("column timed does not exits -> using start time " + startTime);
+						logger.info("column timed does not exist -> using start time " + startTime);
 						requestString = requestString + "?" + startTime;
 					}
 				}else{
