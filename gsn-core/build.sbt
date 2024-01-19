@@ -75,7 +75,7 @@ Debian / debianPackageRecommends ++= Seq("mysql", "postgresql", "munin-node", "g
 
 enablePlugins(DebianPlugin)
 enablePlugins(SystemdPlugin)
-//Debian / serverLoading := ServerLoader.Systemd
+//Debian / serverLoading := ServerLoader.Systemd : ServerLoader.Value
 //Rpm / serverLoading := ServerLoader.Systemd
 
 Linux / daemonUser := "gsn"
@@ -88,7 +88,7 @@ Linux / daemonUser := "gsn"
 //mappings in Universal ++= ((baseDirectory.value / ".." / "virtual-sensors" / "samples").***).pair(file => Some("virtual-sensors-samples/" + file.name))
 
 // new
-//Universal / mappings := { ("src" / "templates" / "gsn-core") -> "bin/gsn-core";  sourceDirectory }
+//Universal / mappings := directory(sourceDirectory.value / "templates" / "gsn-core") -> "bin/gsn-core"
 //Universal / mappings += { ("src" / "main" / "resources" / "log4j2.xml") -> "conf/log4j2.xml"; sourceDirectory}
 //Universal / mappings += { ("base" / ".." / "conf" / "gsn.xml") -> "conf/gsn.xml"; baseDirectory}
 //Universal / mappings += { ("src" / "main" / "resources" / "wrappers.properties") -> "conf/wrappers.properties"; sourceDirectory}
@@ -97,6 +97,10 @@ Linux / daemonUser := "gsn"
 Debian / linuxPackageMappings += packageMapping(
   (baseDirectory.value / ".." / "virtual-sensors" / "packaged") -> "/usr/share/gsn-core/conf/virtual-sensors"
 ) withUser "gsn" withGroup "root" withPerms "0775" withContents()
+
+Debian / linuxPackageMappings += packageMapping(
+  (sourceDirectory.value / "templates" / "gsn-core") -> "bin/gsn-core"
+) withUser "gsn" withGroup "root" withPerms "0755" //withContents()
 
 
 linuxPackageMappings := {
