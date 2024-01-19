@@ -97,7 +97,9 @@ public class VSensorConfig implements Serializable {
 
 	private StorageConfig storage;
 
-    private String timeZone;
+	private String storageDirectory;
+
+	private String timeZone;
     private SimpleDateFormat sdf = null;
 
     private transient final Logger                 logger                                    = LoggerFactory.getLogger( VSensorConfig.class );
@@ -391,7 +393,15 @@ public class VSensorConfig implements Serializable {
 		return directoryQuery;
 	}
 
-		/**
+	public void setStorageDirectory(String storageDirectory) {
+		this.storageDirectory = storageDirectory;
+	}
+	public String getStorageDirectory() {
+		return storageDirectory;
+	}
+
+
+	/**
 	 * @return the securityCode
 	 */
 	public String getWebParameterPassword ( ) {
