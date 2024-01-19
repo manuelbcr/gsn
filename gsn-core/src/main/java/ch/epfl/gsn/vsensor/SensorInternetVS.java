@@ -63,65 +63,66 @@ public class SensorInternetVS extends AbstractVirtualSensor {
 	private static final String SI_STREAM_MAPPING = "si-stream-mapping";
 	private Integer[] siStreamMapping = null;
 
-	private static final String REQUEST_AGENT = "GSN (Global Sensors Networks) Virtual Sensor" ;
+	private static final String REQUEST_AGENT = "GSN (Global Sensors Networks) Virtual Sensor";
 
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat ("yyyy-MM-dd'T'HH:mm:ss") ;
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-	private static transient Logger logger  = LoggerFactory.getLogger ( SensorInternetVS.class );
+	private static transient Logger logger = LoggerFactory.getLogger(SensorInternetVS.class);
 
 	@Override
 	public boolean initialize() {
-		TreeMap <  String , String > params = getVirtualSensorConfiguration( ).getMainClassInitialParams( ) ;
+		TreeMap<String, String> params = getVirtualSensorConfiguration().getMainClassInitialParams();
 		String param = null;
 
 		param = params.get(SI_URL);
-		if (param != null)
+		if (param != null) {
 			try {
-				siUrl = new URL (param) ;
+				siUrl = new URL(param);
 			} catch (MalformedURLException e) {
 				logger.error(e.getMessage(), e);
 				return false;
 			}
-			else {
-				logger.error("The required parameter: >" + SI_URL + "<+ is missing from the virtual sensor configuration file.");
-				return false;
-			}
-
-		param = params.get(SI_USERNAME) ;
-		if (param != null) {
-			siUsername = param ;
+		} else {
+			logger.error(
+					"The required parameter: >" + SI_URL + "<+ is missing from the virtual sensor configuration file.");
+			return false;
 		}
-		else {
-			logger.error("The required parameter: >" + SI_USERNAME + "<+ is missing from the virtual sensor configuration file.");
+
+		param = params.get(SI_USERNAME);
+		if (param != null) {
+			siUsername = param;
+		} else {
+			logger.error("The required parameter: >" + SI_USERNAME
+					+ "<+ is missing from the virtual sensor configuration file.");
 			return false;
 		}
 
 		param = params.get(SI_PASSWORD);
 		if (param != null) {
 			siPassword = param;
-		}
-		else {
-			logger.error("The required parameter: >" + SI_PASSWORD + "<+ is missing from the virtual sensor configuration file.");
+		} else {
+			logger.error("The required parameter: >" + SI_PASSWORD
+					+ "<+ is missing from the virtual sensor configuration file.");
 			return false;
 		}
 
-		param = params.get(SI_STREAM_MAPPING) ;
+		param = params.get(SI_STREAM_MAPPING);
 		if (param != null) {
-			siStreamMapping = initStreamMapping(param) ;
+			siStreamMapping = initStreamMapping(param);
 			if (siStreamMapping == null) {
 				logger.error("Failed to parse the required parameter: >" + SI_STREAM_MAPPING + "< (" + param + ")");
 				return false;
 			}
-		}
-		else {
-			logger.error("The required parameter: >" + SI_STREAM_MAPPING + "<+ is missing from the virtual sensor configuration file.");
+		} else {
+			logger.error("The required parameter: >" + SI_STREAM_MAPPING
+					+ "<+ is missing from the virtual sensor configuration file.");
 			return false;
 		}
 
 		// Enabling Basic authentication
 		Authenticator.setDefault(new Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication (siUsername, siPassword.toCharArray());
+				return new PasswordAuthentication(siUsername, siPassword.toCharArray());
 			}
 		});
 
@@ -131,31 +132,31 @@ public class SensorInternetVS extends AbstractVirtualSensor {
 	@Override
 	public void dataAvailable(String inputStreamName, StreamElement streamElement) {
 		try {
-			
+
 			// Init the HTTP Connection
 			HttpURLConnection siConnection = (HttpURLConnection) siUrl.openConnection();
 			siConnection.setRequestMethod("POST");
 			siConnection.setDoOutput(true);
-			siConnection.setRequestProperty( "User-Agent", REQUEST_AGENT );
+			siConnection.setRequestProperty("User-Agent", REQUEST_AGENT);
 			siConnection.connect();
 
 			// Build and send the parameters
 			PrintWriter out = new PrintWriter(siConnection.getOutputStream());
-			String postParams = buildParameters(streamElement.getFieldNames(), streamElement.getData(), streamElement.getTimeStamp()) ;
-			logger.debug("POST parameters: " + postParams) ;
+			String postParams = buildParameters(streamElement.getFieldNames(), streamElement.getData(),
+					streamElement.getTimeStamp());
+			logger.debug("POST parameters: " + postParams);
 			out.print(postParams);
 			out.flush();
 			out.close();
 
-
 			if (siConnection.getResponseCode() == 200) {
 				logger.debug("data successfully sent");
-			}
-			else {
-				logger.error("Unable to send the data. Check you configuration file. " + siConnection.getResponseMessage() + " Code (" + siConnection.getResponseCode() + ")");
+			} else {
+				logger.error("Unable to send the data. Check you configuration file. "
+						+ siConnection.getResponseMessage() + " Code (" + siConnection.getResponseCode() + ")");
 			}
 		} catch (IOException e) {
-			logger.error(e.getMessage()) ;
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -164,44 +165,44 @@ public class SensorInternetVS extends AbstractVirtualSensor {
 
 	}
 
-	private String buildParameters (String[] fieldsNames, Serializable[] data, long timestamp) {
+	private String buildParameters(String[] fieldsNames, Serializable[] data, long timestamp) {
 
-		StringBuilder sb = new StringBuilder () ;
+		StringBuilder sb = new StringBuilder();
 		//
-		for (int i = 0 ; i < fieldsNames.length ; i++) {
+		for (int i = 0; i < fieldsNames.length; i++) {
 			if (i < siStreamMapping.length) {
-				if (i != 0) sb.append("&");
-				sb.append(createPostParameter ("time[" + i + "]=", dateFormat.format(new Date (timestamp))));
+				if (i != 0) {
+					sb.append("&");
+				}
+				sb.append(createPostParameter("time[" + i + "]=", dateFormat.format(new Date(timestamp))));
 				sb.append("&");
-				sb.append(createPostParameter ("data[" + i + "]=", data[i].toString()));
+				sb.append(createPostParameter("data[" + i + "]=", data[i].toString()));
 				sb.append("&");
-				sb.append(createPostParameter ("key[" + i + "]=", Integer.toString(siStreamMapping[i])));
-			}
-			else {
+				sb.append(createPostParameter("key[" + i + "]=", Integer.toString(siStreamMapping[i])));
+			} else {
 				logger.warn("The field >" + fieldsNames[i] + "< is not mapped in your configuration file.");
 			}
 		}
 		return sb.toString();
 	}
 
-	private String createPostParameter (String paramName, String paramValue) {
+	private String createPostParameter(String paramName, String paramValue) {
 		try {
-			return paramName + URLEncoder.encode(paramValue, "UTF-8") ;
+			return paramName + URLEncoder.encode(paramValue, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			logger.debug(e.getMessage(), e);
 		}
 		return null;
 	}
 
-	private Integer[] initStreamMapping (String param) {
+	private Integer[] initStreamMapping(String param) {
 		String[] mps = param.split(",");
-		Integer[] mapping = new Integer[mps.length] ;
+		Integer[] mapping = new Integer[mps.length];
 		try {
-			for (int i = 0 ; i < mps.length ; i++) {
+			for (int i = 0; i < mps.length; i++) {
 				mapping[i] = Integer.parseInt(mps[i]);
 			}
-		}
-		catch (java.lang.NumberFormatException e) {
+		} catch (java.lang.NumberFormatException e) {
 			logger.error(e.getMessage());
 			return null;
 		}

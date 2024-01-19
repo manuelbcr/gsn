@@ -41,10 +41,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.LoggerFactory;
 
-import ch.epfl.gsn.DataDistributer;
-import ch.epfl.gsn.Main;
-import ch.epfl.gsn.VSensorStateChangeListener;
-import ch.epfl.gsn.VirtualSensorDataListener;
 import ch.epfl.gsn.beans.StreamElement;
 import ch.epfl.gsn.beans.VSensorConfig;
 import ch.epfl.gsn.delivery.DefaultDistributionRequest;
@@ -60,7 +56,7 @@ import org.slf4j.Logger;
 
 public class DataDistributer implements VirtualSensorDataListener, VSensorStateChangeListener, Runnable {
 
-    public static final int KEEP_ALIVE_PERIOD =  15 * 1000;  // 15 sec.
+    public static final int KEEP_ALIVE_PERIOD = 15 * 1000; // 15 sec.
 
     private static int keepAlivePeriod = -1;
 
@@ -75,15 +71,19 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
         try {
             thread = new Thread(this);
             thread.start();
-            // Start the keep alive Timer -- Note that the implementation is backed by one single thread for all the RestDelivery instances.
-            keepAliveTimer = new  javax.swing.Timer(getKeepAlivePeriod(), new ActionListener() {
+            thread.setName("DataDistributer");
+            // Start the keep alive Timer -- Note that the implementation is backed by one
+            // single thread for all the RestDelivery instances.
+            keepAliveTimer = new javax.swing.Timer(getKeepAlivePeriod(), new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     // write the keep alive message to the stream
                     synchronized (listeners) {
                         ArrayList<DistributionRequest> clisteners = (ArrayList<DistributionRequest>) listeners.clone();
                         for (DistributionRequest listener : clisteners) {
-                            if ( ! listener.deliverKeepAliveMessage()) {
-                                logger.debug("remove the listener.");
+                            if (!listener.deliverKeepAliveMessage()) {
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug("remove the listener.");
+                                }
                                 removeListener(listener);
                             }
                         }
@@ -98,14 +98,18 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
 
     public static DataDistributer getInstance(Class<? extends DeliverySystem> c) {
         DataDistributer toReturn = singletonMap.get(c);
-        if (toReturn == null)
+        if (toReturn == null) {
             singletonMap.put(c, (toReturn = new DataDistributer()));
+        }
+
         return toReturn;
     }
 
     public static int getKeepAlivePeriod() {
-        if (keepAlivePeriod == -1)
-            keepAlivePeriod = System.getProperty("remoteKeepAlivePeriod") == null ? KEEP_ALIVE_PERIOD : Integer.parseInt(System.getProperty("remoteKeepAlivePeriod"));
+        if (keepAlivePeriod == -1) {
+            keepAlivePeriod = System.getProperty("remoteKeepAlivePeriod") == null ? KEEP_ALIVE_PERIOD
+                    : Integer.parseInt(System.getProperty("remoteKeepAlivePeriod"));
+        }
         return keepAlivePeriod;
     }
 
@@ -123,16 +127,22 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
         synchronized (listeners) {
             if (!listeners.contains(listener)) {
                 logger.info("Adding a listener to Distributer:" + listener.toString());
-                boolean needsAnd = SQLValidator.removeSingleQuotes(SQLValidator.removeQuotes(listener.getQuery())).indexOf(" where ") > 0;
+                boolean needsAnd = SQLValidator.removeSingleQuotes(SQLValidator.removeQuotes(listener.getQuery()))
+                        .indexOf(" where ") > 0;
                 String query = SQLValidator.addPkField(listener.getQuery());
-                if (needsAnd)
+                if (needsAnd) {
                     query += " AND ";
-                else
+                } else {
                     query += " WHERE ";
-                query += " timed > ? and pk > ? order by pk asc "; //both have to be parameters to force the optimizer of Postgres < 9.2 to not scan on timed index
+                }
+
+                query += " timed > ? and pk > ? order by pk asc "; // both have to be parameters to force the optimizer
+                                                                   // of Postgres < 9.2 to not scan on timed index
                 PreparedStatement prepareStatement = null;
                 try {
-                    prepareStatement = getPersistantConnection(listener.getVSensorConfig()).prepareStatement(query); //prepareStatement = StorageManager.getInstance().getConnection().prepareStatement(query);
+                    prepareStatement = getPersistantConnection(listener.getVSensorConfig()).prepareStatement(query); // prepareStatement
+                                                                                                                     // =
+                                                                                                                     // StorageManager.getInstance().getConnection().prepareStatement(query);
                     prepareStatement.setMaxRows(1000); // Limit the number of rows loaded in memory.
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -146,7 +156,6 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
             }
         }
     }
-
 
     private void addListenerToCandidates(DistributionRequest listener) {
         /**
@@ -175,8 +184,10 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
     }
 
     /**
-     * This method only flushes one single stream element from the provided data enumerator.
-     * Returns false if the flushing the stream element fails. This method also cleans the prepared statements by removing the listener completely.
+     * This method only flushes one single stream element from the provided data
+     * enumerator.
+     * Returns false if the flushing the stream element fails. This method also
+     * cleans the prepared statements by removing the listener completely.
      *
      * @param dataEnum
      * @param listener
@@ -211,7 +222,8 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
                     removeListenerFromCandidates(listener);
                     preparedStatements.get(listener).close();
                     listener.close();
-                    logger.info("Removing listener completely from Distributer [Listener: " + listener.toString() + "]");
+                    logger.info(
+                            "Removing listener completely from Distributer [Listener: " + listener.toString() + "]");
                 } catch (SQLException e) {
                     logger.error(e.getMessage(), e);
                 } finally {
@@ -223,15 +235,17 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
 
     public void consume(StreamElement se, VSensorConfig config) {
         synchronized (listeners) {
-            for (DistributionRequest listener : listeners)
+            for (DistributionRequest listener : listeners) {
                 if (listener.getVSensorConfig() == config) {
-                    logger.debug("sending stream element " + (se == null ? "second-chance-se" : se.toString()) + " produced by " + config.getName() + " to listener =>" + listener.toString());
+                    logger.debug("sending stream element " + (se == null ? "second-chance-se" : se.toString())
+                            + " produced by " + config.getName() + " to listener =>" + listener.toString());
                     if (!candidateListeners.containsKey(listener)) {
                         addListenerToCandidates(listener);
                     } else {
                         candidatesForNextRound.put(listener, Boolean.TRUE);
                     }
                 }
+            }
         }
     }
 
@@ -239,20 +253,21 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
         while (true) {
             try {
                 if (locker.isEmpty()) {
-                    logger.debug("Waiting(locked) for requests or data items, Number of total listeners: " + listeners.size());
+                    logger.debug("Waiting(locked) for requests or data items, Number of total listeners: "
+                            + listeners.size());
                     locker.put(locker.take());
-                    logger.debug("Lock released, trying to find interest listeners (total listeners:" + listeners.size() + ")");
+                    logger.debug("Lock released, trying to find interest listeners (total listeners:" + listeners.size()
+                            + ")");
                 }
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             }
 
-
             for (Entry<DistributionRequest, DataEnumerator> item : candidateListeners.entrySet()) {
                 boolean success = flushStreamElement(item.getValue(), item.getKey());
-                if (success == false)
+                if (success == false) {
                     removeListener(item.getKey());
-                else {
+                } else {
                     if (!item.getValue().hasMoreElements()) {
                         removeListenerFromCandidates(item.getKey());
                         // As we are limiting the number of elements returned by the JDBC driver
@@ -265,18 +280,19 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
     }
 
     public boolean vsLoading(VSensorConfig config) {
-    	synchronized (listeners) {
-    		if (Main.getContainerConfig().isZMQEnabled() && getInstance(ZeroMQDeliverySync.class) == this){
-    			try {
-    				DeliverySystem delivery = new ZeroMQDeliveryAsync(config.getName());
-					addListener(DefaultDistributionRequest.create(delivery, config, "select * from "+config.getName(),System.currentTimeMillis()));
-				} catch (IOException e1) {
-					logger.error(e1.getMessage(), e1);
-				} catch (SQLException e1) {
-					logger.error(e1.getMessage(), e1);
-				}
-    		}
-    	}
+        synchronized (listeners) {
+            if (Main.getContainerConfig().isZMQEnabled() && getInstance(ZeroMQDeliverySync.class) == this) {
+                try {
+                    DeliverySystem delivery = new ZeroMQDeliveryAsync(config.getName());
+                    addListener(DefaultDistributionRequest.create(delivery, config, "select * from " + config.getName(),
+                            System.currentTimeMillis()));
+                } catch (IOException e1) {
+                    logger.error(e1.getMessage(), e1);
+                } catch (SQLException e1) {
+                    logger.error(e1.getMessage(), e1);
+                }
+            }
+        }
         return true;
     }
 
@@ -285,8 +301,9 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
             logger.debug("Distributer unloading: " + listeners.size());
             ArrayList<DistributionRequest> toRemove = new ArrayList<DistributionRequest>();
             for (DistributionRequest listener : listeners) {
-                if (listener.getVSensorConfig() == config)
+                if (listener.getVSensorConfig() == config) {
                     toRemove.add(listener);
+                }
             }
             for (DistributionRequest listener : toRemove) {
                 try {
@@ -303,8 +320,9 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
 
         PreparedStatement prepareStatement = preparedStatements.get(listener);
         try {
-        	//last time can be also used, but must change > to >= in the query for non-unique timestamps
-        	//and it works only with totally ordered streams
+            // last time can be also used, but must change > to >= in the query for
+            // non-unique timestamps
+            // and it works only with totally ordered streams
             prepareStatement.setLong(1, listener.getStartTime());
             prepareStatement.setLong(2, listener.getLastVisitedPk());
         } catch (SQLException e) {
@@ -312,41 +330,47 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
             return new DataEnumerator();
         }
 
-        DataEnumerator dataEnum = new DataEnumerator(Main.getStorage(listener.getVSensorConfig().getName()), prepareStatement, false, true);
+        DataEnumerator dataEnum = new DataEnumerator(Main.getStorage(listener.getVSensorConfig().getName()),
+                prepareStatement, false, true);
         return dataEnum;
     }
 
     public void release() {
         synchronized (listeners) {
-            while (!listeners.isEmpty())
+            while (!listeners.isEmpty()) {
                 removeListener(listeners.get(0));
+            }
+
         }
-        if (keepAliveTimer != null)
+        if (keepAliveTimer != null) {
             keepAliveTimer.stop();
+        }
+
     }
 
     public boolean contains(DeliverySystem delivery) {
         synchronized (listeners) {
-            for (DistributionRequest listener : listeners)
-                if (listener.getDeliverySystem().equals(delivery))
+            for (DistributionRequest listener : listeners) {
+                if (listener.getDeliverySystem().equals(delivery)) {
                     return true;
+                }
+            }
             return false;
-		}
+        }
 
-	}
+    }
 
     private HashMap<StorageManager, Connection> connections = new HashMap<StorageManager, Connection>();
+
     public Connection getPersistantConnection(VSensorConfig config) throws Exception {
         StorageManager sm = Main.getStorage(config);
         Connection c = connections.get(sm);
         if (c == null) {
             c = sm.getConnection();
             c.setReadOnly(true);
-	    connections.put(sm, c);
+            connections.put(sm, c);
         }
         return c;
     }
 
 }
-
-

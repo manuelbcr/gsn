@@ -33,7 +33,7 @@ import ch.epfl.gsn.utils.models.AbstractModel;
 
 public interface DistributionRequest {
 
-	public abstract boolean deliverStreamElement(StreamElement se);
+    public abstract boolean deliverStreamElement(StreamElement se);
 
     public boolean deliverKeepAliveMessage();
 
@@ -50,7 +50,7 @@ public interface DistributionRequest {
     public abstract boolean isClosed();
 
     public abstract DeliverySystem getDeliverySystem();
-    
+
     public abstract AbstractModel getModel();
 
 }

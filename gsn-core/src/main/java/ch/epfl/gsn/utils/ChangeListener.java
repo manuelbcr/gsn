@@ -26,6 +26,6 @@
 package ch.epfl.gsn.utils;
 
 public interface ChangeListener {
-   
-   public void changeHappended ( String changeType , Object changedKey , Object changedValue );
+
+   public void changeHappended(String changeType, Object changedKey, Object changedValue);
 }

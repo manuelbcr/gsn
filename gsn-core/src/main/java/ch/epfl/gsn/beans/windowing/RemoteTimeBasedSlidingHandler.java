@@ -87,7 +87,8 @@ public class RemoteTimeBasedSlidingHandler implements SlidingHandler {
 					long nextSlide = slidingHashMap.get(streamSource);
 					// this is the first stream element
 					if (nextSlide == -1) {
-						slidingHashMap.put(streamSource, streamElement.getTimeStamp() + streamSource.getParsedSlideValue());
+						slidingHashMap.put(streamSource,
+								streamElement.getTimeStamp() + streamSource.getParsedSlideValue());
 					} else {
 						long timeStamp = streamElement.getTimeStamp();
 						if (nextSlide <= timeStamp) {
@@ -140,19 +141,22 @@ public class RemoteTimeBasedSlidingHandler implements SlidingHandler {
 					maxTupleCount = Math.max(maxTupleCount, streamSource.getParsedStorageSize());
 				}
 				if (streamSource.getWindowingType() == WindowType.TIME_BASED) {
-					maxWindowSize = Math.max(maxWindowSize, streamSource.getParsedStorageSize() + streamSource.getParsedSlideValue());
+					maxWindowSize = Math.max(maxWindowSize,
+							streamSource.getParsedStorageSize() + streamSource.getParsedSlideValue());
 				}
 			}
 		}
 
 		if (maxWindowSize > 0) {
 			StringBuilder query = new StringBuilder();
-			query.append("select max(timed) - ").append(maxWindowSize).append(" from ").append(wrapper.getDBAliasInStr());
+			query.append("select max(timed) - ").append(maxWindowSize).append(" from ")
+					.append(wrapper.getDBAliasInStr());
 
 			logger.debug("Query1 for getting oldest timestamp : " + query);
 			Connection conn = null;
 			try {
-				ResultSet resultSet = Main.getWindowStorage().executeQueryWithResultSet(query,conn = Main.getWindowStorage().getConnection());
+				ResultSet resultSet = Main.getWindowStorage().executeQueryWithResultSet(query,
+						conn = Main.getWindowStorage().getConnection());
 				if (resultSet.next()) {
 					timed1 = resultSet.getLong(1);
 				} else {
@@ -166,19 +170,26 @@ public class RemoteTimeBasedSlidingHandler implements SlidingHandler {
 		}
 		if (maxTupleCount > 0) {
 			StringBuilder query = new StringBuilder();
-			if (Main.getWindowStorage().isH2() || Main.getWindowStorage().isMysqlDB() || Main.getWindowStorage().isPostgres()) {
+			if (Main.getWindowStorage().isH2() || Main.getWindowStorage().isMysqlDB()
+					|| Main.getWindowStorage().isPostgres()) {
 				query.append(" select timed from ").append(wrapper.getDBAliasInStr()).append(" where timed <= ");
-				query.append(System.currentTimeMillis() - timediff - maxSlideForTupleBased).append(" order by timed desc limit 1 offset ").append(
-						maxTupleCount - 1);
+				query.append(System.currentTimeMillis() - timediff - maxSlideForTupleBased)
+						.append(" order by timed desc limit 1 offset ").append(
+								maxTupleCount - 1);
 			} else if (Main.getWindowStorage().isSqlServer()) {
-				query.append(" select min(timed) from (select top ").append(maxTupleCount).append(" * ").append(" from ").append(
-						wrapper.getDBAliasInStr()).append(" where timed <= ").append(System.currentTimeMillis() - timediff - maxSlideForTupleBased).append(" order by timed desc) as X  ");
+				query.append(" select min(timed) from (select top ").append(maxTupleCount).append(" * ")
+						.append(" from ").append(
+								wrapper.getDBAliasInStr())
+						.append(" where timed <= ")
+						.append(System.currentTimeMillis() - timediff - maxSlideForTupleBased)
+						.append(" order by timed desc) as X  ");
 			}
 
 			logger.debug("Query2 for getting oldest timestamp : " + query);
 			Connection conn = null;
 			try {
-				ResultSet resultSet = Main.getWindowStorage().executeQueryWithResultSet(query,conn=Main.getWindowStorage().getConnection());
+				ResultSet resultSet = Main.getWindowStorage().executeQueryWithResultSet(query,
+						conn = Main.getWindowStorage().getConnection());
 				if (resultSet.next()) {
 					timed2 = resultSet.getLong(1);
 				} else {
@@ -192,7 +203,7 @@ public class RemoteTimeBasedSlidingHandler implements SlidingHandler {
 		}
 
 		if (timed1 >= 0 && timed2 >= 0) {
-			return "timed < " +Math.min(timed1, timed2);
+			return "timed < " + Math.min(timed1, timed2);
 		}
 		return "timed < " + ((timed1 == -1) ? timed2 : timed1);
 	}
@@ -212,26 +223,29 @@ public class RemoteTimeBasedSlidingHandler implements SlidingHandler {
 				throw new GSNRuntimeException("Wrapper object is null, most probably a bug, please report it !");
 			}
 			if (streamSource.validate() == false) {
-				throw new GSNRuntimeException("Validation of this object the stream source failed, please check the logs.");
+				throw new GSNRuntimeException(
+						"Validation of this object the stream source failed, please check the logs.");
 			}
 			CharSequence wrapperAlias = streamSource.getWrapper().getDBAliasInStr();
 			long windowSize = streamSource.getParsedStorageSize();
 			if (streamSource.getSamplingRate() == 0 || (streamSource.isStorageCountBased() && windowSize == 0)) {
 				return cachedSqlQuery = new StringBuilder("select * from ").append(wrapperAlias).append(" where 1=0");
 			}
-			TreeMap<CharSequence, CharSequence> rewritingMapping = new TreeMap<CharSequence, CharSequence>(new CaseInsensitiveComparator());
+			TreeMap<CharSequence, CharSequence> rewritingMapping = new TreeMap<CharSequence, CharSequence>(
+					new CaseInsensitiveComparator());
 			rewritingMapping.put("wrapper", wrapperAlias);
-			
+
 			String sqlQuery = streamSource.getSqlQuery();
-            StringBuilder toReturn = new StringBuilder();
-            
-            int fromIndex = sqlQuery.indexOf(" from ");
-            if(Main.getWindowStorage().isH2() && fromIndex > -1){
-            	toReturn.append(sqlQuery.substring(0, fromIndex + 6)).append(" (select * from ").append(sqlQuery.substring(fromIndex + 6));
-            }else{
-            	toReturn.append(sqlQuery);
-            }
-			
+			StringBuilder toReturn = new StringBuilder();
+
+			int fromIndex = sqlQuery.indexOf(" from ");
+			if (Main.getWindowStorage().isH2() && fromIndex > -1) {
+				toReturn.append(sqlQuery.substring(0, fromIndex + 6)).append(" (select * from ")
+						.append(sqlQuery.substring(fromIndex + 6));
+			} else {
+				toReturn.append(sqlQuery);
+			}
+
 			if (streamSource.getSqlQuery().toLowerCase().indexOf(" where ") < 0) {
 				toReturn.append(" where ");
 			} else {
@@ -240,59 +254,86 @@ public class RemoteTimeBasedSlidingHandler implements SlidingHandler {
 
 			if (streamSource.getSamplingRate() != 1) {
 				if (Main.getWindowStorage().isH2()) {
-					toReturn.append(" ( timed - (timed / 100) * 100 < ").append(streamSource.getSamplingRate() * 100).append(") and ");
+					toReturn.append(" ( timed - (timed / 100) * 100 < ").append(streamSource.getSamplingRate() * 100)
+							.append(") and ");
 				} else {
-					toReturn.append(" ( mod( timed , 100)< ").append(streamSource.getSamplingRate() * 100).append(") and ");
+					toReturn.append(" ( mod( timed , 100)< ").append(streamSource.getSamplingRate() * 100)
+							.append(") and ");
 				}
 			}
 			WindowType windowingType = streamSource.getWindowingType();
 			if (windowingType == WindowType.TIME_BASED_SLIDE_ON_EACH_TUPLE) {
-				toReturn.append("(wrapper.timed >= (select timed from ").append(VIEW_HELPER_TABLE).append(" where U_ID='").append(
-						streamSource.getUIDStr());
+				toReturn.append("(wrapper.timed >= (select timed from ").append(VIEW_HELPER_TABLE)
+						.append(" where U_ID='").append(
+								streamSource.getUIDStr());
 				toReturn.append("') - ").append(windowSize).append(") ");
-				if (Main.getWindowStorage().isH2() || Main.getWindowStorage().isMysqlDB() || Main.getWindowStorage().isPostgres()) {
+				if (Main.getWindowStorage().isH2() || Main.getWindowStorage().isMysqlDB()
+						|| Main.getWindowStorage().isPostgres()) {
 					toReturn.append(" order by timed desc ");
 				}
 			} else {
 				if (windowingType == WindowType.TIME_BASED) {
-					toReturn.append("timed in (select timed from ").append(wrapperAlias).append(" where timed <= (select timed from ").append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(" where U_ID='").append(streamSource.getUIDStr()).append(
-					"') and timed >= (select timed from ").append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(
-					" where U_ID='").append(streamSource.getUIDStr()).append("') - ").append(windowSize).append(" ) ");
-					if (Main.getWindowStorage().isH2() || Main.getWindowStorage().isMysqlDB() || Main.getWindowStorage().isPostgres()) {
+					toReturn.append("timed in (select timed from ").append(wrapperAlias)
+							.append(" where timed <= (select timed from ")
+							.append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(" where U_ID='")
+							.append(streamSource.getUIDStr()).append(
+									"') and timed >= (select timed from ")
+							.append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(
+									" where U_ID='")
+							.append(streamSource.getUIDStr()).append("') - ").append(windowSize).append(" ) ");
+					if (Main.getWindowStorage().isH2() || Main.getWindowStorage().isMysqlDB()
+							|| Main.getWindowStorage().isPostgres()) {
 						toReturn.append(" order by timed desc ");
 					}
 				} else {// WindowType.TUPLE_BASED_WIN_TIME_BASED_SLIDE
 					if (Main.getWindowStorage().isMysqlDB() || Main.getWindowStorage().isPostgres()) {
-						toReturn.append("timed <= (select timed from ").append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(
-						" where U_ID='").append(streamSource.getUIDStr()).append("') and timed >= (select timed from ");
+						toReturn.append("timed <= (select timed from ").append(SQLViewQueryRewriter.VIEW_HELPER_TABLE)
+								.append(
+										" where U_ID='")
+								.append(streamSource.getUIDStr()).append("') and timed >= (select timed from ");
 						toReturn.append(wrapperAlias).append(" where timed <= (select timed from ");
-						toReturn.append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(" where U_ID='").append(streamSource.getUIDStr());
-						toReturn.append("') ").append(" order by timed desc limit 1 offset ").append(windowSize - 1).append(" )");
+						toReturn.append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(" where U_ID='")
+								.append(streamSource.getUIDStr());
+						toReturn.append("') ").append(" order by timed desc limit 1 offset ").append(windowSize - 1)
+								.append(" )");
 						toReturn.append(" order by timed desc ");
 					} else if (Main.getWindowStorage().isH2()) {
-						toReturn.append("timed <= (select timed from ").append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(
-						" where U_ID='").append(streamSource.getUIDStr()).append("') and timed >= (select distinct(timed) from ");
-						toReturn.append(wrapperAlias).append(" where timed in (select timed from ").append(wrapperAlias).append(
-						" where timed <= (select timed from ");
-						toReturn.append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(" where U_ID='").append(streamSource.getUIDStr());
-						toReturn.append("') ").append(" order by timed desc limit 1 offset ").append(windowSize - 1).append(" ))");
+						toReturn.append("timed <= (select timed from ").append(SQLViewQueryRewriter.VIEW_HELPER_TABLE)
+								.append(
+										" where U_ID='")
+								.append(streamSource.getUIDStr())
+								.append("') and timed >= (select distinct(timed) from ");
+						toReturn.append(wrapperAlias).append(" where timed in (select timed from ").append(wrapperAlias)
+								.append(
+										" where timed <= (select timed from ");
+						toReturn.append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(" where U_ID='")
+								.append(streamSource.getUIDStr());
+						toReturn.append("') ").append(" order by timed desc limit 1 offset ").append(windowSize - 1)
+								.append(" ))");
 						toReturn.append(" order by timed desc ");
 					} else if (Main.getWindowStorage().isSqlServer()) {
-						toReturn.append("timed in (select TOP ").append(windowSize).append(" timed from ").append(wrapperAlias).append(
-						" where timed <= (select timed from ").append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(" where U_ID='").append(streamSource.getUIDStr()).append("') order by timed desc ) ");
+						toReturn.append("timed in (select TOP ").append(windowSize).append(" timed from ")
+								.append(wrapperAlias).append(
+										" where timed <= (select timed from ")
+								.append(SQLViewQueryRewriter.VIEW_HELPER_TABLE).append(" where U_ID='")
+								.append(streamSource.getUIDStr()).append("') order by timed desc ) ");
 					}
 				}
 			}
-			
-			if(Main.getWindowStorage().isH2() && fromIndex > -1){
-            	toReturn.append(")");
-            }
+
+			if (Main.getWindowStorage().isH2() && fromIndex > -1) {
+				toReturn.append(")");
+			}
 
 			toReturn = new StringBuilder(SQLUtils.newRewrite(toReturn, rewritingMapping));
 
-			logger.debug(new StringBuilder().append("The original Query : ").append(streamSource.getSqlQuery()).toString());
-			logger.debug(new StringBuilder().append("The merged query : ").append(toReturn.toString()).append(" of the StreamSource ").append(streamSource.getAlias()).append(" of the InputStream: ").append(
-						streamSource.getInputStream().getInputStreamName()).append("").toString());
+			logger.debug(
+					new StringBuilder().append("The original Query : ").append(streamSource.getSqlQuery()).toString());
+			logger.debug(new StringBuilder().append("The merged query : ").append(toReturn.toString())
+					.append(" of the StreamSource ").append(streamSource.getAlias()).append(" of the InputStream: ")
+					.append(
+							streamSource.getInputStream().getInputStreamName())
+					.append("").toString());
 
 			return cachedSqlQuery = toReturn;
 		}

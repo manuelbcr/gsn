@@ -38,15 +38,15 @@ public class AggregationCriterion extends AbstractCriterion {
 	private static Hashtable<String, String> allowedGroupOperator = null;
 
 	static {
-		allowedGroupOperator = new Hashtable<String, String> () ;
+		allowedGroupOperator = new Hashtable<String, String>();
 		allowedGroupOperator.put("max", "max");
 		allowedGroupOperator.put("min", "min");
 		allowedGroupOperator.put("avg", "avg");
-        allowedGroupOperator.put("sum", "sum");
+		allowedGroupOperator.put("sum", "sum");
 	}
 
-	private String critTimeRange 		= null;
-	private String critGroupOperator 	= null;
+	private String critTimeRange = null;
+	private String critGroupOperator = null;
 
 	/**
 	 * <p>
@@ -54,23 +54,32 @@ public class AggregationCriterion extends AbstractCriterion {
 	 * The description must follow the syntax:<br />
 	 * <code><timerange>:<groupoperator></code>
 	 * </p>
+	 * 
 	 * @param inlinecrits
 	 * @throws DataRequestException
 	 */
-	public AggregationCriterion (String inlinecrits) throws DataRequestException {
+	public AggregationCriterion(String inlinecrits) throws DataRequestException {
 
 		String[] crits = inlinecrits.split(":");
 
-		if (crits.length != 2) throw new DataRequestException (GENERAL_ERROR_MSG + " >" + inlinecrits + "<.") ;
+		if (crits.length != 2) {
+			throw new DataRequestException(GENERAL_ERROR_MSG + " >" + inlinecrits + "<.");
+		}
 
-		critTimeRange		= crits[0];
-		critGroupOperator	= getCriterion(crits[1], allowedGroupOperator);
-	}
-	
-	public String toString () {
-		return "Select: " + critGroupOperator.toUpperCase() + ", group by: timed/" + critTimeRange + " (" + Helpers.formatTimePeriod(Long.parseLong(critTimeRange)) + ")";
+		critTimeRange = crits[0];
+		critGroupOperator = getCriterion(crits[1], allowedGroupOperator);
 	}
 
-	public String getTimeRange()     { return critTimeRange; }
-	public String getGroupOperator() { return critGroupOperator; }
+	public String toString() {
+		return "Select: " + critGroupOperator.toUpperCase() + ", group by: timed/" + critTimeRange + " ("
+				+ Helpers.formatTimePeriod(Long.parseLong(critTimeRange)) + ")";
+	}
+
+	public String getTimeRange() {
+		return critTimeRange;
+	}
+
+	public String getGroupOperator() {
+		return critGroupOperator;
+	}
 }

@@ -28,8 +28,10 @@ package ch.epfl.gsn.utils;
 
 public class GSNRuntimeException extends RuntimeException {
 
-   public GSNRuntimeException ( String message ) {
-      super( message );
+   private static final long serialVersionUID = 444L;
+
+   public GSNRuntimeException(String message) {
+      super(message);
    }
 
 }

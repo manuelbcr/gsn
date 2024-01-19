@@ -28,7 +28,7 @@ package ch.epfl.gsn.utils.graph;
 
 import java.io.Serializable;
 
-public class Edge<T> implements Serializable{
+public class Edge<T> implements Serializable {
 
 	private static final long serialVersionUID = -8165242353963312649L;
 

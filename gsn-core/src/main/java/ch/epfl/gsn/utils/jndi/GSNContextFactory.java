@@ -30,8 +30,6 @@ import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 import java.util.Hashtable;
 
-
-
 public class GSNContextFactory implements InitialContextFactory {
 
     private static GSNContext singleton = new GSNContext();

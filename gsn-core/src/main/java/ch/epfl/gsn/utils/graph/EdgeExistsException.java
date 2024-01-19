@@ -46,5 +46,5 @@ public class EdgeExistsException extends Exception {
 	public EdgeExistsException(Throwable cause) {
 		super(cause);
 	}
-	
+
 }

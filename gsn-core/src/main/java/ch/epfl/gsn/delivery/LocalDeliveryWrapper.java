@@ -53,24 +53,23 @@ import ch.epfl.gsn.wrappers.AbstractWrapper;
 import java.sql.Connection;
 import java.sql.ResultSet;
 
-
 import org.slf4j.Logger;
 import org.joda.time.format.ISODateTimeFormat;
 
-public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySystem{
+public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySystem {
 
-	private  final String CURRENT_TIME = ISODateTimeFormat.dateTime().print(System.currentTimeMillis());
-	
-	private static transient Logger                  logger           = LoggerFactory.getLogger( LocalDeliveryWrapper.class );
-	
+	private final String CURRENT_TIME = ISODateTimeFormat.dateTime().print(System.currentTimeMillis());
+
+	private static transient Logger logger = LoggerFactory.getLogger(LocalDeliveryWrapper.class);
+
 	private VSensorConfig vSensorConfig;
-	
+
 	public VSensorConfig getVSensorConfig() {
 		return vSensorConfig;
 	}
-	
+
 	private DataField[] structure;
-	
+
 	private DefaultDistributionRequest distributionRequest;
 
 	public String getWrapperName() {
@@ -78,19 +77,20 @@ public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySys
 	}
 
 	public boolean initialize() {
-		AddressBean params = getActiveAddressBean( );
+		AddressBean params = getActiveAddressBean();
 		String query = params.getPredicateValue("query");
-		
-		String vsName = params.getPredicateValue( "name" );
-		String startTime = params.getPredicateValueWithDefault("start-time",CURRENT_TIME );
 
-		if (query==null && vsName == null) {
-			logger.error("For using local-wrapper, either >query< or >name< parameters should be specified"); 
+		String vsName = params.getPredicateValue("name");
+		String startTime = params.getPredicateValueWithDefault("start-time", CURRENT_TIME);
+
+		if (query == null && vsName == null) {
+			logger.error("For using local-wrapper, either >query< or >name< parameters should be specified");
 			return false;
 		}
 
-		if (query == null) 
-			query = "select * from "+vsName;
+		if (query == null) {
+			query = "select * from " + vsName;
+		}
 
 		long lastVisited = -1;
 		boolean continuous = false;
@@ -100,8 +100,8 @@ public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySys
 			continuous = true;
 			try {
 				conn = Main.getStorage(params.getVirtualSensorConfig()).getConnection();
-				
-				rs = conn.getMetaData().getTables(null, null, params.getVirtualSensorName(), new String[] {"TABLE"});
+
+				rs = conn.getMetaData().getTables(null, null, params.getVirtualSensorName(), new String[] { "TABLE" });
 				if (rs.next()) {
 					StringBuilder dbquery = new StringBuilder();
 					dbquery.append("select max(timed) from ").append(params.getVirtualSensorName());
@@ -124,30 +124,32 @@ public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySys
 			} catch (NumberFormatException e) {
 				logger.error("Problem in parsing the start-time parameter, the provided value is: " + startTime);
 				logger.error(e.getMessage(), e);
-				return false;				
+				return false;
 			}
 		} else {
 			try {
 				lastVisited = Helpers.convertTimeFromIsoToLong(startTime);
 			} catch (Exception e) {
-				logger.error("Problem in parsing the start-time parameter, the provided value is:"+startTime+" while a valid input is:"+CURRENT_TIME);
-				logger.error(e.getMessage(),e);
+				logger.error("Problem in parsing the start-time parameter, the provided value is:" + startTime
+						+ " while a valid input is:" + CURRENT_TIME);
+				logger.error(e.getMessage(), e);
 				return false;
 			}
 		}
 
 		try {
 			vsName = SQLValidator.getInstance().validateQuery(query);
-			if(vsName==null) //while the other instance is not loaded.
+			if (vsName == null) { // while the other instance is not loaded.
 				return false;
-			
+			}
+
 			vSensorConfig = Mappings.getConfig(vsName);
-			
-			if (startTime.equals("continue")){
+
+			if (startTime.equals("continue")) {
 				try {
 					conn = Main.getStorage(vSensorConfig).getConnection();
-					
-					rs = conn.getMetaData().getTables(null, null, vsName, new String[] {"TABLE"});
+
+					rs = conn.getMetaData().getTables(null, null, vsName, new String[] { "TABLE" });
 					if (rs.next()) {
 						StringBuilder dbquery = new StringBuilder();
 						dbquery.append("select max(timed) from ").append(vsName);
@@ -158,7 +160,8 @@ public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySys
 							long t = rs.getLong(1);
 							if (lastVisited > t) {
 								lastVisited = t;
-								logger.info("newest timed from " + vsName + " is older than requested start time -> using timed as start time");
+								logger.info("newest timed from " + vsName
+										+ " is older than requested start time -> using timed as start time");
 							}
 						}
 					}
@@ -169,52 +172,56 @@ public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySys
 					Main.getStorage(vSensorConfig).close(conn);
 				}
 			}
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()) {
 				logger.debug("lastVisited=" + String.valueOf(lastVisited));
-
+			}
 
 			query = SQLUtils.newRewrite(query, vsName, vsName.toLowerCase()).toString();
-			
-			logger.debug("Local wrapper request received for: "+vsName);
+
+			logger.debug("Local wrapper request received for: " + vsName);
 			distributionRequest = DefaultDistributionRequest.create(this, vSensorConfig, query, lastVisited);
-			// This call MUST be executed before adding this listener to the data-distributer because distributer checks the isClose method before flushing.
-		}catch (Exception e) {
+			// This call MUST be executed before adding this listener to the
+			// data-distributer because distributer checks the isClose method before
+			// flushing.
+		} catch (Exception e) {
 			logger.error("Problem in the query parameter of the local-wrapper.");
-			logger.error(e.getMessage(),e);
+			logger.error(e.getMessage(), e);
 			return false;
 		}
 		return true;
 	}
 
-	public boolean sendToWrapper ( String action,String[] paramNames, Serializable[] paramValues ) throws OperationNotSupportedException {
+	public boolean sendToWrapper(String action, String[] paramNames, Serializable[] paramValues)
+			throws OperationNotSupportedException {
 		AbstractVirtualSensor vs;
 		try {
-			vs = Mappings.getVSensorInstanceByVSName( vSensorConfig.getName( ) ).borrowVS( );
-		} catch ( VirtualSensorInitializationFailedException e ) {
-			logger.warn("Sending data back to the source virtual sensor failed !: "+e.getMessage( ),e);
+			vs = Mappings.getVSensorInstanceByVSName(vSensorConfig.getName()).borrowVS();
+		} catch (VirtualSensorInitializationFailedException e) {
+			logger.warn("Sending data back to the source virtual sensor failed !: " + e.getMessage(), e);
 			return false;
 		}
-		boolean toReturn = vs.dataFromWeb( action , paramNames , paramValues );
-		Mappings.getVSensorInstanceByVSName( vSensorConfig.getName( ) ).returnVS( vs );
+		boolean toReturn = vs.dataFromWeb(action, paramNames, paramValues);
+		Mappings.getVSensorInstanceByVSName(vSensorConfig.getName()).returnVS(vs);
 		return toReturn;
 	}
-	
+
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("LocalDistributionReq => [" ).append(distributionRequest.getQuery()).append(", Start-Time: ").append(new Date(distributionRequest.getStartTime())).append("]");
+		sb.append("LocalDistributionReq => [").append(distributionRequest.getQuery()).append(", Start-Time: ")
+				.append(new Date(distributionRequest.getStartTime())).append("]");
 		return sb.toString();
 	}
-	
+
 	public void run() {
 		DataDistributer localDistributer = DataDistributer.getInstance(LocalDeliveryWrapper.class);
 		localDistributer.addListener(this.distributionRequest);
 	}
 
 	public void writeStructure(DataField[] fields) throws IOException {
-		this.structure=fields;
-		
+		this.structure = fields;
+
 	}
-	
+
 	public DataField[] getOutputFormat() {
 		return structure;
 	}
@@ -224,9 +231,9 @@ public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySys
 		try {
 			releaseResources();
 		} catch (SQLException e) {
-			logger.error(e.getMessage(),e);
+			logger.error(e.getMessage(), e);
 		}
-		
+
 	}
 
 	public boolean isClosed() {
@@ -235,17 +242,16 @@ public class LocalDeliveryWrapper extends AbstractWrapper implements DeliverySys
 
 	public boolean writeStreamElement(StreamElement se) {
 		boolean isSucced = postStreamElement(se);
-		logger.debug("wants to deliver stream element:"+ se.toString()+ "["+isSucced+"]");
+		logger.debug("wants to deliver stream element:" + se.toString() + "[" + isSucced + "]");
 		return true;
 	}
 
-    public boolean writeKeepAliveStreamElement() {
-        return true;
-    }
-
-    public void dispose() {
-		
+	public boolean writeKeepAliveStreamElement() {
+		return true;
 	}
 
+	public void dispose() {
+
+	}
 
 }

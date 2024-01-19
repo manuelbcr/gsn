@@ -1,4 +1,4 @@
-package ch.epfl.gsn.http.ac;
+package ch.epfl.gsn.ac;
 
 /**
  * Created by IntelliJ IDEA.
@@ -9,21 +9,19 @@ package ch.epfl.gsn.http.ac;
  */
 
 /*
-This class defines a column of a DB table:
+ * This class defines a column of a DB table:
  */
-    
-public class Column
-{
-    protected String columnLabel;//name of the column
+
+public class Column {
+    protected String columnLabel;// name of the column
     protected String columnValue; // value of the column
 
-    public Column(String columnLabel)
-    {
-        this.columnLabel=columnLabel;
+    public Column(String columnLabel) {
+        this.columnLabel = columnLabel;
     }
-    public Column(String columnLabel, String columnValue)
-    {
-        this.columnLabel=columnLabel;
-        this.columnValue=columnValue;
+
+    public Column(String columnLabel, String columnValue) {
+        this.columnLabel = columnLabel;
+        this.columnValue = columnValue;
     }
 }

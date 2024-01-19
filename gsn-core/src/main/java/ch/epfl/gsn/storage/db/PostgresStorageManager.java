@@ -61,10 +61,10 @@ public class PostgresStorageManager extends StorageManager {
             case Types.CHAR:
                 return DataTypes.CHAR;
             case Types.DOUBLE:
-            case Types.DECIMAL:    // This is needed for doing aggregates in datadownload servlet.
+            case Types.DECIMAL: // This is needed for doing aggregates in datadownload servlet.
                 return DataTypes.DOUBLE;
-            case Types.REAL:   //should also be float mapped here ?
-            	return DataTypes.FLOAT;
+            case Types.REAL: // should also be float mapped here ?
+                return DataTypes.FLOAT;
             case Types.BINARY:
             case Types.BLOB:
             case Types.VARBINARY:
@@ -89,7 +89,7 @@ public class PostgresStorageManager extends StorageManager {
 
     @Override
     public int getTableNotExistsErrNo() {
-        return 0;  //TODO: check error code in Postgres reference
+        return 0; // TODO: check error code in Postgres reference
     }
 
     @Override
@@ -112,7 +112,7 @@ public class PostgresStorageManager extends StorageManager {
                 .append(virtualSensorName)
                 .append(".timed DESC LIMIT 1 offset ")
                 .append(storageSize)
-                .append("  ) AS TMP)");  //TODO: verify
+                .append("  ) AS TMP)"); // TODO: verify
     }
 
     @Override
@@ -129,7 +129,7 @@ public class PostgresStorageManager extends StorageManager {
                 .append(".timed ORDER BY ")
                 .append(virtualSensorName)
                 .append(".timed DESC LIMIT 1 offset ")
-                .append(storageSize).append("  ) AS TMP)"); //TODO: verify
+                .append(storageSize).append("  ) AS TMP)"); // TODO: verify
     }
 
     @Override
@@ -143,10 +143,13 @@ public class PostgresStorageManager extends StorageManager {
     public StringBuilder getStatementCreateTable(String tableName, DataField[] structure) {
         StringBuilder result = new StringBuilder("CREATE TABLE ").append(tableName);
 
-        result.append(" (PK serial PRIMARY KEY NOT NULL , timed BIGINT NOT NULL, "); //TODO: add auto increment AUTO_INCREMENT
+        result.append(" (PK serial PRIMARY KEY NOT NULL , timed BIGINT NOT NULL, "); // TODO: add auto increment
+                                                                                     // AUTO_INCREMENT
 
         for (DataField field : structure) {
-            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) continue;
+            if (field.getName().equalsIgnoreCase("pk") || field.getName().equalsIgnoreCase("timed")) {
+                continue;
+            }
             result.append(field.getName().toUpperCase()).append(' ');
             result.append(convertGSNTypeToLocalType(field));
             result.append(" ,");
@@ -169,10 +172,11 @@ public class PostgresStorageManager extends StorageManager {
             case DataTypes.VARCHAR:
                 // Because the parameter for the varchar is not
                 // optional.
-                if (gsnType.getType().trim().equalsIgnoreCase("string"))
+                if (gsnType.getType().trim().equalsIgnoreCase("string")) {
                     convertedType = "TEXT";
-                else
+                } else {
                     convertedType = gsnType.getType();
+                }
                 break;
             case DataTypes.BINARY:
                 convertedType = "BYTEA";
@@ -184,8 +188,8 @@ public class PostgresStorageManager extends StorageManager {
                 convertedType = "REAL";
                 break;
             case DataTypes.TINYINT:
-            	convertedType = "SMALLINT";
-            	break;
+                convertedType = "SMALLINT";
+                break;
             default:
                 convertedType = DataTypes.TYPE_NAMES[gsnType.getDataTypeID()];
                 break;

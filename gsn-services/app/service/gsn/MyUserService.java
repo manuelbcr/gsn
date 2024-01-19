@@ -4,7 +4,7 @@ import com.feth.play.module.pa.PlayAuthenticate;
 import com.feth.play.module.pa.service.AbstractUserService;
 import com.feth.play.module.pa.user.AuthUser;
 import com.feth.play.module.pa.user.AuthUserIdentity;
-import models.gsn.User;
+import models.gsn.auth.User;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

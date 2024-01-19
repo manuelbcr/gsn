@@ -28,7 +28,7 @@ import scalaoauth2.provider._
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.mvc._
 import play.utils.UriEncoding
-import models.gsn.{User, Client, OAuthCode}
+import models.gsn.auth.{User, Client, OAuthCode}
 import com.feth.play.module.pa.PlayAuthenticate
 import be.objectify.deadbolt.scala.DeadboltActions
 import security.gsn.GSNScalaDeadboltHandler

@@ -1,6 +1,5 @@
 .cache
 .settings
-.project
 *.class
 *.log
 target/
@@ -22,3 +21,5 @@ csv-check-points/
 .vagrant/rgloader/
 
 .DS_Store
+.vscode/settings.json
+.gitignore

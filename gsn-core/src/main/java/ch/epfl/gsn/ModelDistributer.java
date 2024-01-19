@@ -35,9 +35,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.LoggerFactory;
 
-import ch.epfl.gsn.ModelDistributer;
-import ch.epfl.gsn.VSensorStateChangeListener;
-import ch.epfl.gsn.VirtualSensorDataListener;
 import ch.epfl.gsn.beans.StreamElement;
 import ch.epfl.gsn.beans.VSensorConfig;
 import ch.epfl.gsn.delivery.DeliverySystem;
@@ -49,7 +46,7 @@ import org.slf4j.Logger;
 
 public class ModelDistributer implements VirtualSensorDataListener, VSensorStateChangeListener, Runnable {
 
-    public static final int KEEP_ALIVE_PERIOD =  15 * 1000;  // 15 sec.
+    public static final int KEEP_ALIVE_PERIOD = 15 * 1000; // 15 sec.
 
     private static int keepAlivePeriod = -1;
 
@@ -64,14 +61,15 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
         try {
             thread = new Thread(this);
             thread.start();
-            // Start the keep alive Timer -- Note that the implementation is backed by one single thread for all the Delivery instances.
-            keepAliveTimer = new  javax.swing.Timer(getKeepAlivePeriod(), new ActionListener() {
+            // Start the keep alive Timer -- Note that the implementation is backed by one
+            // single thread for all the Delivery instances.
+            keepAliveTimer = new javax.swing.Timer(getKeepAlivePeriod(), new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     // write the keep alive message to the stream
                     synchronized (listeners) {
                         ArrayList<DistributionRequest> clisteners = (ArrayList<DistributionRequest>) listeners.clone();
                         for (DistributionRequest listener : clisteners) {
-                            if ( ! listener.deliverKeepAliveMessage()) {
+                            if (!listener.deliverKeepAliveMessage()) {
                                 logger.debug("remove the listener.");
                                 removeListener(listener);
                             }
@@ -80,7 +78,7 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
                 }
             });
             keepAliveTimer.start();
-        //} catch (SQLException e) {
+            // } catch (SQLException e) {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -88,21 +86,26 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
 
     public static ModelDistributer getInstance(Class<? extends DeliverySystem> c) {
         ModelDistributer toReturn = singletonMap.get(c);
-        if (toReturn == null)
+        if (toReturn == null) {
             singletonMap.put(c, (toReturn = new ModelDistributer()));
+        }
+
         return toReturn;
     }
 
     public static int getKeepAlivePeriod() {
-        if (keepAlivePeriod == -1)
-            keepAlivePeriod = System.getProperty("remoteKeepAlivePeriod") == null ? KEEP_ALIVE_PERIOD : Integer.parseInt(System.getProperty("remoteKeepAlivePeriod"));
+        if (keepAlivePeriod == -1) {
+            keepAlivePeriod = System.getProperty("remoteKeepAlivePeriod") == null ? KEEP_ALIVE_PERIOD
+                    : Integer.parseInt(System.getProperty("remoteKeepAlivePeriod"));
+        }
+
         return keepAlivePeriod;
     }
 
     private ArrayList<DistributionRequest> listeners = new ArrayList<DistributionRequest>();
 
     private LinkedBlockingQueue<DistributionRequest> locker = new LinkedBlockingQueue<DistributionRequest>();
-    
+
     private ConcurrentHashMap<DistributionRequest, DataEnumeratorIF> candidateListeners = new ConcurrentHashMap<DistributionRequest, DataEnumeratorIF>();
 
     private ConcurrentHashMap<DistributionRequest, Boolean> candidatesForNextRound = new ConcurrentHashMap<DistributionRequest, Boolean>();
@@ -111,16 +114,16 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
         synchronized (listeners) {
             if (!listeners.contains(listener)) {
                 logger.info("Adding a listener to ModelDistributer:" + listener.toString());
-                
+
                 listeners.add(listener);
                 addListenerToCandidates(listener);
 
             } else {
-                logger.info("Adding a listener to ModelDistributer failed, duplicated listener! " + listener.toString());
+                logger.info(
+                        "Adding a listener to ModelDistributer failed, duplicated listener! " + listener.toString());
             }
         }
     }
-
 
     private void addListenerToCandidates(DistributionRequest listener) {
         /**
@@ -149,8 +152,10 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
     }
 
     /**
-     * This method only flushes one single stream element from the provided data enumerator.
-     * Returns false if the flushing the stream element fails. This method also cleans the prepared statements by removing the listener completely.
+     * This method only flushes one single stream element from the provided data
+     * enumerator.
+     * Returns false if the flushing the stream element fails. This method also
+     * cleans the prepared statements by removing the listener completely.
      *
      * @param dataEnum
      * @param listener
@@ -168,7 +173,7 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
         }
 
         StreamElement se = dataEnum.nextElement();
-        //		boolean success = true;
+        // boolean success = true;
         boolean success = listener.deliverStreamElement(se);
         if (!success) {
             logger.warn("FLushing an stream element failed, delivery failure [Listener: " + listener.toString() + "]");
@@ -181,25 +186,27 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
     public void removeListener(DistributionRequest listener) {
         synchronized (listeners) {
             if (listeners.remove(listener)) {
-                    candidatesForNextRound.remove(listener);
-                    removeListenerFromCandidates(listener);
-                    listener.close();
-                    logger.debug("Removing listener completely from Distributer [Listener: " + listener.toString() + "]");
+                candidatesForNextRound.remove(listener);
+                removeListenerFromCandidates(listener);
+                listener.close();
+                logger.debug("Removing listener completely from Distributer [Listener: " + listener.toString() + "]");
             }
         }
     }
 
     public void consume(StreamElement se, VSensorConfig config) {
         synchronized (listeners) {
-            for (DistributionRequest listener : listeners)
+            for (DistributionRequest listener : listeners) {
                 if (listener.getVSensorConfig() == config) {
-                    logger.debug("sending stream element " + (se == null ? "second-chance-se" : se.toString()) + " produced by " + config.getName() + " to listener =>" + listener.toString());
+                    logger.debug("sending stream element " + (se == null ? "second-chance-se" : se.toString())
+                            + " produced by " + config.getName() + " to listener =>" + listener.toString());
                     if (!candidateListeners.containsKey(listener)) {
                         addListenerToCandidates(listener);
                     } else {
                         candidatesForNextRound.put(listener, Boolean.TRUE);
                     }
                 }
+            }
         }
     }
 
@@ -207,25 +214,27 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
         while (true) {
             try {
                 if (locker.isEmpty()) {
-                    logger.debug("Waiting(locked) for requests or data items, Number of total listeners: " + listeners.size());
+                    logger.debug("Waiting(locked) for requests or data items, Number of total listeners: "
+                            + listeners.size());
                     locker.put(locker.take());
-                    logger.debug("Lock released, trying to find interest listeners (total listeners:" + listeners.size() + ")");
+                    logger.debug("Lock released, trying to find interest listeners (total listeners:" + listeners.size()
+                            + ")");
                 }
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             }
 
-
             for (Entry<DistributionRequest, DataEnumeratorIF> item : candidateListeners.entrySet()) {
                 boolean success = flushStreamElement(item.getValue(), item.getKey());
-                if (success == false)
+                if (success == false) {
                     removeListener(item.getKey());
-                else {
+                } else {
                     if (!item.getValue().hasMoreElements()) {
                         removeListenerFromCandidates(item.getKey());
                         // As we are limiting the number of elements returned by the JDBC driver
                         // we consume the eventual remaining items.
-                       // consume(null, item.getKey().getVSensorConfig()); //do not activate for models !!!!!
+                        // consume(null, item.getKey().getVSensorConfig()); //do not activate for models
+                        // !!!!!
                     }
                 }
             }
@@ -241,8 +250,9 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
             logger.debug("Distributer unloading: " + listeners.size());
             ArrayList<DistributionRequest> toRemove = new ArrayList<DistributionRequest>();
             for (DistributionRequest listener : listeners) {
-                if (listener.getVSensorConfig() == config)
+                if (listener.getVSensorConfig() == config) {
                     toRemove.add(listener);
+                }
             }
             for (DistributionRequest listener : toRemove) {
                 try {
@@ -256,29 +266,32 @@ public class ModelDistributer implements VirtualSensorDataListener, VSensorState
     }
 
     private DataEnumeratorIF makeDataEnum(DistributionRequest listener) {
-        ModelEnumerator mEnum = new ModelEnumerator(listener.getQuery(),listener.getModel());
+        ModelEnumerator mEnum = new ModelEnumerator(listener.getQuery(), listener.getModel());
         return mEnum;
     }
 
     public void release() {
         synchronized (listeners) {
-            while (!listeners.isEmpty())
+            while (!listeners.isEmpty()) {
                 removeListener(listeners.get(0));
+            }
         }
-        if (keepAliveTimer != null)
+        if (keepAliveTimer != null) {
             keepAliveTimer.stop();
+        }
+
     }
 
     public boolean contains(DeliverySystem delivery) {
         synchronized (listeners) {
-            for (DistributionRequest listener : listeners)
-                if (listener.getDeliverySystem().equals(delivery))
+            for (DistributionRequest listener : listeners) {
+                if (listener.getDeliverySystem().equals(delivery)) {
                     return true;
+                }
+            }
             return false;
-		}
+        }
 
-	}
+    }
 
 }
-
-

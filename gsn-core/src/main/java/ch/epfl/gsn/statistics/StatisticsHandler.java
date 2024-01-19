@@ -36,12 +36,17 @@ public class StatisticsHandler {
 			logger.error("producer virtual sensor name should not be null");
 			return false;
 		}
-		if (statisticsListeners.isEmpty())
+		if (statisticsListeners.isEmpty()){
 			return false;
+		}
+			
 		boolean ret = false;
-		for(Iterator<StatisticsListener> iter = statisticsListeners.iterator(); iter.hasNext();)
-			if(iter.next().inputEvent(producerVS.toLowerCase().trim(), statisticsElement))
+		for(Iterator<StatisticsListener> iter = statisticsListeners.iterator(); iter.hasNext();){
+			if(iter.next().inputEvent(producerVS.toLowerCase().trim(), statisticsElement)){
 				ret = true;
+			}	
+		}
+
 		return ret;
 	}
 
@@ -50,12 +55,17 @@ public class StatisticsHandler {
 			logger.error("producer virtual sensor name should not be null");
 			return false;
 		}
-		if (statisticsListeners.isEmpty())
+		if (statisticsListeners.isEmpty()){
 			return false;
+		}
+			
 		boolean ret = false;
-		for(Iterator<StatisticsListener> iter = statisticsListeners.iterator(); iter.hasNext();)
-			if(iter.next().outputEvent(producerVS.toLowerCase().trim(), statisticsElement))
+		for(Iterator<StatisticsListener> iter = statisticsListeners.iterator(); iter.hasNext();){
+			if(iter.next().outputEvent(producerVS.toLowerCase().trim(), statisticsElement)){
 				ret = true;
+			}	
+		}
+
 		return ret;
 	}
 }

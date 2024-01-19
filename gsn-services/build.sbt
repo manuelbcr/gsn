@@ -39,7 +39,7 @@ libraryDependencies ++= Seq(
   "com.nulab-inc" %% "play2-oauth2-provider" % "1.3.0",
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.3" % "test",
   "org.seleniumhq.selenium" % "selenium-java" % "3.141.59" % "test"
-  //"ch.epfl.gsn" % "gsn-core" % "2.0.1" exclude("org.apache.logging.log4j", "log4j-slf4j-impl") exclude("org.scala-lang.modules", "scala-xml_2.11")
+  //"ch.epfl.gsn" % "gsn-core" % "2.0.3" exclude("org.apache.logging.log4j", "log4j-slf4j-impl") exclude("org.scala-lang.modules", "scala-xml_2.11")
 )
 
 //libraryDependencies := libraryDependencies.value.map(_.exclude("ch.qos.logback", "logback-classic").exclude("ch.qos.logback", "logback-core"))
@@ -59,7 +59,7 @@ debianPackageDependencies in Debian += "java11-runtime"
 
 debianPackageRecommends in Debian ++= Seq("postgresql", "gsn-core", "nginx")
 
-//serverLoading in Debian := ServerLoader.Systemd
+serverLoading in Debian := Some(ServerLoader.Systemd)
 
 enablePlugins(DebianPlugin)
 

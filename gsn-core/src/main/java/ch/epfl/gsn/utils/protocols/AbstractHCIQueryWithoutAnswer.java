@@ -40,22 +40,22 @@ public abstract class AbstractHCIQueryWithoutAnswer extends AbstractHCIQuery {
    }
 
    // we usually dont expect an answer
-   public int getWaitTime ( Vector < Object > params ) {
+   public int getWaitTime(Vector<Object> params) {
       // TODO Auto-generated method stub
       return NO_WAIT_TIME;
    }
-   
-   /* 
-    * By default we dont expect an answer. 
+
+   /*
+    * By default we dont expect an answer.
     */
-   public boolean needsAnswer ( Vector < Object > params ) {
+   public boolean needsAnswer(Vector<Object> params) {
       return false;
    }
-   
+
    /*
     * No answer by default so this is a placeholder method.
     */
    public Object[] getAnswers(byte[] rawAnswer) {
-	   return null;
+      return null;
    }
 }

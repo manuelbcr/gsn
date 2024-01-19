@@ -45,7 +45,6 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class GridDataWrapper extends AbstractWrapper {
     private static final transient Logger logger = LoggerFactory.getLogger(GridDataWrapper.class);
     private static int threadCounter;
@@ -62,12 +61,12 @@ public class GridDataWrapper extends AbstractWrapper {
     private static final String PARAM_EXTENSION = "extension";
     private static final String PARAM_RATE = "rate";
 
-    private static final String[] ESRI_Format = {"ncols",
+    private static final String[] ESRI_Format = { "ncols",
             "nrows",
             "xllcorner",
             "yllcorner",
             "cellsize",
-            "NODATA_value"};
+            "NODATA_value" };
 
     private String header[] = new String[6];
 
@@ -87,25 +86,29 @@ public class GridDataWrapper extends AbstractWrapper {
 
         fileExtension = addressBean.getPredicateValue(PARAM_EXTENSION);
         if (fileExtension == null) {
-            logger.warn("The > " + PARAM_EXTENSION + " < parameter is missing from the wrapper for VS " + this.getActiveAddressBean().getVirtualSensorName());
+            logger.warn("The > " + PARAM_EXTENSION + " < parameter is missing from the wrapper for VS "
+                    + this.getActiveAddressBean().getVirtualSensorName());
             return false;
         }
 
         timeFormat = addressBean.getPredicateValue(PARAM_TIME_FORMAT);
         if (timeFormat == null) {
-            logger.warn("The > " + PARAM_TIME_FORMAT + " < parameter is missing from the wrapper for VS " + this.getActiveAddressBean().getVirtualSensorName());
+            logger.warn("The > " + PARAM_TIME_FORMAT + " < parameter is missing from the wrapper for VS "
+                    + this.getActiveAddressBean().getVirtualSensorName());
             return false;
         }
 
         fileMask = addressBean.getPredicateValue(PARAM_FILE_MASK);
         if (fileMask == null) {
-            logger.warn("The > " + PARAM_FILE_MASK + " < parameter is missing from the wrapper for VS " + this.getActiveAddressBean().getVirtualSensorName());
+            logger.warn("The > " + PARAM_FILE_MASK + " < parameter is missing from the wrapper for VS "
+                    + this.getActiveAddressBean().getVirtualSensorName());
             return false;
         }
 
         directory = addressBean.getPredicateValue(PARAM_DIRECTORY);
         if (directory == null) {
-            logger.warn("The > " + PARAM_DIRECTORY + " < parameter is missing from the wrapper for VS " + this.getActiveAddressBean().getVirtualSensorName());
+            logger.warn("The > " + PARAM_DIRECTORY + " < parameter is missing from the wrapper for VS "
+                    + this.getActiveAddressBean().getVirtualSensorName());
             return false;
         }
 
@@ -115,11 +118,13 @@ public class GridDataWrapper extends AbstractWrapper {
             try {
                 rate = Integer.parseInt(rateStr);
             } catch (NumberFormatException e) {
-                logger.warn("The > " + PARAM_RATE + " < parameter is invalid for wrapper in VS " + this.getActiveAddressBean().getVirtualSensorName());
+                logger.warn("The > " + PARAM_RATE + " < parameter is invalid for wrapper in VS "
+                        + this.getActiveAddressBean().getVirtualSensorName());
                 return false;
             }
         } else {
-            logger.warn("The > " + PARAM_RATE + " < parameter is missing from the wrapper in VS " + this.getActiveAddressBean().getVirtualSensorName());
+            logger.warn("The > " + PARAM_RATE + " < parameter is missing from the wrapper in VS "
+                    + this.getActiveAddressBean().getVirtualSensorName());
             return false;
         }
 
@@ -129,14 +134,14 @@ public class GridDataWrapper extends AbstractWrapper {
     }
 
     public DataField[] getOutputFormat() {
-        return new DataField[]{
+        return new DataField[] {
                 new DataField("ncols", "int", "number of columns"),
                 new DataField("nrows", "int", "number of rows"),
                 new DataField("xllcorner", "double", "xll corner"),
                 new DataField("yllcorner", "double", "yll corner"),
                 new DataField("cellsize", "double", "cell size"),
                 new DataField("nodata_value", "double", "no data value"),
-                new DataField("grid", "binary:image/raw", "raw raster data")};
+                new DataField("grid", "binary:image/raw", "raw raster data") };
     }
 
     public void run() {
@@ -172,7 +177,7 @@ public class GridDataWrapper extends AbstractWrapper {
                 line = reader.readLine();
             }
 
-            //System.out.println(lines);
+            // System.out.println(lines);
 
         } catch (FileNotFoundException e) {
             success = false;
@@ -196,7 +201,7 @@ public class GridDataWrapper extends AbstractWrapper {
             // trim white spaces, replace tabs and multiple spaces with a single space
             for (int i = 0; i < lines.size(); i++) {
                 lines.set(i, lines.get(i).trim().replaceAll("[ \t]+", " "));
-                //System.out.println(lines.get(i));
+                // System.out.println(lines.get(i));
             }
 
             logger.debug("size " + lines.size());
@@ -234,7 +239,7 @@ public class GridDataWrapper extends AbstractWrapper {
                 logger.debug("NODATA_value " + NODATA_value);
             }
 
-            //parse raw data
+            // parse raw data
             if (success) {
                 List raw = new ArrayList<Double>();
 
@@ -244,15 +249,16 @@ public class GridDataWrapper extends AbstractWrapper {
 
                         try {
                             Double d = Double.parseDouble(aLine[j]);
-                            if (d != null)
+                            if (d != null) {
                                 raw.add(d);
-                            else
+                            } else {
                                 raw.add(NODATA_value);
+                            }
                         } catch (java.lang.NumberFormatException e) {
                             logger.warn(j + ": \"" + aLine[j] + "\"");
                             logger.warn(e.getMessage());
                         }
-                        //System.out.println(i + "," + j + " : " + d);
+                        // System.out.println(i + "," + j + " : " + d);
                     }
 
                 }
@@ -262,18 +268,19 @@ public class GridDataWrapper extends AbstractWrapper {
 
                 if (raw.size() == nrows * ncols) {
                     rawData = new Double[nrows][ncols];
-                    for (int i = 0; i < nrows; i++)
+                    for (int i = 0; i < nrows; i++) {
                         for (int j = 0; j < ncols; j++) {
                             rawData[i][j] = (Double) raw.get(i * ncols + j);
-                            //System.out.println(i + "," + j + " : " + rawData[i][j]);
+                            // System.out.println(i + "," + j + " : " + rawData[i][j]);
                         }
+                    }
+
                     logger.debug("rawData.length " + rawData.length);
                     logger.debug("rawData[0].length " + rawData[0].length);
                 } else {
                     success = false;
                 }
             }
-
 
         }
 
@@ -315,10 +322,9 @@ public class GridDataWrapper extends AbstractWrapper {
     }
 
     /*
-    * Posting data to database
-    * */
+     * Posting data to database
+     */
     private boolean postData(String filePath, long timed) {
-
 
         parseFile(filePath);
 
@@ -347,8 +353,7 @@ public class GridDataWrapper extends AbstractWrapper {
 
             logger.debug("size => " + bos.toByteArray().length);
 
-            //testDeserialize(bos.toByteArray());
-
+            // testDeserialize(bos.toByteArray());
 
         } catch (IOException e) {
             logger.warn(e.getMessage(), e);
@@ -365,8 +370,8 @@ public class GridDataWrapper extends AbstractWrapper {
     }
 
     /*
-    * Test deserialization
-    * */
+     * Test deserialization
+     */
     public static void testDeserialize(byte[] bytes) {
 
         try {

@@ -71,8 +71,8 @@ public class ImageFileWrapper extends AbstractWrapper {
     private static final String PARAM_RATE = "rate";
 
     public DataField[] getOutputFormat() {
-        return new DataField[]{
-                new DataField("image", "binary:image/"+fileExtension, fileExtension+" image")};
+        return new DataField[] {
+                new DataField("image", "binary:image/" + fileExtension, fileExtension + " image") };
     }
 
     public boolean initialize() {
@@ -80,25 +80,29 @@ public class ImageFileWrapper extends AbstractWrapper {
 
         fileExtension = addressBean.getPredicateValue(PARAM_EXTENSION);
         if (fileExtension == null) {
-            logger.warn("The > "+PARAM_EXTENSION+" < parameter is missing from the wrapper for VS " + this.getActiveAddressBean().getVirtualSensorName());
+            logger.warn("The > " + PARAM_EXTENSION + " < parameter is missing from the wrapper for VS "
+                    + this.getActiveAddressBean().getVirtualSensorName());
             return false;
         }
 
         timeFormat = addressBean.getPredicateValue(PARAM_TIME_FORMAT);
         if (timeFormat == null) {
-            logger.warn("The > "+PARAM_TIME_FORMAT+" < parameter is missing from the wrapper for VS " + this.getActiveAddressBean().getVirtualSensorName());
+            logger.warn("The > " + PARAM_TIME_FORMAT + " < parameter is missing from the wrapper for VS "
+                    + this.getActiveAddressBean().getVirtualSensorName());
             return false;
         }
 
         fileMask = addressBean.getPredicateValue(PARAM_FILE_MASK);
         if (fileMask == null) {
-            logger.warn("The > "+PARAM_FILE_MASK+" < parameter is missing from the wrapper for VS " + this.getActiveAddressBean().getVirtualSensorName());
+            logger.warn("The > " + PARAM_FILE_MASK + " < parameter is missing from the wrapper for VS "
+                    + this.getActiveAddressBean().getVirtualSensorName());
             return false;
         }
 
         imagesDirectory = addressBean.getPredicateValue(PARAM_DIRECTORY);
         if (imagesDirectory == null) {
-            logger.warn("The > "+PARAM_DIRECTORY+" < parameter is missing from the wrapper for VS " + this.getActiveAddressBean().getVirtualSensorName());
+            logger.warn("The > " + PARAM_DIRECTORY + " < parameter is missing from the wrapper for VS "
+                    + this.getActiveAddressBean().getVirtualSensorName());
             return false;
         }
 
@@ -108,15 +112,17 @@ public class ImageFileWrapper extends AbstractWrapper {
             try {
                 rate = Integer.parseInt(rateStr);
             } catch (NumberFormatException e) {
-                logger.warn("The > "+PARAM_RATE+" < parameter is invalid for wrapper in VS " + this.getActiveAddressBean().getVirtualSensorName());
+                logger.warn("The > " + PARAM_RATE + " < parameter is invalid for wrapper in VS "
+                        + this.getActiveAddressBean().getVirtualSensorName());
                 return false;
             }
         } else {
-            logger.warn("The > "+PARAM_RATE+" < parameter is missing from the wrapper in VS " + this.getActiveAddressBean().getVirtualSensorName());
+            logger.warn("The > " + PARAM_RATE + " < parameter is missing from the wrapper in VS "
+                    + this.getActiveAddressBean().getVirtualSensorName());
             return false;
         }
 
-        latestProcessedTimestamp=-1;
+        latestProcessedTimestamp = -1;
 
         return true;
     }
@@ -131,7 +137,7 @@ public class ImageFileWrapper extends AbstractWrapper {
         while (isActive()) {
             try {
 
-                listOfNewFiles(imagesDirectory,fileMask);
+                listOfNewFiles(imagesDirectory, fileMask);
 
                 Thread.sleep(rate);
             } catch (InterruptedException e) {
@@ -148,17 +154,17 @@ public class ImageFileWrapper extends AbstractWrapper {
         return "ImageFileWrapper";
     }
 
-    /* converts time from string to long
-    * returns -1 if not successful
-    * */
+    /*
+     * converts time from string to long
+     * returns -1 if not successful
+     */
     private long strTime2Long(String s, String timeFormat) {
 
         long l = -1;
         try {
             DateTimeFormatter fmt = DateTimeFormat.forPattern(timeFormat);
             l = fmt.parseDateTime(s).getMillis();
-        }
-        catch (java.lang.IllegalArgumentException e) {
+        } catch (java.lang.IllegalArgumentException e) {
             logger.warn(e.getMessage(), e);
         }
         return l;
@@ -169,21 +175,19 @@ public class ImageFileWrapper extends AbstractWrapper {
         Pattern pattern = Pattern.compile(regexMask);
         Matcher matcher = pattern.matcher(fileName);
         if (matcher.find()) {
-            logger.debug("Date => "+matcher.group(1));
+            logger.debug("Date => " + matcher.group(1));
             return matcher.group(1);
-        }
-        else {
+        } else {
             logger.debug("Date => null");
             return null;
         }
     }
 
-
     /*
-    * posts new image files to database
-    * returns a list of file names in a directory,
-    * which match a fileMask (given as regular expression)
-    * */
+     * posts new image files to database
+     * returns a list of file names in a directory,
+     * which match a fileMask (given as regular expression)
+     */
     private Vector<String> listOfNewFiles(String dir, String regexFileMask) {
 
         File f = new File(dir);
@@ -191,22 +195,22 @@ public class ImageFileWrapper extends AbstractWrapper {
 
         Arrays.sort(files);
 
-        Vector <String> v = new Vector<String>();
-        logger.debug("*** found "+files.length+" files ***");
-        for (int i=0;i<files.length;i++) {
+        Vector<String> v = new Vector<String>();
+        logger.debug("*** found " + files.length + " files ***");
+        for (int i = 0; i < files.length; i++) {
             String file = files[i];
             Pattern pattern = Pattern.compile(regexFileMask);
             Matcher matcher = pattern.matcher(file);
-            logger.debug("("+i+") Testing... " + file);
+            logger.debug("(" + i + ") Testing... " + file);
             if (matcher.find()) {
-                String date = getTimeStampFromFileName(file,regexFileMask);
-                long epoch = strTime2Long(date,timeFormat);
-                logger.debug("Matching => "+file + " date = "+ date + " epoch = "+epoch);
-                if (epoch>latestProcessedTimestamp) {
-                    logger.debug("New image => "+epoch);
+                String date = getTimeStampFromFileName(file, regexFileMask);
+                long epoch = strTime2Long(date, timeFormat);
+                logger.debug("Matching => " + file + " date = " + date + " epoch = " + epoch);
+                if (epoch > latestProcessedTimestamp) {
+                    logger.debug("New image => " + epoch);
                     latestProcessedTimestamp = epoch;
                     v.add(file);
-                    postData(dir+"/"+file,epoch);
+                    postData(dir + "/" + file, epoch);
                 }
             }
         }
@@ -215,8 +219,8 @@ public class ImageFileWrapper extends AbstractWrapper {
     }
 
     /*
-    * Posting data to database
-    * */
+     * Posting data to database
+     */
     private boolean postData(String imagePath, long timed) {
 
         logger.debug("trying to post... " + imagePath);

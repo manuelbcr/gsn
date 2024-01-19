@@ -29,7 +29,7 @@ package ch.epfl.gsn.utils.graph;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Node<T> implements Serializable{
+public class Node<T> implements Serializable {
 
 	private static final long serialVersionUID = -62301155506174334L;
 
@@ -42,7 +42,7 @@ public class Node<T> implements Serializable{
 	private boolean root;
 
 	private boolean visited;
-	
+
 	private boolean removed;
 
 	public Node() {
@@ -59,8 +59,9 @@ public class Node<T> implements Serializable{
 	}
 
 	public Edge<T> addEdge(Node<T> node) throws EdgeExistsException {
-		if (edgeExists(node))
+		if (edgeExists(node)) {
 			throw new EdgeExistsException();
+		}
 		Edge<T> edge = new Edge<T>(this, node);
 		outputEdges.add(edge);
 		node.getInputEdges().add(edge);
@@ -80,16 +81,18 @@ public class Node<T> implements Serializable{
 
 	private boolean edgeExists(Node<T> node) {
 		for (Edge<T> edge : outputEdges) {
-			if (edge.getEndNode().equals(node))
+			if (edge.getEndNode().equals(node)) {
 				return true;
+			}
 		}
 		return false;
 	}
 
 	private Edge<T> getEdge(Node<T> node) {
 		for (Edge<T> edge : outputEdges) {
-			if (edge.getEndNode().equals(node))
+			if (edge.getEndNode().equals(node)) {
 				return edge;
+			}
 		}
 		return null;
 	}
@@ -135,17 +138,18 @@ public class Node<T> implements Serializable{
 	}
 
 	public boolean equals(Object obj) {
-		if (this.object == obj)
+		if (this.object == obj) {
 			return true;
-		if (obj instanceof Node && this.object != null){
+		}
+		if (obj instanceof Node && this.object != null) {
 			Node node = (Node) obj;
 			return this.object.equals(node.getObject());
 		}
 		return false;
 	}
-	
-	public String toString(){
-		return new StringBuilder("Node[").append(object != null ? object.toString() : null).append("]").toString(); 
+
+	public String toString() {
+		return new StringBuilder("Node[").append(object != null ? object.toString() : null).append("]").toString();
 	}
 
 	public boolean isRemoved() {
@@ -156,5 +160,4 @@ public class Node<T> implements Serializable{
 		this.removed = removed;
 	}
 
-	
 }

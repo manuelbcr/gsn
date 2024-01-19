@@ -18,59 +18,73 @@ import org.joda.time.format.ISODateTimeFormat;
 
 public class RemoteWrapperParamParser {
 
-	private final transient Logger     logger                 = LoggerFactory.getLogger ( RemoteWrapperParamParser.class );
+	private final transient Logger logger = LoggerFactory.getLogger(RemoteWrapperParamParser.class);
 
 	private long startTime;
 	private boolean isPushBased;
 	private boolean continuous = false;
-	private String query,deliveryContactPoint,remoteContactPoint;
-	private String username,password;
-    private boolean isSSLRequired;
-    // The default timeout is set to 3 times the rate of the periodical Keep alive messages.
-    // The timeout can be overriden in the virtual sensor description files.
-    private int timeout =  3 * DataDistributer.getKeepAlivePeriod();
+	private String query, deliveryContactPoint, remoteContactPoint;
+	private String username, password;
+	private boolean isSSLRequired;
+	// The default timeout is set to 3 times the rate of the periodical Keep alive
+	// messages.
+	// The timeout can be overriden in the virtual sensor description files.
+	private int timeout = 3 * DataDistributer.getKeepAlivePeriod();
 
-	private  final String CURRENT_TIME = ISODateTimeFormat.dateTime().print(System.currentTimeMillis());
+	private final String CURRENT_TIME = ISODateTimeFormat.dateTime().print(System.currentTimeMillis());
 
 	public RemoteWrapperParamParser(AddressBean addressBean, boolean isPushBased) {
 		this.isPushBased = isPushBased;
 
-		query = addressBean.getPredicateValueWithException("query" );
-		
-		logger.debug("Remote wrapper parameter [keep-alive: "+isPushBased+"], Query=> "+query);
+		query = addressBean.getPredicateValueWithException("query");
 
-		if (isPushBased ) 
+		logger.debug("Remote wrapper parameter [keep-alive: " + isPushBased + "], Query=> " + query);
+
+		if (isPushBased) {
 			deliveryContactPoint = addressBean.getPredicateValueWithException(PushDelivery.LOCAL_CONTACT_POINT);
+		}
 
-		username = addressBean.getPredicateValue( "username" );
-		password = addressBean.getPredicateValue( "password" );
+		username = addressBean.getPredicateValue("username");
+		password = addressBean.getPredicateValue("password");
 
-        timeout = addressBean.getPredicateValueAsInt("timeout", timeout);
-        
-        /**
+		timeout = addressBean.getPredicateValueAsInt("timeout", timeout);
+
+		/**
 		 * First looks for URL parameter, if it is there it will be used otherwise
 		 * looks for host and port parameters.
 		 */
-		if ( (remoteContactPoint =addressBean.getPredicateValue ( "remote-contact-point" ))==null) {
-			String host = addressBean.getPredicateValue ( "host" );
-			if ( host == null || host.trim ( ).length ( ) == 0 ) 
-				throw new RuntimeException( "The >host< parameter is missing from the RemoteWrapper wrapper." );
-			//int port = addressBean.getPredicateValueAsInt("port" ,ContainerConfig.DEFAULT_GSN_PORT);
-            int port = addressBean.getPredicateValueAsInt("port" ,ContainerConfig.DEFAULT_MONITOR_PORT); // change to default_monitor_port which is 22001 as in the old version
-			if ( port > 65000 || port <= 0 ) 
-				throw new RuntimeException("Remote wrapper initialization failed, bad port number:"+port);
+		if ((remoteContactPoint = addressBean.getPredicateValue("remote-contact-point")) == null) {
+			String host = addressBean.getPredicateValue("host");
+			if (host == null || host.trim().length() == 0) {
+				throw new RuntimeException("The >host< parameter is missing from the RemoteWrapper wrapper.");
+			}
 
-			remoteContactPoint ="http://" + host +":"+port+"/streaming/";
+			// int port = addressBean.getPredicateValueAsInt("port"
+			// ,ContainerConfig.DEFAULT_GSN_PORT);
+			int port = addressBean.getPredicateValueAsInt("port", ContainerConfig.DEFAULT_MONITOR_PORT); // change to
+																											// default_monitor_port
+																											// which is
+																											// 22001 as
+																											// in the
+																											// old
+																											// version
+			if (port > 65000 || port <= 0) {
+				throw new RuntimeException("Remote wrapper initialization failed, bad port number:" + port);
+			}
+
+			remoteContactPoint = "http://" + host + ":" + port + "/streaming/";
 		}
-		remoteContactPoint= remoteContactPoint.trim();
-		if (!remoteContactPoint.trim().endsWith("/"))
-			remoteContactPoint+="/";
-        //
-        isSSLRequired = remoteContactPoint.toLowerCase().startsWith("https");
-        
-		String str = addressBean.getPredicateValueWithDefault("start-time",CURRENT_TIME);
-		
-        String strStartTime = addressBean.getPredicateValue("start-time");
+		remoteContactPoint = remoteContactPoint.trim();
+		if (!remoteContactPoint.trim().endsWith("/")) {
+			remoteContactPoint += "/";
+		}
+
+		//
+		isSSLRequired = remoteContactPoint.toLowerCase().startsWith("https");
+
+		String str = addressBean.getPredicateValueWithDefault("start-time", CURRENT_TIME);
+
+		String strStartTime = addressBean.getPredicateValue("start-time");
 		if (strStartTime != null && strStartTime.equals("continue")) {
 			Connection conn = null;
 			ResultSet rs = null;
@@ -78,7 +92,8 @@ public class RemoteWrapperParamParser {
 				conn = Main.getStorage(addressBean.getVirtualSensorConfig()).getConnection();
 
 				// check if table already exists
-				rs = conn.getMetaData().getTables(null, null, addressBean.getVirtualSensorName(), new String[] {"TABLE"});
+				rs = conn.getMetaData().getTables(null, null, addressBean.getVirtualSensorName(),
+						new String[] { "TABLE" });
 				continuous = true;
 				if (rs.next()) {
 					StringBuilder query = new StringBuilder();
@@ -88,9 +103,11 @@ public class RemoteWrapperParamParser {
 					if (rs.next()) {
 						startTime = rs.getLong(1);
 					}
+				} else {
+					logger.info("Table '" + addressBean.getVirtualSensorName()
+							+ "' doesn't exist => using all data from the remote database");
 				}
-				else
-					logger.info("Table '" + addressBean.getVirtualSensorName() + "' doesn't exist => using all data from the remote database");
+
 			} catch (SQLException e) {
 				logger.error(e.getMessage(), e);
 				throw new RuntimeException(e);
@@ -109,7 +126,8 @@ public class RemoteWrapperParamParser {
 			try {
 				startTime = Helpers.convertTimeFromIsoToLong(str);
 			} catch (Exception e) {
-				logger.error("Failed to parse the start-time parameter of the remote wrapper, a sample time could be:"+(CURRENT_TIME));
+				logger.error("Failed to parse the start-time parameter of the remote wrapper, a sample time could be:"
+						+ (CURRENT_TIME));
 				throw new RuntimeException(e);
 			}
 		}
@@ -147,34 +165,40 @@ public class RemoteWrapperParamParser {
 		return password;
 	}
 
-    public int getTimeout() {
-        return timeout;
-    }
+	public int getTimeout() {
+		return timeout;
+	}
 
-    public boolean isSSLRequired() {
-        return isSSLRequired;
-    }
+	public boolean isSSLRequired() {
+		return isSSLRequired;
+	}
 
-    public String getRemoteContactPointEncoded(long lastModifiedTime) {
+	public String getRemoteContactPointEncoded(long lastModifiedTime) {
 		String toSend;
 		try {
-			if (continuous)
-				toSend = getRemoteContactPoint()+URLEncoder.encode(query, "UTF-8")+"/"+URLEncoder.encode(getStartTimeInString(lastModifiedTime), "UTF-8")+"/c";
-			else
-				toSend = getRemoteContactPoint()+URLEncoder.encode(query, "UTF-8")+"/"+URLEncoder.encode(getStartTimeInString(lastModifiedTime), "UTF-8");
+			if (continuous) {
+				toSend = getRemoteContactPoint() + URLEncoder.encode(query, "UTF-8") + "/"
+						+ URLEncoder.encode(getStartTimeInString(lastModifiedTime), "UTF-8") + "/c";
+			} else {
+				toSend = getRemoteContactPoint() + URLEncoder.encode(query, "UTF-8") + "/"
+						+ URLEncoder.encode(getStartTimeInString(lastModifiedTime), "UTF-8");
+			}
+
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
-		//logger.debug ( new StringBuilder ("Wants to connect to ").append(getRemoteContactPoint()+query+"/"+getStartTimeInString(lastModifiedTime)).append( "==Encoded==> "+toSend));
+		// logger.debug ( new StringBuilder ("Wants to connect to
+		// ").append(getRemoteContactPoint()+query+"/"+getStartTimeInString(lastModifiedTime)).append(
+		// "==Encoded==> "+toSend));
 		logger.debug(new StringBuilder("Wants to connect to ")
-                    .append(getRemoteContactPoint())
-                    .append(query)
-                    .append("/")
-                    .append(getStartTimeInString(lastModifiedTime))
-                    .append("==Encoded==> ")
-                    .append(toSend)
-                    .toString());
-        return toSend;
+				.append(getRemoteContactPoint())
+				.append(query)
+				.append("/")
+				.append(getStartTimeInString(lastModifiedTime))
+				.append("==Encoded==> ")
+				.append(toSend)
+				.toString());
+		return toSend;
 	}
 
 }

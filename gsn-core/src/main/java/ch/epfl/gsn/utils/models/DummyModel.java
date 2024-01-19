@@ -30,41 +30,41 @@ import ch.epfl.gsn.beans.StreamElement;
 
 /**
  * This class is just an example of implementation of an AsbtractModel.
- * It always returns the last element and if no one is set, it builds one with the default value.
+ * It always returns the last element and if no one is set, it builds one with
+ * the default value.
  * The default value can be defined as a parameter.
+ * 
  * @author jeberle
  *
  */
 public class DummyModel extends AbstractModel {
-	
+
 	private StreamElement lastone;
 	private int defaultValue = 0;
 
 	@Override
-	public StreamElement[] pushData(StreamElement streamElement,String origin) {
+	public StreamElement[] pushData(StreamElement streamElement, String origin) {
 		lastone = streamElement;
-		return new StreamElement[]{lastone};
+		return new StreamElement[] { lastone };
 	}
 
 	@Override
 	public StreamElement[] query(StreamElement params) {
-		
-		if (lastone != null){
-			return new StreamElement[] {lastone};
-		}
-		else{
-			return new StreamElement[]{new StreamElement(new String[]{"value"},
-					new Byte[]{DataTypes.INTEGER}, new Integer[]{defaultValue})};
+
+		if (lastone != null) {
+			return new StreamElement[] { lastone };
+		} else {
+			return new StreamElement[] { new StreamElement(new String[] { "value" },
+					new Byte[] { DataTypes.INTEGER }, new Integer[] { defaultValue }) };
 		}
 	}
 
 	@Override
 	public void setParam(String k, String string) {
-		if (k.equalsIgnoreCase("default")){
-			try{
+		if (k.equalsIgnoreCase("default")) {
+			try {
 				defaultValue = Integer.parseInt(string);
-			}
-			catch (NumberFormatException e) {
+			} catch (NumberFormatException e) {
 			}
 		}
 

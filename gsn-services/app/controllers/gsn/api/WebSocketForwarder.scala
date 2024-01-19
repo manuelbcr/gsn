@@ -33,8 +33,8 @@ import play.mvc.Http
 import security.gsn.GSNDeadboltHandler
 import play.core.j.JavaHelpers
 import scalaoauth2.provider.AuthInfoRequest
-import models.gsn.User
-import models.gsn.DataSource
+import models.gsn.auth.User
+import models.gsn.auth.DataSource
 import controllers.gsn.GSNDataHandler
 import collection.JavaConverters._
 import scalaoauth2.provider.{ProtectedResource, ProtectedResourceRequest}
@@ -54,12 +54,9 @@ import play.Logger
 class WebSocketForwarder @Inject()(playAuth: PlayAuthenticate)(implicit actorSystem: ActorSystem, ec: ExecutionContext) extends InjectedController {
 
   def socket(sensorid: String)= WebSocket.acceptOrResult[Message, Message] { requestHeader =>
-    Logger.error(s"here $sensorid")
     if (playAuth.isLoggedIn(new Http.Session(requestHeader.session.data.asJava))) {
       val user = User.findByAuthUserIdentity(playAuth.getUser(JavaHelpers.createJavaContext(requestHeader, JavaHelpers.createContextComponents())))
-      Logger.error(s"user $user")
       if (hasAccess(user, false, sensorid)) {
-        Logger.error("hasAccesss")
         val flow: Flow[Message, Message, _] = createWebSocketFlow(sensorid)
         Future.successful(Right(flow))
       } else {

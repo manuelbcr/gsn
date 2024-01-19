@@ -37,7 +37,7 @@ import java.io.Serializable;
 import java.sql.*;
 import java.util.ArrayList;
 
-import org.apache.commons.dbcp.*;
+import org.apache.commons.dbcp2.*;
 import org.slf4j.LoggerFactory;
 
 import ch.epfl.gsn.Main;
@@ -62,24 +62,30 @@ public abstract class StorageManager {
 
     private BasicDataSource pool;
 
-    private int Idcounter=0;
+    private int Idcounter = 0;
 
-    public void init(String databaseDriver, String username, String password, String databaseURL, int maxDBConnections) {
+    public void init(String databaseDriver, String username, String password, String databaseURL,
+            int maxDBConnections) {
         this.databaseDriver = databaseDriver;
-        pool = DataSources.getDataSource(new DBConnectionInfo(databaseDriver,databaseURL,username,password));
-        pool.setMaxActive(maxDBConnections);
+        pool = DataSources.getDataSource(new DBConnectionInfo(databaseDriver, databaseURL, username, password));
+        pool.setMaxTotal(maxDBConnections);
         pool.setMaxIdle(maxDBConnections);
 
-        pool.setRemoveAbandoned(true);    // removing unused connections, used to clean after poorly written code
-        pool.setRemoveAbandonedTimeout(300);    // 5 minutes
+        pool.setRemoveAbandonedOnBorrow(true); // removing unused connections, used to clean after poorly written code
+        pool.setRemoveAbandonedTimeout(300); // 5 minutes
         //
         Connection con = null;
         try {
             initDatabaseAccess(con = getConnection());
-            logger.info(new StringBuilder().append("StorageManager DB connection initialized successfuly. driver:").append(databaseDriver).append(" url:").append(databaseURL).toString());
+            logger.info(new StringBuilder().append("StorageManager DB connection initialized successfuly. driver:")
+                    .append(databaseDriver).append(" url:").append(databaseURL).toString());
         } catch (Exception e) {
-            logger.error(new StringBuilder().append("Connecting to the database with the following properties failed :").append("\n\t UserName :").append(username).append("\n\t Password : ").append(password).append("\n\t Driver class : ").append(databaseDriver).append("\n\t Database URL : ").append(databaseURL).toString());
-            logger.info(new StringBuilder().append(e.getMessage()).append(", Please refer to the logs for more detailed information.").toString());
+            logger.error(new StringBuilder().append("Connecting to the database with the following properties failed :")
+                    .append("\n\t UserName :").append(username).append("\n\t Password : ").append(password)
+                    .append("\n\t Driver class : ").append(databaseDriver).append("\n\t Database URL : ")
+                    .append(databaseURL).toString());
+            logger.info(new StringBuilder().append(e.getMessage())
+                    .append(", Please refer to the logs for more detailed information.").toString());
             logger.info("Make sure in the ch.epfl.gsn.xml file, the <storage ...> element is correct.");
             logger.error(e.getMessage(), e);
         } finally {
@@ -87,7 +93,8 @@ public abstract class StorageManager {
         }
     }
 
-    public void initDatabaseAccess(Connection con) throws Exception {}
+    public void initDatabaseAccess(Connection con) throws Exception {
+    }
 
     public abstract byte convertLocalTypeToGSN(int jdbcType, int precision);
 
@@ -105,9 +112,6 @@ public abstract class StorageManager {
         return convertLocalTypeToGSN(jdbcType, 0);
     }
 
-
-
-
     /**
      * Returns false if the table doesnt exist. Uses the current default
      * connection.
@@ -120,7 +124,7 @@ public abstract class StorageManager {
         Connection connection = null;
         try {
             connection = getConnection();
-            return tableExists(tableName, new DataField[]{}, connection);
+            return tableExists(tableName, new DataField[] {}, connection);
         } finally {
             close(connection);
         }
@@ -135,26 +139,30 @@ public abstract class StorageManager {
      * @throws SQLException
      */
     public boolean tableExists(CharSequence tableName, Connection connection) throws SQLException {
-        return tableExists(tableName, new DataField[]{}, connection);
+        return tableExists(tableName, new DataField[] {}, connection);
     }
 
-
-    public abstract StringBuilder getStatementRemoveUselessDataCountBased(String virtualSensorName, long storageSize) ;
+    public abstract StringBuilder getStatementRemoveUselessDataCountBased(String virtualSensorName, long storageSize);
 
     public StringBuilder getStatementRemoveUselessDataTimeBased(String virtualSensorName, long storageSize) {
         StringBuilder query = null;
         long timedToRemove = -1;
         Connection conn = null;
         try {
-            ResultSet rs = Main.getStorage(virtualSensorName).executeQueryWithResultSet(new StringBuilder("SELECT MAX(timed) FROM ").append(virtualSensorName), conn = Main.getStorage(virtualSensorName).getConnection());
-            if (rs.next())
+            ResultSet rs = Main.getStorage(virtualSensorName).executeQueryWithResultSet(
+                    new StringBuilder("SELECT MAX(timed) FROM ").append(virtualSensorName),
+                    conn = Main.getStorage(virtualSensorName).getConnection());
+            if (rs.next()) {
                 timedToRemove = rs.getLong(1);
+            }
+
         } catch (SQLException e) {
             logger.error(e.getMessage(), e);
         } finally {
             Main.getStorage(virtualSensorName).close(conn);
         }
-        query = new StringBuilder().append("delete from ").append(virtualSensorName).append(" where ").append(virtualSensorName).append(".timed < ").append(timedToRemove);
+        query = new StringBuilder().append("delete from ").append(virtualSensorName).append(" where ")
+                .append(virtualSensorName).append(".timed < ").append(timedToRemove);
         query.append(" - ").append(storageSize);
         return query;
     }
@@ -169,26 +177,32 @@ public abstract class StorageManager {
             ArrayList<DataField> toReturnArr = new ArrayList<DataField>();
             for (int i = 1; i <= structure.getColumnCount(); i++) {
                 String colName = structure.getColumnLabel(i);
-                if (colName.equalsIgnoreCase("pk")) continue;
+                if (colName.equalsIgnoreCase("pk")) {
+                    continue;
+                }
                 int colType = structure.getColumnType(i);
                 byte colTypeInGSN = convertLocalTypeToGSN(colType);
-                if (colTypeInGSN == -100){
-                    logger.error("The type can't be converted to GSN form - error description: virtual sensor name is: "+tableName+", field name is: "+colName + ", query is: " + sb);
+                if (colTypeInGSN == -100) {
+                    logger.error("The type can't be converted to GSN form - error description: virtual sensor name is: "
+                            + tableName + ", field name is: " + colName + ", query is: " + sb);
                 }
                 toReturnArr.add(new DataField(colName, colTypeInGSN));
             }
-            toReturn = toReturnArr.toArray(new DataField[]{});
+            toReturn = toReturnArr.toArray(new DataField[] {});
         } finally {
-            if (rs != null)
+            if (rs != null) {
                 close(rs);
+            }
+
         }
         return toReturn;
     }
 
     /*
-    * Alternative method to 'tableToStructure'
-    * Useful for correctly creating structure for fields with variable length (like char, varchar, binary, blob)  
-    * */
+     * Alternative method to 'tableToStructure'
+     * Useful for correctly creating structure for fields with variable length (like
+     * char, varchar, binary, blob)
+     */
     public DataField[] tableToStructureByString(String tableName, Connection connection) throws SQLException {
         StringBuilder sb = new StringBuilder("select * from ").append(tableName).append(" where 1=0 ");
         ResultSet rs = null;
@@ -199,28 +213,35 @@ public abstract class StorageManager {
             ArrayList<DataField> toReturnArr = new ArrayList<DataField>();
             for (int i = 1; i <= structure.getColumnCount(); i++) {
                 String colName = structure.getColumnLabel(i);
-                if (colName.equalsIgnoreCase("pk")) continue;
-                if (colName.equalsIgnoreCase("timed")) continue;
+                if (colName.equalsIgnoreCase("pk")) {
+                    continue;
+                }
+                if (colName.equalsIgnoreCase("timed")) {
+                    continue;
+                }
                 int colType = structure.getColumnType(i);
                 String colTypeName = structure.getColumnTypeName(i);
                 int precision = structure.getPrecision(i);
                 byte colTypeInGSN = convertLocalTypeToGSN(colType);
-                if (colTypeInGSN == -100){
-                    logger.error("The type can't be converted to GSN form - error description: virtual sensor name is: "+tableName+", field name is: "+colName + ", query is: " + sb);
+                if (colTypeInGSN == -100) {
+                    logger.error("The type can't be converted to GSN form - error description: virtual sensor name is: "
+                            + tableName + ", field name is: " + colName + ", query is: " + sb);
                 }
-                if ((colTypeInGSN == DataTypes.VARCHAR) || (colTypeInGSN == DataTypes.CHAR))
+                if ((colTypeInGSN == DataTypes.VARCHAR) || (colTypeInGSN == DataTypes.CHAR)) {
                     toReturnArr.add(new DataField(colName, colTypeName, precision, colName));
-                else
+                } else {
                     toReturnArr.add(new DataField(colName, colTypeInGSN));
+                }
             }
-            toReturn = toReturnArr.toArray(new DataField[]{});
+            toReturn = toReturnArr.toArray(new DataField[] {});
         } finally {
-            if (rs != null)
+            if (rs != null) {
                 close(rs);
+            }
         }
+
         return toReturn;
     }
-
 
     /**
      * Returns false if the table doesnt exist. If the table exists but the
@@ -228,7 +249,8 @@ public abstract class StorageManager {
      * GSNRuntimeException. Note that this method doesn't close the connection
      *
      * @param tableName
-     * @param connection (this method will not close it and the caller is responsible
+     * @param connection (this method will not close it and the caller is
+     *                   responsible
      *                   for closing the connection)
      * @return
      * @throws SQLException
@@ -237,42 +259,50 @@ public abstract class StorageManager {
 
     public boolean tableExists(CharSequence tableName, DataField[] fields, Connection connection) throws SQLException,
             GSNRuntimeException {
-        if (!ValidityTools.isValidJavaVariable(tableName))
+        if (!ValidityTools.isValidJavaVariable(tableName)) {
             throw new GSNRuntimeException("Table name is not valid");
-        StringBuilder sb = new StringBuilder("select * from ").append(tableNameGeneratorInString(tableName)).append(" where 1=0 ");
+        }
+
+        StringBuilder sb = new StringBuilder("select * from ").append(tableNameGeneratorInString(tableName))
+                .append(" where 1=0 ");
         ResultSet rs = null;
         try {
             rs = executeQueryWithResultSet(sb, connection);
             ResultSetMetaData structure = rs.getMetaData();
-            if (fields != null && fields.length > 0)
-                nextField:for (DataField field : fields) {
+            if (fields != null && fields.length > 0) {
+                nextField: for (DataField field : fields) {
                     for (int i = 1; i <= structure.getColumnCount(); i++) {
                         String colName = structure.getColumnLabel(i);
                         int colType = structure.getColumnType(i);
                         int colTypeScale = structure.getScale(i);
-                        if (field.getName().equalsIgnoreCase(colName)){
+                        if (field.getName().equalsIgnoreCase(colName)) {
                             byte gsnType = convertLocalTypeToGSN(colType, colTypeScale);
-                            if (gsnType == -100){
-                                logger.error("The type can't be converted to GSN form - error description: virtual sensor name is: "+tableName+", field name is: "+colName + ", query is: " + sb);
+                            if (gsnType == -100) {
+                                logger.error(
+                                        "The type can't be converted to GSN form - error description: virtual sensor name is: "
+                                                + tableName + ", field name is: " + colName + ", query is: " + sb);
                             }
-                            if (field.getDataTypeID() == gsnType)
+                            if (field.getDataTypeID() == gsnType) {
                                 continue nextField;
-                            else
+                            } else {
                                 throw new GSNRuntimeException("The column : "
                                         + colName + " in the >" + tableName
                                         + "< table is not compatible with type : "
                                         + field.getType()
                                         + ". The actual type for this table (currently in the database): " + colType);
+                            }
                         }
                     }
                     throw new GSNRuntimeException("The table " + tableName
                             + " in the database, doesn't have the >" + field.getName()
                             + "< column.");
                 }
+            }
+
         } catch (SQLException e) {
-            if (e.getErrorCode() == getTableNotExistsErrNo() || e.getMessage().contains("does not exist"))
+            if (e.getErrorCode() == getTableNotExistsErrNo() || e.getMessage().contains("does not exist")) {
                 return false;
-            else {
+            } else {
                 logger.error(e.getMessage());
                 throw e;
             }
@@ -331,7 +361,7 @@ public abstract class StorageManager {
      */
 
     public ResultSet getBinaryFieldByQuery(StringBuilder query,
-                                           String colName, long pk, Connection connection) throws SQLException {
+            String colName, long pk, Connection connection) throws SQLException {
         PreparedStatement ps = connection.prepareStatement(query.toString());
         ps.setLong(1, pk);
         return ps.executeQuery();
@@ -423,6 +453,10 @@ public abstract class StorageManager {
         }
     }
 
+    public BasicDataSource getPool() {
+        return pool;
+    }
+
     public void executeDropTable(CharSequence tableName, Connection connection) {
         PreparedStatement prepareStatement = null;
         try {
@@ -447,7 +481,8 @@ public abstract class StorageManager {
 
     public void executeDropView(StringBuilder tableName, Connection connection) throws SQLException {
         logger.debug("Dropping table structure: " + tableName);
-        PreparedStatement prepareStatement = connection.prepareStatement(getStatementDropView(tableName, connection).toString());
+        PreparedStatement prepareStatement = connection
+                .prepareStatement(getStatementDropView(tableName, connection).toString());
         prepareStatement.execute();
         close(prepareStatement);
     }
@@ -467,11 +502,13 @@ public abstract class StorageManager {
      *
      * @param tableName
      * @param structure
-     * @param unique     , setting this true cause the system to create a unique index on time.
+     * @param unique     , setting this true cause the system to create a unique
+     *                   index on time.
      * @param connection
      * @throws SQLException
      */
-    public void executeCreateTable(CharSequence tableName, DataField[] structure, boolean unique, Connection connection) throws SQLException {
+    public void executeCreateTable(CharSequence tableName, DataField[] structure, boolean unique, Connection connection)
+            throws SQLException {
         StringBuilder sql = getStatementCreateTable(tableName, structure, connection);
         logger.debug(new StringBuilder().append("The create table statement is : ").append(sql).toString());
 
@@ -484,35 +521,42 @@ public abstract class StorageManager {
         prepareStatement.execute();
         prepareStatement.close();
         for (DataField field : structure) {
-        	if (!field.getIndex())
-        		continue;
-        	sql = getStatementCreateIndexOnField(tableName, field.getName().toUpperCase(), false);
-            if (logger.isDebugEnabled())
+            if (!field.getIndex()) {
+                continue;
+            }
+
+            sql = getStatementCreateIndexOnField(tableName, field.getName().toUpperCase(), false);
+            if (logger.isDebugEnabled()) {
                 logger.debug(new StringBuilder().append(
                         "The create index statement is : ").append(sql).toString());
+            }
+
             prepareStatement = connection.prepareStatement(sql.toString());
             prepareStatement.execute();
             prepareStatement.close();
-        } 
+        }
 
     }
 
-
     public StringBuilder getStatementCreateIndexOnField(
             CharSequence tableName, String field, boolean unique) throws SQLException {
-    	return getStatementCreateIndexOnField(tableName, field, unique, "");	
+        return getStatementCreateIndexOnField(tableName, field, unique, "");
     }
 
     private StringBuilder getStatementCreateIndexOnField(
             CharSequence tableName, String field, boolean unique, String order) throws SQLException {
         StringBuilder toReturn = new StringBuilder("CREATE ");
-        if (unique)
+        if (unique) {
             toReturn.append(" UNIQUE ");
-        toReturn.append(" INDEX ").append(field).append(System.currentTimeMillis()).append("_").append(Idcounter++).append("_INDEX").append(" ON ").append(tableName).append(" (").append(field).append(" ").append(order).append(")");
+        }
+
+        toReturn.append(" INDEX ").append(field).append(System.currentTimeMillis()).append("_").append(Idcounter++)
+                .append("_INDEX").append(" ON ").append(tableName).append(" (").append(field).append(" ").append(order)
+                .append(")");
         return toReturn;
     }
 
-    public ResultSet executeQueryWithResultSet(StringBuilder query,Connection connection) throws SQLException {
+    public ResultSet executeQueryWithResultSet(StringBuilder query, Connection connection) throws SQLException {
         return connection.prepareStatement(query.toString()).executeQuery();
     }
 
@@ -520,11 +564,13 @@ public abstract class StorageManager {
         if (abstractQuery.getLimitCriterion() == null) {
             return executeQueryWithResultSet(abstractQuery.getStandardQuery(), c);
         }
-        String query = addLimit(abstractQuery.getStandardQuery().toString(), abstractQuery.getLimitCriterion().getSize(), abstractQuery.getLimitCriterion().getOffset());
+        String query = addLimit(abstractQuery.getStandardQuery().toString(),
+                abstractQuery.getLimitCriterion().getSize(), abstractQuery.getLimitCriterion().getOffset());
         return executeQueryWithResultSet(new StringBuilder(query), c);
     }
 
-    public DataEnumerator executeQuery(StringBuilder query, boolean binaryFieldsLinked, Connection connection) throws SQLException {
+    public DataEnumerator executeQuery(StringBuilder query, boolean binaryFieldsLinked, Connection connection)
+            throws SQLException {
         logger.debug("Executing query: " + query + "( Binary Field Linked:" + binaryFieldsLinked + ")");
         return new DataEnumerator(this, connection.prepareStatement(query.toString()), binaryFieldsLinked);
     }
@@ -538,20 +584,24 @@ public abstract class StorageManager {
      * @return
      * @throws SQLException
      */
-    public DataEnumerator executeQuery(AbstractQuery abstractQuery, boolean binaryFieldsLinked, Connection connection) throws SQLException {
+    public DataEnumerator executeQuery(AbstractQuery abstractQuery, boolean binaryFieldsLinked, Connection connection)
+            throws SQLException {
         if (abstractQuery.getLimitCriterion() == null) {
             return executeQuery(abstractQuery.getStandardQuery(), binaryFieldsLinked, connection);
         }
-        String query = addLimit(abstractQuery.getStandardQuery().toString(), abstractQuery.getLimitCriterion().getSize(), abstractQuery.getLimitCriterion().getOffset());
+        String query = addLimit(abstractQuery.getStandardQuery().toString(),
+                abstractQuery.getLimitCriterion().getSize(), abstractQuery.getLimitCriterion().getOffset());
         logger.debug("Executing query: " + query + "(" + binaryFieldsLinked + ")");
         return new DataEnumerator(this, connection.prepareStatement(query.toString()), binaryFieldsLinked);
     }
 
-    public DataEnumerator streamedExecuteQuery(AbstractQuery abstractQuery, boolean binaryFieldsLinked, Connection connection) throws SQLException {
+    public DataEnumerator streamedExecuteQuery(AbstractQuery abstractQuery, boolean binaryFieldsLinked,
+            Connection connection) throws SQLException {
         if (abstractQuery.getLimitCriterion() == null) {
             return streamedExecuteQuery(abstractQuery.getStandardQuery().toString(), binaryFieldsLinked, connection);
         }
-        String query = addLimit(abstractQuery.getStandardQuery().toString(), abstractQuery.getLimitCriterion().getSize(), abstractQuery.getLimitCriterion().getOffset());
+        String query = addLimit(abstractQuery.getStandardQuery().toString(),
+                abstractQuery.getLimitCriterion().getSize(), abstractQuery.getLimitCriterion().getOffset());
         logger.debug("Executing query: " + query + "(" + binaryFieldsLinked + ")");
         return streamedExecuteQuery(query, binaryFieldsLinked, connection);
     }
@@ -560,15 +610,14 @@ public abstract class StorageManager {
         return executeQuery(query, binaryFieldsLinked, getConnection());
     }
 
-    public DataEnumerator streamedExecuteQuery(String query, boolean binaryFieldsLinked, Connection conn) throws SQLException {
+    public DataEnumerator streamedExecuteQuery(String query, boolean binaryFieldsLinked, Connection conn)
+            throws SQLException {
         return new DataEnumerator(this, conn.prepareStatement(query), binaryFieldsLinked);
     }
-
 
     public DataEnumerator streamedExecuteQuery(String query, boolean binaryFieldsLinked) throws SQLException {
         return streamedExecuteQuery(query, binaryFieldsLinked, getConnection());
     }
-
 
     public void executeCreateView(CharSequence viewName, CharSequence selectQuery) throws SQLException {
         Connection connection = null;
@@ -580,7 +629,8 @@ public abstract class StorageManager {
         }
     }
 
-    public void executeCreateView(CharSequence viewName, CharSequence selectQuery, Connection connection) throws SQLException {
+    public void executeCreateView(CharSequence viewName, CharSequence selectQuery, Connection connection)
+            throws SQLException {
         StringBuilder statement = getStatementCreateView(viewName, selectQuery);
         logger.debug("Creating a view:" + statement);
         final PreparedStatement prepareStatement = connection.prepareStatement(statement.toString());
@@ -607,20 +657,22 @@ public abstract class StorageManager {
             logger.error(error.getMessage() + " FOR: " + sql, error);
         } finally {
             try {
-                if (stmt != null && !stmt.isClosed())
+                if (stmt != null && !stmt.isClosed()) {
                     stmt.close();
+                }
+
             } catch (SQLException e) {
-            	logger.error(e.getMessage(), e);
+                logger.error(e.getMessage(), e);
             }
         }
     }
 
     public int executeUpdate(String updateStatement, Connection connection) {
         int toReturn = -1;
-        //PreparedStatement prepareStatement = null;
+        // PreparedStatement prepareStatement = null;
         try {
-            //prepareStatement = connection.prepareStatement(updateStatement);
-            //toReturn = prepareStatement.executeUpdate();
+            // prepareStatement = connection.prepareStatement(updateStatement);
+            // toReturn = prepareStatement.executeUpdate();
             toReturn = connection.createStatement().executeUpdate(updateStatement);
         } catch (SQLException error) {
             logger.error(error.getMessage(), error);
@@ -654,71 +706,85 @@ public abstract class StorageManager {
         }
     }
 
-    public void executeInsert(CharSequence tableName, DataField[] fields, StreamElement streamElement, Connection connection) throws SQLException {
+    public void executeInsert(CharSequence tableName, DataField[] fields, StreamElement streamElement,
+            Connection connection) throws SQLException {
         PreparedStatement ps = null;
         String query = getStatementInsert(tableName, fields).toString();
         try {
             ps = connection.prepareStatement(query);
             int counter = 1;
             for (DataField dataField : fields) {
-                if (dataField.getName().equalsIgnoreCase("timed"))
+                if (dataField.getName().equalsIgnoreCase("timed")) {
                     continue;
+                }
+
                 Serializable value = streamElement.getData(dataField.getName());
 
                 switch (dataField.getDataTypeID()) {
                     case DataTypes.VARCHAR:
-                        if (value == null)
+                        if (value == null) {
                             ps.setNull(counter, Types.VARCHAR);
-                        else
+                        } else {
                             ps.setString(counter, value.toString());
+                        }
                         break;
                     case DataTypes.CHAR:
-                        if (value == null)
+                        if (value == null) {
                             ps.setNull(counter, Types.CHAR);
-                        else
+                        } else {
                             ps.setString(counter, value.toString());
+                        }
                         break;
                     case DataTypes.INTEGER:
-                        if (value == null)
+                        if (value == null) {
                             ps.setNull(counter, Types.INTEGER);
-                        else
+                        } else {
                             ps.setInt(counter, ((Number) value).intValue());
+                        }
                         break;
                     case DataTypes.SMALLINT:
-                        if (value == null)
+                        if (value == null) {
                             ps.setNull(counter, Types.SMALLINT);
-                        else
+                        } else {
                             ps.setShort(counter, ((Number) value).shortValue());
+                        }
                         break;
                     case DataTypes.TINYINT:
-                        if (value == null)
+                        if (value == null) {
                             ps.setNull(counter, Types.TINYINT);
-                        else
+                        } else {
                             ps.setByte(counter, ((Number) value).byteValue());
+                        }
                         break;
                     case DataTypes.DOUBLE:
-                        if (value == null)
+                        if (value == null) {
                             ps.setNull(counter, Types.DOUBLE);
-                        else
+                        } else {
                             ps.setDouble(counter, ((Number) value).doubleValue());
+                        }
                         break;
                     case DataTypes.FLOAT:
-                        if (value == null)
+                        if (value == null) {
                             ps.setNull(counter, Types.FLOAT);
-                        else
+                        } else {
                             ps.setFloat(counter, ((Number) value).floatValue());
+                        }
                         break;
                     case DataTypes.BIGINT:
-                        if (value == null)
+                        if (value == null) {
                             ps.setNull(counter, Types.BIGINT);
-                        else
+                        } else {
                             ps.setLong(counter, ((Number) value).longValue());
+                        }
+
                         break;
                     case DataTypes.BINARY:
-                        if (value == null)
+                        if (value == null) {
                             ps.setNull(counter, Types.BINARY);
-                        else
+                        } else {
                             ps.setBytes(counter, (byte[]) value);
+                        }
+
                         break;
                     default:
                         logger.error("The type conversion is not supported for : "
@@ -730,20 +796,25 @@ public abstract class StorageManager {
             ps.setLong(counter, streamElement.getTimeStamp());
             ps.execute();
         } catch (GSNRuntimeException e) {
-            //if (e.getType() == GSNRuntimeException.UNEXPECTED_VIRTUAL_SENSOR_REMOVAL) {
-            //    if (logger.isDebugEnabled())
-            //        logger.debug("An stream element dropped due to unexpected virtual sensor removal. (Stream element: " + streamElement.toString() + ")+ Query: " + query, e);
-            //} else
-                logger.warn("Inserting a stream element failed : "
-                        + streamElement.toString(), e);
+            // if (e.getType() == GSNRuntimeException.UNEXPECTED_VIRTUAL_SENSOR_REMOVAL) {
+            // if (logger.isDebugEnabled())
+            // logger.debug("An stream element dropped due to unexpected virtual sensor
+            // removal. (Stream element: " + streamElement.toString() + ")+ Query: " +
+            // query, e);
+            // } else
+            logger.warn("Inserting a stream element failed : "
+                    + streamElement.toString(), e);
         } catch (SQLException e) {
-            if (e.getMessage().toLowerCase().contains("duplicate entry"))
-                logger.info("Error occurred on inserting data to the database, an stream element dropped due to: " + e.getMessage() + ". (Stream element: " + streamElement.toString() + ")+ Query: " + query);
-            else
-                logger.warn("Error occurred on inserting data to the database, an stream element dropped due to: " + e.getMessage() + ". (Stream element: " + streamElement.toString() + ")+ Query: " + query);
+            if (e.getMessage().toLowerCase().contains("duplicate entry")) {
+                logger.info("Error occurred on inserting data to the database, an stream element dropped due to: "
+                        + e.getMessage() + ". (Stream element: " + streamElement.toString() + ")+ Query: " + query);
+            } else {
+                logger.warn("Error occurred on inserting data to the database, an stream element dropped due to: "
+                        + e.getMessage() + ". (Stream element: " + streamElement.toString() + ")+ Query: " + query);
+            }
+
             throw e;
-        }
-        finally {
+        } finally {
             close(ps);
         }
     }
@@ -762,16 +833,20 @@ public abstract class StorageManager {
      */
     public StringBuilder getStatementInsert(CharSequence tableName, DataField fields[]) {
         StringBuilder toReturn = new StringBuilder("insert into ").append(tableName).append(" ( ");
-        int numberOfQuestionMarks = 1; //Timed is always there.
+        int numberOfQuestionMarks = 1; // Timed is always there.
         for (DataField dataField : fields) {
-            if (dataField.getName().equalsIgnoreCase("timed"))
+            if (dataField.getName().equalsIgnoreCase("timed")) {
                 continue;
+            }
+
             numberOfQuestionMarks++;
             toReturn.append(dataField.getName()).append(" ,");
         }
         toReturn.append(" timed ").append(" ) values (");
-        for (int i = 1; i <= numberOfQuestionMarks; i++)
+        for (int i = 1; i <= numberOfQuestionMarks; i++) {
             toReturn.append("?,");
+        }
+
         toReturn.deleteCharAt(toReturn.length() - 1);
         toReturn.append(")");
         return toReturn;
@@ -781,7 +856,7 @@ public abstract class StorageManager {
         return new StringBuilder("alter table ").append(oldName).append(" rename to ").append(newName).toString();
     }
 
-    public abstract StringBuilder getStatementDropTable(CharSequence tableName, Connection conn) throws SQLException ;
+    public abstract StringBuilder getStatementDropTable(CharSequence tableName, Connection conn) throws SQLException;
 
     /**
      * First detects the appropriate DB Engine to use. Get's the drop index
@@ -792,35 +867,39 @@ public abstract class StorageManager {
      * @return
      * @throws SQLException
      */
-    public StringBuilder getStatementDropIndex(CharSequence indexName, CharSequence tableName,Connection connection) throws SQLException {
-       return new StringBuilder(getStatementDropIndex().replace("#NAME",indexName).replace("#TABLE", tableName));
+    public StringBuilder getStatementDropIndex(CharSequence indexName, CharSequence tableName, Connection connection)
+            throws SQLException {
+        return new StringBuilder(getStatementDropIndex().replace("#NAME", indexName).replace("#TABLE", tableName));
     }
 
-    public StringBuilder getStatementDropView(CharSequence viewName,Connection connection) throws SQLException {
-        return new StringBuilder(getStatementDropView().replace("#NAME",viewName));
+    public StringBuilder getStatementDropView(CharSequence viewName, Connection connection) throws SQLException {
+        return new StringBuilder(getStatementDropView().replace("#NAME", viewName));
     }
 
     public StringBuilder getStatementCreateIndexOnTimed(
             CharSequence tableName, boolean unique) throws SQLException {
         StringBuilder toReturn = new StringBuilder("CREATE ");
-        if (unique)
+        if (unique) {
             toReturn.append(" UNIQUE ");
-        toReturn.append(" INDEX ").append(tableNamePostFixAppender(tableName, "_INDEX")).append(" ON ").append(tableName).append(" (timed DESC)");
+        }
+
+        toReturn.append(" INDEX ").append(tableNamePostFixAppender(tableName, "_INDEX")).append(" ON ")
+                .append(tableName).append(" (timed DESC)");
         return toReturn;
     }
 
-    public StringBuilder getStatementCreateTable(CharSequence tableName, DataField[] structure, Connection connection) throws SQLException {
+    public StringBuilder getStatementCreateTable(CharSequence tableName, DataField[] structure, Connection connection)
+            throws SQLException {
         return getStatementCreateTable(tableName.toString(), structure);
     }
 
     public abstract StringBuilder getStatementCreateTable(String tableName, DataField[] structure);
 
-    public StringBuilder getStatementCreateView(CharSequence viewName,CharSequence selectQuery) {
+    public StringBuilder getStatementCreateView(CharSequence viewName, CharSequence selectQuery) {
         return new StringBuilder("create view ").append(viewName).append(" AS ( ").append(selectQuery).append(" ) ");
     }
 
     private String driver = null;
-
 
     /**
      * The prefix is in lower case
@@ -834,27 +913,30 @@ public abstract class StorageManager {
     }
 
     /*
-    * Converts from internal GSN data types to a supported DB data type.
-    * @param field The DataField to be converted @return convertedType The
-    * datatype name used by the target database.
-    */
+     * Converts from internal GSN data types to a supported DB data type.
+     * 
+     * @param field The DataField to be converted @return convertedType The
+     * datatype name used by the target database.
+     */
     public abstract String convertGSNTypeToLocalType(DataField gsnType);
-
 
     /**
      * Obtains the default database connection.
-     * The conneciton comes from the data source which is configured through ch.epfl.gsn.xml file.
+     * The conneciton comes from the data source which is configured through
+     * ch.epfl.gsn.xml file.
+     * 
      * @return
      * @throws SQLException
      */
     public Connection getConnection() throws SQLException {
-        logger.debug("Asking a con. to DB: "+pool.getUrl()+" => busy: "+pool.getNumActive()+", max-size: "+pool.getMaxActive()+", idle: "+pool.getNumIdle());
+        logger.debug("Asking a con. to DB: " + pool.getUrl() + " => busy: " + pool.getNumActive() + ", max-size: "
+                + pool.getMaxTotal() + ", idle: " + pool.getNumIdle());
         return pool.getConnection();
     }
 
-
     /**
-     * Retruns an approximation of the difference between the current time of the DB and that of the local system
+     * Retruns an approximation of the difference between the current time of the DB
+     * and that of the local system
      *
      * @return
      */
@@ -886,52 +968,69 @@ public abstract class StorageManager {
 
     //
 
-    public String randomTableNameGenerator ( int length ) {
-		byte oneCharacter;
-		StringBuffer result = new StringBuffer ( length );
-		for ( int i = 0 ; i < length ; i++ ) {
-			oneCharacter = ( byte ) ( ( Math.random ( ) * ( 'z' - 'a' + 1 ) ) + 'a' );
-			result.append ( ( char ) oneCharacter );
-		}
-		return result.toString ( );
-	}
+    public String randomTableNameGenerator(int length) {
+        byte oneCharacter;
+        StringBuffer result = new StringBuffer(length);
+        for (int i = 0; i < length; i++) {
+            oneCharacter = (byte) ((Math.random() * ('z' - 'a' + 1)) + 'a');
+            result.append((char) oneCharacter);
+        }
+        return result.toString();
+    }
 
-	public int tableNameGenerator ( ) {
-		return randomTableNameGenerator ( 15 ).hashCode ( );
-	}
+    public int tableNameGenerator() {
+        return randomTableNameGenerator(15).hashCode();
+    }
 
-    public StringBuilder tableNameGeneratorInString (CharSequence tableName) {
-		return new StringBuilder(tableName);
-	}
+    public StringBuilder tableNameGeneratorInString(CharSequence tableName) {
+        return new StringBuilder(tableName);
+    }
 
-	public StringBuilder tableNameGeneratorInString (int code) {
-		StringBuilder sb = new StringBuilder ("_");
-		if (code<0)
-			sb.append ( "_" );
-		sb.append ( Math.abs (code) );
-		return tableNameGeneratorInString(sb);
-	}
+    public StringBuilder tableNameGeneratorInString(int code) {
+        StringBuilder sb = new StringBuilder("_");
+        if (code < 0) {
+            sb.append("_");
+        }
 
-    public String tableNamePostFixAppender(CharSequence table_name,String postFix) {
+        sb.append(Math.abs(code));
+        return tableNameGeneratorInString(sb);
+    }
+
+    public String tableNamePostFixAppender(CharSequence table_name, String postFix) {
         String tableName = table_name.toString();
-		if (tableName.endsWith("\""))
-			return (tableName.substring(0, tableName.length()-2))+postFix+"\"";
-		else
-			return tableName+postFix;
+        if (tableName.endsWith("\"")) {
+            return (tableName.substring(0, tableName.length() - 2)) + postFix + "\"";
+        } else {
+            return tableName + postFix;
+        }
+
     }
 
     // deprecated
-    protected boolean isH2 ;
-    protected boolean isMysql ;
-    protected boolean isOracle ;
-    protected boolean isSqlServer ;
-    protected boolean isPostgres ;
-    public boolean isOracle(){ return isOracle; }
-    public boolean isH2(){ return isH2; }
-    public boolean isSqlServer(){ return isSqlServer; }
-    public boolean isMysqlDB(){ return isMysql; }
-    public boolean isPostgres(){ return isPostgres; }
+    protected boolean isH2;
+    protected boolean isMysql;
+    protected boolean isOracle;
+    protected boolean isSqlServer;
+    protected boolean isPostgres;
 
+    public boolean isOracle() {
+        return isOracle;
+    }
 
+    public boolean isH2() {
+        return isH2;
+    }
+
+    public boolean isSqlServer() {
+        return isSqlServer;
+    }
+
+    public boolean isMysqlDB() {
+        return isMysql;
+    }
+
+    public boolean isPostgres() {
+        return isPostgres;
+    }
 
 }

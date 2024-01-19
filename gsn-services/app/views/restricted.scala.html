@@ -1,5 +1,5 @@
 @import service.gsn.UserProvider
-@(userProvider: UserProvider, localUser: models.gsn.User = null)
+@(userProvider: UserProvider, localUser: models.gsn.auth.User = null)
 
 @main(userProvider, Messages("playauthenticate.navigation.restricted"), "restricted") {
     

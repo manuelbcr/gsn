@@ -89,7 +89,8 @@ public class ApproxSwissProj {
 		// Process long
 		double lng = (2.6779094 + (4.728982 * y_aux)
 				+ (0.791484 * y_aux * x_aux) + (0.1306 * y_aux * Math.pow(
-				x_aux, 2))) - (0.0436 * Math.pow(y_aux, 3));
+						x_aux, 2)))
+				- (0.0436 * Math.pow(y_aux, 3));
 
 		// Unit 10000" to 1 " and converts seconds to degrees (dec)
 		lng = (lng * 100) / 36;
@@ -210,7 +211,8 @@ public class ApproxSwissProj {
 		// Process X
 		double x = ((200147.07 + (308807.95 * lat_aux)
 				+ (3745.25 * Math.pow(lng_aux, 2)) + (76.63 * Math.pow(lat_aux,
-				2))) - (194.56 * Math.pow(lng_aux, 2) * lat_aux))
+						2)))
+				- (194.56 * Math.pow(lng_aux, 2) * lat_aux))
 				+ (119.79 * Math.pow(lat_aux, 3));
 
 		return x;

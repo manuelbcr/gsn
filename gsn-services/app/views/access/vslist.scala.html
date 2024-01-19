@@ -1,8 +1,8 @@
 @import scala.collection.mutable.Buffer
 @import service.gsn.UserProvider 
 @import controllers.gsn.auth.GSNGroup 
-@import models.gsn._
-@(vs: Buffer[models.gsn.DataSource], groups: Buffer[models.gsn.Group], users: Buffer[models.gsn.User], count:Int, page:Int, pageLength:Int,userProvider: UserProvider) 
+@import models.gsn.auth._
+@(vs: Buffer[models.gsn.auth.DataSource], groups: Buffer[models.gsn.auth.Group], users: Buffer[models.gsn.auth.User], count:Int, page:Int, pageLength:Int,userProvider: UserProvider) 
 @import helper._ 
 @implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapBasic.f) }
 
@@ -14,6 +14,12 @@
     </div>
     <div id="groups" class="row">
         <div class="col-xs-12 col-md-12">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="text" id="searchVs" class="form-control" placeholder="Search Virtual Sensors">
+                </div>
+            </div>  
+            <br>          
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -283,6 +289,20 @@
             }
         });
     });
+
+    $('#searchVs').on('input', function () {
+            var searchTerm = $(this).val().toLowerCase();
+
+            $('tbody tr').each(function () {
+                var vsName = $(this).find('td:first-child').text().toLowerCase();
+
+                if (vsName.includes(searchTerm)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
     </script>
     }
     

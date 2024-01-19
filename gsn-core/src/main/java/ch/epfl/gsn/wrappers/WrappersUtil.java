@@ -39,11 +39,13 @@ import ch.epfl.gsn.wrappers.WrappersUtil;
 import java.nio.file.Paths;
 
 import org.slf4j.Logger;
+
 public class WrappersUtil {
-  
-  public static transient Logger logger= LoggerFactory.getLogger ( WrappersUtil.class );
-  
-  public static final String     DEFAULT_WRAPPER_PROPERTIES_FILE  = Main.gsnConfFolder +"/wrappers.properties";
+
+  public static transient Logger logger = LoggerFactory.getLogger(WrappersUtil.class);
+
+  public static final String DEFAULT_WRAPPER_PROPERTIES_FILE = Main.gsnConfFolder + "/wrappers.properties";
+
   public static Properties loadWrappers(HashMap<String, Class<?>> wrappers, String location) {
     Properties config = new Properties ();
     String currentWorkingDir = System.getProperty("user.dir");
@@ -57,8 +59,9 @@ public class WrappersUtil {
     }  
     // TODO: Checking for duplicates in the wrappers file.
     return config;
-  }  
-  public static Properties loadWrappers(HashMap<String, Class<?>> wrappers){
-    return loadWrappers(wrappers,DEFAULT_WRAPPER_PROPERTIES_FILE);
+  }
+
+  public static Properties loadWrappers(HashMap<String, Class<?>> wrappers) {
+    return loadWrappers(wrappers, DEFAULT_WRAPPER_PROPERTIES_FILE);
   }
 }

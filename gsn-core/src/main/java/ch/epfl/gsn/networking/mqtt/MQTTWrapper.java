@@ -15,10 +15,10 @@ import ch.epfl.gsn.beans.DataField;
 import ch.epfl.gsn.beans.StreamElement;
 import ch.epfl.gsn.wrappers.AbstractWrapper;
 
-public class MQTTWrapper extends AbstractWrapper implements  MqttCallbackExtended{
-	
+public class MQTTWrapper extends AbstractWrapper implements MqttCallbackExtended {
+
 	private final transient Logger logger = LoggerFactory.getLogger(MQTTWrapper.class);
-	
+
 	private MqttAsyncClient client;
 	private AddressBean addressBean;
 	private String serverURI;
@@ -28,38 +28,40 @@ public class MQTTWrapper extends AbstractWrapper implements  MqttCallbackExtende
 
 	@Override
 	public DataField[] getOutputFormat() {
-		return new DataField[] {new DataField( "raw_packet" , "BINARY" , "The packet contains raw data received in the MQTT payload." ) };
+		return new DataField[] {
+				new DataField("raw_packet", "BINARY", "The packet contains raw data received in the MQTT payload.") };
 	}
 
 	@Override
 	public boolean initialize() {
 		try {
-			addressBean = getActiveAddressBean( );
+			addressBean = getActiveAddressBean();
 			serverURI = addressBean.getPredicateValue("uri");
-			if ( serverURI == null || serverURI.trim().length() == 0 ) {
-				logger.error( "The uri parameter is missing from the MQTT wrapper, initialization failed." );
+			if (serverURI == null || serverURI.trim().length() == 0) {
+				logger.error("The uri parameter is missing from the MQTT wrapper, initialization failed.");
 				return false;
 			}
 			clientID = addressBean.getPredicateValue("client_id");
-			if ( clientID == null || clientID.trim().length() == 0 ) {
-				logger.error( "The client_id parameter is missing from the MQTT wrapper, initialization failed." );
+			if (clientID == null || clientID.trim().length() == 0) {
+				logger.error("The client_id parameter is missing from the MQTT wrapper, initialization failed.");
 				return false;
 			}
 			topic = addressBean.getPredicateValue("topic");
-			if ( topic == null || topic.trim().length() == 0 ) {
-				logger.error( "The topic parameter is missing from the MQTT wrapper, initialization failed." );
+			if (topic == null || topic.trim().length() == 0) {
+				logger.error("The topic parameter is missing from the MQTT wrapper, initialization failed.");
 				return false;
 			}
 			qos = addressBean.getPredicateValueAsInt("qos", 0);
 			if (qos < 0 || qos > 2) {
-				logger.error( "The qos parameter from MQTT wrapper can be 0, 1 or 2 (found "+qos+"), initialization failed." );
+				logger.error("The qos parameter from MQTT wrapper can be 0, 1 or 2 (found " + qos
+						+ "), initialization failed.");
 				return false;
 			}
 			client = new MqttAsyncClient(serverURI, clientID);
 			client.setCallback(this);
-			client.connect();			
-		}catch (Exception e){
-			logger.error("Error in instanciating MQTT broker with "+topic+" @ "+serverURI,e);
+			client.connect();
+		} catch (Exception e) {
+			logger.error("Error in instanciating MQTT broker with " + topic + " @ " + serverURI, e);
 			return false;
 		}
 		return true;
@@ -68,7 +70,7 @@ public class MQTTWrapper extends AbstractWrapper implements  MqttCallbackExtende
 	@Override
 	public void dispose() {
 		try {
-			if (client.isConnected()){
+			if (client.isConnected()) {
 				client.unsubscribe(topic);
 				client.disconnect();
 			}
@@ -80,7 +82,7 @@ public class MQTTWrapper extends AbstractWrapper implements  MqttCallbackExtende
 
 	@Override
 	public String getWrapperName() {
-		return "MQTTWrapper["+topic+"]";
+		return "MQTTWrapper[" + topic + "]";
 	}
 
 	@Override
@@ -90,32 +92,33 @@ public class MQTTWrapper extends AbstractWrapper implements  MqttCallbackExtende
 			Thread.sleep(3000);
 			client.reconnect();
 		} catch (Exception e1) {
-			logger.error("Error while reconnecting to server "+ serverURI, e1);
+			logger.error("Error while reconnecting to server " + serverURI, e1);
 		}
 	}
 
 	@Override
 	public void deliveryComplete(IMqttDeliveryToken token) {
-		//MQTTWrapper doesn't publish		
+		// MQTTWrapper doesn't publish
 	}
 
 	@Override
 	public void messageArrived(String s, MqttMessage m) throws Exception {
-		logger.info("Message received on topic " + s + ": "+new String(m.getPayload()));
-		StreamElement streamElement = new StreamElement(getOutputFormat(), new Serializable[] {m.getPayload()}, System.currentTimeMillis());
-        postStreamElement(streamElement);
+		logger.info("Message received on topic " + s + ": " + new String(m.getPayload()));
+		StreamElement streamElement = new StreamElement(getOutputFormat(), new Serializable[] { m.getPayload() },
+				System.currentTimeMillis());
+		postStreamElement(streamElement);
 	}
 
 	@Override
 	public void connectComplete(boolean reconnect, String s) {
-		if (!reconnect){
+		if (!reconnect) {
 			try {
 				client.subscribe(topic, qos);
 			} catch (MqttException e) {
-				logger.error("Error while subscribing to topic "+topic+" with qos "+qos, e);
+				logger.error("Error while subscribing to topic " + topic + " with qos " + qos, e);
 			}
-		}else{
-			logger.debug("MQTT server reconnected "+s);
-		}		
-	}	
+		} else {
+			logger.debug("MQTT server reconnected " + s);
+		}
+	}
 }
