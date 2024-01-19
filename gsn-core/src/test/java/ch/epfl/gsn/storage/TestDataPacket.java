@@ -33,16 +33,16 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
 public class TestDataPacket extends TestCase {
    
-   String     dbURL = "jdbc:hsqldb:mem:.";
-   
+   String     dbURL = "jdbc:h2:mem:coreTest";
    Connection con;
    
    protected void setUp ( ) throws Exception {
       super.setUp( );
-      Class.forName( "org.hsqldb.jdbcDriver" );
+      Class.forName( "org.h2.Driver" );
       Properties properties = new Properties( );
       properties.put( "user" , "sa" );
       properties.put( "password" , "" );
@@ -78,8 +78,7 @@ public class TestDataPacket extends TestCase {
       con.createStatement( ).execute( "delete from TEST1" );
       con.createStatement( ).execute( "delete from TEST2" );
       con.createStatement( ).execute( "delete from TEST3" );
-      con.createStatement( ).execute( "delete from TEST4" );
-      
+      con.createStatement( ).execute( "delete from TEST4" ); 
    }
    
 }

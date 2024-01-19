@@ -36,6 +36,9 @@ import org.junit.Test;
 
 import ch.epfl.gsn.utils.graph.Graph;
 import ch.epfl.gsn.utils.graph.NodeNotExistsExeption;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 
 
 public class TestGraph {
@@ -110,6 +113,153 @@ public class TestGraph {
 		assertNotSame(graph.findRootNode(graph.findNode("n1")), graph.findNode("n5"));
 		assertEquals(graph.findRootNode(graph.findNode("n4")), graph.findNode("n2"));
 	}
+
+ @Test
+    public void testGetNodes() throws NodeNotExistsExeption {
+		Graph<String> graph = new Graph<String>();
+        graph.addNode("A");
+        graph.addNode("B");
+        graph.addNode("C");
+
+        List<String> expectedNodes = Arrays.asList("A", "B", "C");
+        List<Node<String>> nodes = graph.getNodes();
+
+        assertEquals(expectedNodes.size(), nodes.size());
+
+        for (Node<String> node : nodes) {
+            assertEquals(true, expectedNodes.contains(node.getObject()));
+        }
+    }
+
+    @Test
+    public void testGetRootNodes() throws NodeNotExistsExeption {
+		Graph<String> graph = new Graph<String>();
+        graph.addNode("A");
+        graph.addNode("B");
+        graph.addNode("C");
+        graph.addEdge("A", "B");
+
+        List<String> expectedRootNodes = Arrays.asList("A", "C");
+        List<Node<String>> rootNodes = graph.getRootNodes();
+
+        assertEquals(expectedRootNodes.size(), rootNodes.size());
+
+        for (Node<String> node : rootNodes) {
+            assertEquals(true, expectedRootNodes.contains(node.getObject()));
+        }
+    }
+
+
+
+	@Test
+    public void testGetNodesByDFSSearch() throws NodeNotExistsExeption {
+		Graph<String> graph = new Graph<String>();
+		graph.addNode("A");
+		graph.addNode("B");
+		graph.addNode("C");
+		graph.addNode("D");
+		graph.addEdge("A", "B");
+		graph.addEdge("B", "C");
+		graph.addEdge("A", "D");
+		graph.addEdge("D", "C");
+		
+
+		List<String> result = graph.getNodesByDFSSearch();
+		List<String> expected = Arrays.asList("C", "B", "A");
+
+		assertTrue(result.containsAll(expected));
+    	assertTrue(expected.containsAll(result));
+    }
+
+	 @Test
+    public void testGetDescendingNodes() throws NodeNotExistsExeption {
+        Graph<String> graph = new Graph<String>();
+        graph.addNode("A");
+        graph.addNode("B");
+        graph.addNode("C");
+        graph.addEdge("A", "B");
+        graph.addEdge("B", "C");
+
+        Node<String> testNode = graph.findNode("A");
+
+        List<Node<String>> result = graph.getDescendingNodes(testNode);
+        List<Node<String>> expected = Arrays.asList(
+            graph.findNode("C"),
+            graph.findNode("B"),
+            graph.findNode("A")
+        );
+
+        assertEquals(expected, result);
+    }
+
+
+	@Test
+    public void testAddEdge() throws EdgeExistsException {
+        Node<String> nodeA = new Node<>("A");
+        Node<String> nodeB = new Node<>("B");
+
+        Edge<String> edgeAB = nodeA.addEdge(nodeB);
+
+        assertTrue(nodeA.getOutputEdges().contains(edgeAB));
+        assertTrue(nodeB.getInputEdges().contains(edgeAB));
+    }
+
+    @Test
+    public void testRemoveEdge() throws EdgeExistsException {
+        Node<String> nodeA = new Node<>("A");
+        Node<String> nodeB = new Node<>("B");
+
+        Edge<String> edgeAB = nodeA.addEdge(nodeB);
+        boolean removed = nodeA.removeEdge(nodeB);
+
+        assertTrue(removed);
+        assertFalse(nodeA.getOutputEdges().contains(edgeAB));
+        assertFalse(nodeB.getInputEdges().contains(edgeAB));
+    }
+
+    @Test
+    public void testEquals() {
+        Node<String> nodeA = new Node<>("A");
+        Node<String> nodeA2 = new Node<>("A");
+        Node<String> nodeB = new Node<>("B");
+
+        assertTrue(nodeA.equals(nodeA2));
+        assertFalse(nodeA.equals(nodeB));
+    }
+
+    @Test
+    public void testToString() {
+        Node<String> nodeA = new Node<>("A");
+
+        assertEquals("Node[A]", nodeA.toString());
+    }
+
+	@Test
+    public void testNodeMethods() {
+        Node<String> node = new Node<>("A");
+
+        ArrayList<Edge<String>> inputEdges = new ArrayList<>();
+        inputEdges.add(new Edge<>(new Node<>("B"), node));
+        node.setInputEdges(inputEdges);
+        assertEquals(inputEdges, node.getInputEdges());
+
+        
+        ArrayList<Edge<String>> outputEdges = new ArrayList<>();
+        outputEdges.add(new Edge<>(node, new Node<>("C")));
+        node.setOutputEdges(outputEdges);
+        assertEquals(outputEdges, node.getOutputEdges());
+
+        
+        node.setObject("D");
+        assertEquals("D", node.getObject());
+
+        node.setRoot(true);
+        assertTrue(node.isRoot());
+
+        node.setRemoved(true);
+        assertTrue(node.isRemoved());
+    }
+
 
 	private void printGraph(Graph graph, String message) {
 		System.out.println("===================" + message + "==================");

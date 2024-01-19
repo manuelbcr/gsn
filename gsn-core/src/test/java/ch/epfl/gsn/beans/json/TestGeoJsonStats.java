@@ -17,41 +17,46 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
-* File: src/ch/epfl/gsn/storage/TestSQLUtils.java
+* File: src/ch/epfl/gsn/beans/TestStreamSource.java
 *
-* @author Sofiane Sarni
+* @author gsn_devs
+* @author Mehdi Riahi
 * @author Ali Salehi
+* @author Timotee Maret
 *
 */
 
-package ch.epfl.gsn.storage;
+package ch.epfl.gsn.beans.json;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
 
-public class TestSQLUtils extends TestCase {
-   
-   protected void setUp ( ) throws Exception {
-      super.setUp( );
-   }
-   
-   protected void tearDown ( ) throws Exception {
-      super.tearDown( );
-   }
-   
-   /*
-    * Test method for 'ch.epfl.gsn.storage.SQLUtils.rewriteQuery(String, HashMap<String,
-    * String>)'
-    */
-   public void testRewriteQuery ( ) {
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.Ignore;
 
-   }
-   
-   /*
-    * Test method for
-    * 'ch.epfl.gsn.storage.SQLUtils.extractTableNamesUsedInQuery(String)'
-    */
-   public void testExtractTableNamesUsedInQuery ( ) {
+import java.io.IOException;
+
+public class TestGeoJsonStats {
+
+    GeoJsonStats geoJsonStats;
+
+    @Before
+	public void setUp() {
+
+        geoJsonStats = new GeoJsonStats();
+        geoJsonStats.setStartDatetime(123456L);
+        geoJsonStats.setEndDatetime(234567L);
+
+	}
+
+    @Test
+	public void TestGeoJsonStats() {
+
+        assertEquals(123456L, geoJsonStats.getStartDatetime(), 0.0);
+        assertEquals(234567L, geoJsonStats.getEndDatetime(), 0.0);
+
+	}
 	
-   }
-   
 }

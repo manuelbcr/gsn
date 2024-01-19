@@ -17,42 +17,47 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
-* File: src/ch/epfl/gsn/utils/TestEmpty.java
+* File: src/ch/epfl/gsn/beans/TestStreamSource.java
 *
-* @author Sofiane Sarni
+* @author gsn_devs
+* @author Mehdi Riahi
 * @author Ali Salehi
+* @author Timotee Maret
 *
 */
 
-package ch.epfl.gsn.utils;
+package ch.epfl.gsn.beans;
 
-
-import junit.framework.JUnit4TestAdapter;
+import static org.junit.Assert.*;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 
-public class TestEmpty {
-   @After public void clean()  throws Exception{
-      
-   }
-   @Test public void gettingGeneralWebAppInformations()  throws Exception{
-      
-   }
-   @Before public void setup() throws Exception {
-      
-   }
-   @BeforeClass public static  void init() throws Exception {
-      
-   }
-   @AfterClass public static void cleanAll() throws Exception{
-      
-   }
-  
-   public static junit.framework.Test suite() {
-      return new JUnit4TestAdapter(TestEmpty.class);
-   }   
+import java.io.IOException;
+
+public class TestAccessControlConfig {
+
+    AccessControlConfig accessControlConfig;
+
+    @Before
+	public void setUp() {
+
+        accessControlConfig = new AccessControlConfig();
+        assertNotNull(accessControlConfig);
+
+	}
+
+
+    @Test
+	public void testAccessControlConfig() {
+
+        StorageConfig storageConfig = new StorageConfig();
+        accessControlConfig.setStorage(storageConfig);
+        assertNotNull(accessControlConfig.getStorage());
+
+	}
+	
 }

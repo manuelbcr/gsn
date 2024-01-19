@@ -31,7 +31,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -52,29 +51,52 @@ import ch.epfl.gsn.beans.VSensorConfig;
 import ch.epfl.gsn.storage.StorageManager;
 import ch.epfl.gsn.storage.StorageManagerFactory;
 import ch.epfl.gsn.wrappers.MockWrapper;
+import java.io.IOException;
+
+import org.junit.Ignore;
 
 public class TestVSensorLoader {
 
     private static StorageManager sm = null;
+	
+	private AddressBean[] addressing= new AddressBean[] {new AddressBean("mock-test")};
+	private VSensorConfig testVensorConfig;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+
+		// Setup current working directory
+        String currentWorkingDir = System.getProperty("user.dir");
+		if (!currentWorkingDir.endsWith("/gsn-core/")) {
+			String newDirectory = currentWorkingDir + "/gsn-core/";
+        	System.setProperty("user.dir", newDirectory);
+		}
+
 		DriverManager.registerDriver( new org.h2.Driver( ) );
-		sm = StorageManagerFactory.getInstance( "org.hsqldb.jdbcDriver","sa","" ,"jdbc:hsqldb:mem:.", Main.DEFAULT_MAX_DB_CONNECTIONS);
+		sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:coreTest", Main.DEFAULT_MAX_DB_CONNECTIONS);
+
+		Main.setDefaultGsnConf("/gsn_test.xml");
+	  	Main.getInstance();
+	
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-	}
 
-  private AddressBean[] addressing= new AddressBean[] {new AddressBean("mock-test")};
+	}
 
 	@Before
 	public void setUp() throws Exception {
-	  Properties p = new Properties();
-	  p.put("mock-test", "ch.epfl.gsn.wrappers.MockWrapper");
-	  p.put("system-time", "ch.epfl.gsn.wrappers.SystemTime");
-	  Main.getInstance();
+		Properties p = new Properties();
+		p.put("mock-test", "ch.epfl.gsn.wrappers.MockWrapper");
+		p.put("system-time", "ch.epfl.gsn.wrappers.SystemTime");
+		
+		testVensorConfig = new VSensorConfig();
+		testVensorConfig.setName("test");
+		File someFile = File.createTempFile("bla", ".xml");
+		testVensorConfig.setMainClass("ch.epfl.gsn.vsensor.BridgeVirtualSensor");
+		testVensorConfig.setFileName(someFile.getAbsolutePath());
+	
 	}
 
 	@After
@@ -101,36 +123,36 @@ public class TestVSensorLoader {
 
 	@Test
 	public void testStopLoading() throws IOException {
-		VSensorConfig  sensorConfig = new VSensorConfig();
-		sensorConfig.setName("test");
-		File someFile = File.createTempFile("bla", ".xml");
-		sensorConfig.setMainClass("ch.epfl.gsn.vsensor.BridgeVirtualSensor");
-		sensorConfig.setFileName(someFile.getAbsolutePath());
-		VirtualSensor pool = new VirtualSensor(sensorConfig);
+		VirtualSensor pool = new VirtualSensor(testVensorConfig);
+
 		InputStream is = new InputStream();
 		is.setInputStreamName("t1");
 		is.setQuery("select * from my-stream1");
-		StreamSource 	ss1 = new StreamSource().setAlias("my-stream1").setAddressing(new AddressBean[] {new AddressBean("mock-test")}).setSqlQuery("select * from wrapper").setRawHistorySize("2").setInputStream(is);		
+		StreamSource ss1 = new StreamSource().setAlias("my-stream1").setAddressing(new AddressBean[] {new AddressBean("mock-test")}).setSqlQuery("select * from wrapper").setRawHistorySize("2").setInputStream(is);	
+
 		ss1.setSamplingRate(1);
 		assertTrue(ss1.validate());
 		is.setSources(ss1);
 		assertTrue(is.validate());
-		sensorConfig.setInputStreams(is);
-		assertTrue(sensorConfig.validate());
-		
+		testVensorConfig.setInputStreams(is);
+		assertTrue(testVensorConfig.validate());
 	}
 	@Test
 	public void testOneInputStreamUsingTwoStreamSources() throws InstantiationException, IllegalAccessException, SQLException {
 		VSensorLoader loader = new VSensorLoader();
 		InputStream is = new InputStream();
-		StreamSource 	ss1 = new StreamSource().setAlias("my-stream1").setAddressing(new AddressBean[] {new AddressBean("mock-test")}).setSqlQuery("select * from wrapper").setRawHistorySize("2").setInputStream(is);		
+		MockWrapper wrapper = (MockWrapper) loader.createWrapper(addressing[0]);
+		
+		StreamSource ss1 = new StreamSource().setAlias("my-stream1").setAddressing(new AddressBean[] {new AddressBean("mock-test")}).setSqlQuery("select * from wrapper").setRawHistorySize("2").setInputStream(is);		
+		ss1.setWrapper(wrapper);
 		ss1.setSamplingRate(1);
 		assertTrue(ss1.validate());
-//		assertTrue(loader.prepareStreamSource(is,ss1));
-		StreamSource 	ss2 = new StreamSource().setAlias("my-stream2").setAddressing(new AddressBean[] {new AddressBean("mock-test")}).setSqlQuery("select * from wrapper").setRawHistorySize("20").setInputStream(is);		
+		assertTrue(loader.prepareStreamSource(testVensorConfig, is, ss1));
+
+		StreamSource ss2 = new StreamSource().setAlias("my-stream2").setAddressing(new AddressBean[] {new AddressBean("mock-test")}).setSqlQuery("select * from wrapper").setRawHistorySize("20").setInputStream(is);		
 		ss2.setSamplingRate(1);
 		assertTrue(ss2.validate());
-//		assertTrue(loader.prepareStreamSource(is,ss2));
+		assertTrue(loader.prepareStreamSource(testVensorConfig, is, ss2));
 		ss1.getWrapper().releaseResources();
 		assertFalse(sm.tableExists(ss1.getWrapper().getDBAliasInStr()));
 	}
@@ -139,10 +161,14 @@ public class TestVSensorLoader {
 	public void testReloadingVirtualSensor() throws InstantiationException, IllegalAccessException, SQLException {
 		VSensorLoader loader = new VSensorLoader();
 		InputStream is = new InputStream();
-		StreamSource 	ss = new StreamSource().setAlias("my-stream1").setAddressing(addressing).setSqlQuery("select * from wrapper").setRawHistorySize("2").setInputStream(is);		
+		
+		StreamSource ss = new StreamSource().setAlias("my-stream1").setAddressing(addressing).setSqlQuery("select * from wrapper").setRawHistorySize("2").setInputStream(is);		
+		MockWrapper wrapper = (MockWrapper) loader.createWrapper(addressing[0]);
+		ss.setWrapper(wrapper);
 		ss.setSamplingRate(1);
+
 		assertTrue(ss.validate());
-//		assertTrue(loader.prepareStreamSource(is,ss));
+		assertTrue(loader.prepareStreamSource(testVensorConfig, is, ss));
 		assertTrue(sm.tableExists(ss.getWrapper().getDBAliasInStr()));
 		assertTrue(sm.tableExists(ss.getUIDStr()));
 		assertFalse(is.getRenamingMapping().isEmpty());
@@ -154,7 +180,7 @@ public class TestVSensorLoader {
 		assertTrue(is.getRenamingMapping().isEmpty());
 		ss = new StreamSource().setAlias("my-stream1").setAddressing(addressing).setSqlQuery("select * from wrapper").setRawHistorySize("2").setInputStream(is);		
 		ss.setSamplingRate(1);
-//		assertTrue(loader.prepareStreamSource(is,ss));
-		
+		assertTrue(loader.prepareStreamSource(testVensorConfig, is, ss));	
 	}
+
 }

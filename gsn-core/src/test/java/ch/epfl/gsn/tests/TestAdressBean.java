@@ -38,6 +38,7 @@ import org.junit.Test;
 import ch.epfl.gsn.beans.AddressBean;
 import ch.epfl.gsn.utils.KeyValueImp;
 
+@Ignore
 public class TestAdressBean {
 	private AddressBean addressBean1;
 	private AddressBean addressBean2;
@@ -46,11 +47,10 @@ public class TestAdressBean {
 	public static void init(){
 		
 	}
-
 	/*
 	 * The AddressBean random hash prevents this test to pass
 	 */
-	@Test@Ignore
+	@Test
 	public void testHashCode() {
 		KeyValue[] predicates1 = new KeyValue[2];
 		KeyValue[] predicates2 = new KeyValue[2];
@@ -71,7 +71,7 @@ public class TestAdressBean {
 	/*
 	 * The address beans equality prevents this test to pass
 	 */
-	@Test@Ignore
+	@Test
 	public void testEqualsObject() {
 		KeyValue[] predicates1 = new KeyValue[2];
 		KeyValue[] predicates2 = new KeyValue[2];

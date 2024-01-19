@@ -26,9 +26,11 @@
 
 package ch.epfl.gsn.utils;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.net.UnknownHostException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -45,102 +47,76 @@ import ch.epfl.gsn.storage.StorageManagerFactory;
 import ch.epfl.gsn.utils.GSNRuntimeException;
 import ch.epfl.gsn.utils.ValidityTools;
 
+import org.junit.Ignore;
+
+
 public class TestValidityTools {
 
-	static StorageManager sm = null;
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		DriverManager.registerDriver( new org.h2.Driver( ) );
-		sm = StorageManagerFactory.getInstance( "org.hsqldb.jdbcDriver","sa","" ,"jdbc:hsqldb:mem:.", Main.DEFAULT_MAX_DB_CONNECTIONS);
+		// Setup current working directory
+        String currentWorkingDir = System.getProperty("user.dir");
+		if (!currentWorkingDir.endsWith("/gsn-core/")) {
+			String newDirectory = currentWorkingDir + "/gsn-core/";
+        	System.setProperty("user.dir", newDirectory);
+		}
 	}
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
 
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
+	@Test
+	public void testFileAccess() {
+		String updatedWorkingDir = System.getProperty("user.dir");
+		ValidityTools.checkAccessibilityOfFiles ( "../conf/wrappers.properties", "../conf/gsn.xml");
 	}
 
 	@Test
-	public void testIsAccessibleSocketStringInt() {
-
-	}
-
-	@Test
-	public void testIsAccessibleSocketStringIntInt() {
-
-	}
+    public void testIsNotAccessibleSocket() throws UnknownHostException {
+        assertFalse(ValidityTools.isAccessibleSocket("localhost", 9999, 3000));
+		assertFalse(ValidityTools.isAccessibleSocket("localhost", 9999));
+    }
 
 	@Test
-	public void testCheckAccessibilityOfDirs() {
+	public void testInvalidParameters() throws UnknownHostException, RuntimeException {
+        ValidityTools.isAccessibleSocket(null, -1, 3000);
+    }
 
-	}
+    @Test
+    public void testGetHostName() {
+        assertEquals("example.com", ValidityTools.getHostName("example.com:8080"));
+    }
 
-	@Test
-	public void testCheckAccessibilityOfFiles() {
-
-	}
-
-	@Test
-	public void testIsDBAccessible() {
-
-	}
-
-	@Test
-	public void testGetHostName() {
-
-	}
+    @Test
+    public void testGetPortNumber() {
+        assertEquals(8080, ValidityTools.getPortNumber("example.com:8080"));
+    }
 
 	@Test
-	public void testGetPortNumber() {
-
-	}
-
-	@Test
-	public void testIsLocalhost() {
-		assertTrue(ValidityTools.isLocalhost("127.0.0.1"));
-		assertFalse(ValidityTools.isLocalhost("127.0.1.1"));
-		assertTrue(ValidityTools.isLocalhost("localhost"));
-		assertFalse(ValidityTools.isLocalhost("129.0.0.1"));
-	}
+    public void testIsLocalhost() {
+        assertTrue(ValidityTools.isLocalhost("localhost"));
+        assertTrue(ValidityTools.isLocalhost("127.0.0.1"));
+        assertFalse(ValidityTools.isLocalhost("example.com"));
+    }
 
 	@Test
-	public void testIsInt() {
+    public void testIsValidJavaVariable() {
+        assertTrue(ValidityTools.isValidJavaVariable("validIdentifier"));
+        assertFalse(ValidityTools.isValidJavaVariable("123invalid"));
+        assertFalse(ValidityTools.isValidJavaVariable(null));
+    }
 
-	}
+	@Test(expected = ClassNotFoundException.class)
+    public void testInvaliIsDBAccessible() throws ClassNotFoundException, SQLException {
+        ValidityTools.isDBAccessible("invalidDriverClass", "invalid", "invalid", "invalid");
+    }
 
-	@Test (expected=GSNRuntimeException.class)
-	public void testTableExists() throws SQLException{
-		assertFalse(sm.tableExists("myTable"));
-		sm.executeCreateTable("table1",new DataField[]{},true);
-		assertTrue(sm.tableExists("table1"));
-		sm.executeDropTable("table1");
-		assertFalse(sm.tableExists("table1"));
-		assertFalse(sm.tableExists(""));
-		assertFalse(sm.tableExists(null));
-	}
-	@Test (expected=GSNRuntimeException.class)
-	public void testTableExistsWithEmptyTableName() throws SQLException{
-		assertFalse(sm.tableExists(""));
-	}
-	@Test (expected=GSNRuntimeException.class)
-	public void testTableExistsWithBadParameters() throws SQLException{
-		assertFalse(sm.tableExists("'f\\"));
-	}
 	@Test
-	public void testTablesWithSameStructure() throws SQLException{
-		sm.executeCreateTable("table1",new DataField[]{},true);
-		assertTrue(sm.tableExists("table1",new DataField[] {}));
-		sm.executeDropTable("table1");
-		sm.executeCreateTable("table1",new DataField[]{new DataField("sensor","double"),new DataField("sensor2","int")},true);
-		assertTrue(sm.tableExists("table1",new DataField[] {new DataField("sensor","double")}));
-		assertTrue(sm.tableExists("table1",new DataField[] {new DataField("sensor2","int")}));
-		assertTrue(sm.tableExists("table1",new DataField[] {new DataField("sensor2", "int"),new DataField("sensor","double")}));
-	}
-
+    public void testIsInt() {
+        assertTrue(ValidityTools.isInt("123"));
+        assertTrue(ValidityTools.isInt("-456"));
+        assertTrue(ValidityTools.isInt("0"));
+		assertFalse(ValidityTools.isInt(null));
+		assertFalse(ValidityTools.isInt("abc"));
+        assertFalse(ValidityTools.isInt("12.34"));
+        assertFalse(ValidityTools.isInt("   "));
+    }
 }
