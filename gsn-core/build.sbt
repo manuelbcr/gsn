@@ -99,7 +99,7 @@ Debian / linuxPackageMappings += packageMapping(
 ) withUser "gsn" withGroup "root" withPerms "0775" withContents()
 
 Debian / linuxPackageMappings += packageMapping(
-  (sourceDirectory.value / "templates" / "gsn-core") -> "bin/gsn-core"
+  (sourceDirectory.value / "templates" / "gsn-core") -> "/usr/share/gsn-core/bin/gsn-core"
 ) withUser "gsn" withGroup "root" withPerms "0755" //withContents()
 
 
