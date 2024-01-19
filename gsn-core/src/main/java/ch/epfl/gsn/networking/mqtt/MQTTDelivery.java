@@ -26,6 +26,7 @@ public class MQTTDelivery implements DeliverySystem {
 	public MQTTDelivery(String serverURI, String clientID, String topic, String vsname) {
 		try {
 			client = new MqttClient(serverURI, clientID);
+			this.topic=topic;
 			options.setAutomaticReconnect(true);
 			client.connect(options);
 		} catch (Exception e) {

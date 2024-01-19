@@ -78,8 +78,7 @@ public class CSVHandler {
 
     public boolean initialize(String dataFile, String inFields, String inFormats, char separator, char stringSeparator,
             int skipFirstXLines, String nullValues) {
-        return initialize(dataFile, inFields, inFormats, separator, stringSeparator, skipFirstXLines, nullValues,
-                LOCAL_TIMEZONE_ID, "check-poin/" + (new File(dataFile).getName() + ".chk-point"));
+        return initialize(dataFile, inFields, inFormats, separator, stringSeparator, skipFirstXLines, nullValues, LOCAL_TIMEZONE_ID, "csv-check-points/" + (new File(dataFile).getName()));
     }
 
     public boolean initialize(String dataFile, String inFields, String inFormats, char separator, char stringSeparator,
@@ -113,7 +112,7 @@ public class CSVHandler {
             logger.error(e.getMessage(), e);
             return false;
         }
-        if (!validateFormats(this.formats)) {
+        if (!validateFormats(this.formats)){
             return false;
         }
         if (fields.length != formats.length) {

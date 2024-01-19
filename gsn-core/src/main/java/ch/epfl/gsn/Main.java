@@ -85,6 +85,9 @@ import ch.epfl.gsn.utils.ValidityTools;
 import ch.epfl.gsn.vsensor.SQLValidatorIntegration;
 import ch.epfl.gsn.wrappers.WrappersUtil;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 //import java.sql.Connection;
 //import java.sql.DriverManager;
 //import java.sql.SQLException;
@@ -93,8 +96,9 @@ public final class Main {
 
 	public static final int DEFAULT_MAX_DB_CONNECTIONS = 128;
 	public static final String DEFAULT_GSN_CONF_FOLDER = "../conf";
-	public static final String DEFAULT_VIRTUAL_SENSOR_FOLDER = "../conf/virtual-sensors";
+	public static final String DEFAULT_VIRTUAL_SENSOR_FOLDER = "../virtual-sensors";
 	public static transient Logger logger = LoggerFactory.getLogger(Main.class);
+	public static String DEFAULT_GSN_CONF = "/gsn.xml";
 
 	/**
 	 * Mapping between the wrapper name (used in addressing of stream source)
@@ -127,8 +131,7 @@ public final class Main {
 
 	private Main() throws Exception {
 
-		ValidityTools.checkAccessibilityOfFiles(WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE,
-				gsnConfFolder + "/gsn.xml");
+		ValidityTools.checkAccessibilityOfFiles ( WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE , gsnConfFolder + DEFAULT_GSN_CONF);
 		ValidityTools.checkAccessibilityOfDirs(virtualSensorDirectory);
 		containerConfig = loadContainerConfiguration();
 		updateSplashIfNeeded(
@@ -165,7 +168,12 @@ public final class Main {
 		}
 
 		VSensorLoader vsloader = VSensorLoader.getInstance(virtualSensorDirectory);
-		File vsDir = new File(virtualSensorDirectory);
+		
+		String currentWorkingDir = System.getProperty("user.dir");
+    	Path absolutePath = Paths.get(currentWorkingDir, virtualSensorDirectory);
+		File vsDir = absolutePath.toFile();
+		//File vsDir=new File(virtualSensorDirectory);
+
 		for (File f : vsDir.listFiles()) {
 			if (f.getName().endsWith(".xml")) {
 				VsConf vs = VsConf.load(f.getPath());
@@ -304,12 +312,11 @@ public final class Main {
 	}
 
 	public static ContainerConfig loadContainerConfiguration() {
-		ValidityTools.checkAccessibilityOfFiles(WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE,
-				gsnConfFolder + "/gsn.xml");
+		ValidityTools.checkAccessibilityOfFiles (WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE , gsnConfFolder + DEFAULT_GSN_CONF);
 		ValidityTools.checkAccessibilityOfDirs(virtualSensorDirectory);
 		ContainerConfig toReturn = null;
 		try {
-			toReturn = loadContainerConfig(gsnConfFolder + "/gsn.xml");
+			toReturn = loadContainerConfig (gsnConfFolder + DEFAULT_GSN_CONF);
 			logger.info("Loading wrappers.properties at : " + WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE);
 			wrappers = WrappersUtil.loadWrappers(new HashMap<String, Class<?>>());
 			logger.info("Wrappers initialization ...");
@@ -323,7 +330,12 @@ public final class Main {
 	}
 
 	public static ContainerConfig loadContainerConfig(String gsnXMLpath) throws ClassNotFoundException {
-		if (!new File(gsnXMLpath).isFile()) {
+		
+		String currentWorkingDir = System.getProperty("user.dir");
+		Path absolutePath = Paths.get(currentWorkingDir, gsnXMLpath);
+        File f = absolutePath.toFile();
+
+		if (!f.isFile()) {
 			logger.error("Couldn't find the gsn.xml file @: " + (new File(gsnXMLpath).getAbsolutePath()));
 			System.exit(1);
 		}
@@ -384,7 +396,7 @@ public final class Main {
 	public static ContainerConfig getContainerConfig() {
 		if (singleton == null) {
 			try {
-				return loadContainerConfig(Main.gsnConfFolder + "/gsn.xml");
+				return loadContainerConfig(Main.gsnConfFolder + DEFAULT_GSN_CONF);
 			} catch (Exception e) {
 				return null;
 			}
@@ -463,5 +475,9 @@ public final class Main {
 	public static ThreadMXBean getThreadMXBean() {
 		return threadBean;
 	}
+
+	public static void setDefaultGsnConf(String newDefaultGsnConf) {
+        DEFAULT_GSN_CONF = newDefaultGsnConf;
+    }
 
 }

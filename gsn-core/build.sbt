@@ -52,6 +52,8 @@ libraryDependencies ++= Seq(
   "org.eclipse.jetty" % "jetty-continuation" % "9.4.43.v20210629",
   "org.eclipse.jetty" % "jetty-io" % "9.4.43.v20210629",
   "org.jibx" % "jibx-run" % "1.3.1",
+  "com.github.sbt" % "junit-interface" % "0.13.3" % Test,
+  "org.mockito" % "mockito-core" % "5.9.0" % Test,
   "org.httpunit" % "httpunit" % "1.7.2" % "test" exclude("xerces","xercesImpl") exclude("xerces","xmlParserAPIs") exclude("javax.servlet","servlet-api")
 )
 

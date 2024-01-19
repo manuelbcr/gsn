@@ -50,6 +50,9 @@ import ch.epfl.gsn.utils.ValidityTools;
 
 import org.slf4j.Logger;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class ValidityTools {
 
 	public static final int SMTP_PORT = 25;
@@ -99,24 +102,34 @@ public class ValidityTools {
 	}
 
 	public static void checkAccessibilityOfDirs(String... args) {
+		String currentWorkingDir = System.getProperty("user.dir");
 		for (String name : args) {
-			File f = new File(name);
+			Path absolutePath = Paths.get(currentWorkingDir, name);
+        	File f = absolutePath.toFile();
+			//File f = new File( name );
 			if (f.canRead() && f.canWrite() && f.isDirectory()) {
 				continue;
 			} else {
-				logger.error("The required directory : " + f.getAbsolutePath() + " is not accessible.");
+				logger.error( "The required directory : " + f.getAbsolutePath() + " is not accessible." );
+				System.out.println("NOT AVAILABLE" + f.getAbsolutePath());
 				System.exit(1);
 			}
 		}
 	}
 
 	public static void checkAccessibilityOfFiles(String... args) {
+		String currentWorkingDir = System.getProperty("user.dir");
 		for (String name : args) {
-			File f = new File(name);
+
+			Path absolutePath = Paths.get(currentWorkingDir, name);
+        	File f = absolutePath.toFile();
+			//File f = new File( name );
+
 			if (f.canRead() && f.canWrite() && f.isFile()) {
 				continue;
 			} else {
 				logger.error("The required file : " + f.getAbsolutePath() + " is not accessible.");
+				System.out.println("NOT AVAILABLE 2");
 				System.exit(1);
 			}
 		}

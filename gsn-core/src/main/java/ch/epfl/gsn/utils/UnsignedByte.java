@@ -84,9 +84,10 @@ public class UnsignedByte {
     public static UnsignedByte[] ByteArray2UnsignedByteArray(byte[] ba) {
         int length = ba.length;
         UnsignedByte[] uba = new UnsignedByte[length];
-        for (int i = 0; i < length; i++) {
-            uba[i].setValue(ba[i]);
-        }
+        for (int i = 0; i < length; i++){ 
+            uba[i] = new UnsignedByte(); 
+            uba[i].setValue(ba[i]); 
+        } 
         return uba;
     }
 }

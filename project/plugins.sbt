@@ -24,4 +24,6 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.6.1")
 
+addSbtPlugin("com.github.sbt" % "sbt-jacoco" % "3.2.0")
+
 
