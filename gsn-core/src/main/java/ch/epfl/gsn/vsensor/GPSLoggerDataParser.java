@@ -135,8 +135,10 @@ public class GPSLoggerDataParser extends BridgeVirtualSensorPermasense {
 		VSensorConfig vsensor = getVirtualSensorConfiguration();
 
 		storage_directory = vsensor.getStorage().getStorageDirectory();
+		logger.info("Storage directory: " + storage_directory);
 		if (storage_directory != null) {
 			storage_directory = new File(storage_directory, deployment).getPath();
+			logger.info("Storage directory is not NULL: " + storage_directory);
 		}
 		
 		String streamtype = vsensor.getMainClassInitialParams().get("stream_type");
