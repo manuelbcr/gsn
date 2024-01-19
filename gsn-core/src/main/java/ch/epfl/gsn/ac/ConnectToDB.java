@@ -829,7 +829,7 @@ public class ConnectToDB
        Vector groupvector = new Vector();
        for(int i=0;i< groupnamevector.size();i++)
        {
-           groupname=(String)(groupnamevector.get(i));
+           groupname=(String) groupnamevector.get(i);
            //System.out.println(" values in groupname vector : "+ groupname );
            groupvector.add(new Group( groupname,getDataSourceListForGroup(groupname) ));
         }
@@ -850,7 +850,7 @@ public class ConnectToDB
         Vector uservector = new Vector();
         for(int i=0;i< usernamevector.size();i++)
         {
-              username=(String)(usernamevector.get(i));//WAITINGACUSER
+              username=(String)usernamevector.get(i);//WAITINGACUSER
               uservector.add(new User(username,getValueForOneColumnUnderOneConditions(new Column("PASSWORD"),new Column("USERNAME",username),"ACUSER"),getValueForOneColumnUnderOneConditions(new Column("FIRSTNAME"),new Column("USERNAME",username),"ACUSER"),getValueForOneColumnUnderOneConditions(new Column("LASTNAME"),new Column("USERNAME",username),"ACUSER"),getValueForOneColumnUnderOneConditions(new Column("EMAIL"),new Column("USERNAME",username),"ACUSER"),getGroupListForUser(username),"yes"));
          }
         return uservector;
@@ -865,7 +865,7 @@ public class ConnectToDB
         Vector usersCompletedVector = new Vector();
         for(int i=0;i< usersVector.size();i++)
         {
-            user=(User)(usersVector.get(i));
+            user=(User)usersVector.get(i);
             user.setDataSourceList(getDataSourcesForWaitingUser(user.getUserName()));
             user.setGroupList(getGroupsForWaitingUserSecondPart(getGroupsForWaitingUserFirstPart(user.getUserName())));
             if(user.getDataSourceList().size()!=0 || user.getGroupList().size()!=0)
@@ -945,7 +945,7 @@ public class ConnectToDB
        Vector groupvector = new Vector();
        for(int i=0;i< groupnamevector.size();i++)
        {
-           groupname=(String)(groupnamevector.get(i));
+           groupname=(String) groupnamevector.get(i);
            grouptype=this.getValueForOneColumnUnderTwoConditions(new Column("GROUPTYPE"),new Column("GROUPNAME",groupname),new Column("USERNAME", userName),"ACUSER_ACGROUP");
            if(grouptype.charAt(0)!='5')
            {

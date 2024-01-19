@@ -514,7 +514,7 @@ public class VSensorConfig implements Serializable {
 			return false;
 		}
 
-		return Boolean.parseBoolean(sensorMap.toString());
+		return Boolean.parseBoolean(sensorMap);
 	}
 
 	/**

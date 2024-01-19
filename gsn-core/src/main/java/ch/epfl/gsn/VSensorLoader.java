@@ -509,7 +509,7 @@ public class VSensorLoader extends Thread {
 				logger.error("Preparation of the stream source failed : "+streamSource.getAlias()+ " from the input stream : "+inputStream.getInputStreamName()+". " + e.getMessage(),e);
 			}
 		}
-		return (wrapper!=null);
+		return wrapper!=null;
 	}
 
 	public boolean prepareStreamSource ( StreamSource streamSource ,DataField[] outputformat, AbstractWrapper wrapper ) throws InstantiationException, IllegalAccessException, SQLException {

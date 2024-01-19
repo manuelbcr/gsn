@@ -80,7 +80,9 @@ public class DataDistributer implements VirtualSensorDataListener, VSensorStateC
                         ArrayList<DistributionRequest> clisteners = (ArrayList<DistributionRequest>) listeners.clone();
                         for (DistributionRequest listener : clisteners) {
                             if ( ! listener.deliverKeepAliveMessage()) {
-                                logger.debug("remove the listener.");
+                                if(logger.isDebugEnabled()){
+                                    logger.debug("remove the listener.");
+                                }
                                 removeListener(listener);
                             }
                         }
