@@ -1,7 +1,6 @@
 /**
 * Global Sensor Networks (GSN) Source Code
 * Copyright (c) 2006-2016, Ecole Polytechnique Federale de Lausanne (EPFL)
-* Copyright (c) 2020-2023, University of Innsbruck
 * 
 * This file is part of GSN.
 * 
@@ -18,6 +17,8 @@
 * You should have received a copy of the GNU General Public License
 * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
 * 
+* File: src/ch/epfl/gsn/Main.java
+*
 * @author parobert
 * @author cl3m
 * @author Jerome Rousselot
@@ -27,11 +28,6 @@
 * @author Behnaz Bostanipour
 * @author Timotee Maret
 * @author Julien Eberle
-* @author Tonio Gsell
-* @author Mustafa Yuecel
-* @author Davide Desclavis
-* @author Manuel Buchauer
-* @author Jan Beutel
 *
 */
 
@@ -49,7 +45,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.SplashScreen;
 import java.io.File;
-// import java.io.FileNotFoundException;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,10 +58,11 @@ import org.slf4j.Logger;
 
 import org.zeromq.ZContext;
 
-// import ch.epfl.gsn.ContainerImpl;
-// import ch.epfl.gsn.DataDistributer;
-// import ch.epfl.gsn.Mappings;
-// import ch.epfl.gsn.VSensorLoader;
+import ch.epfl.gsn.ContainerImpl;
+import ch.epfl.gsn.DataDistributer;
+import ch.epfl.gsn.Main;
+import ch.epfl.gsn.Mappings;
+import ch.epfl.gsn.VSensorLoader;
 import ch.epfl.gsn.beans.BeansInitializer;
 import ch.epfl.gsn.beans.ContainerConfig;
 import ch.epfl.gsn.beans.StorageConfig;
@@ -92,14 +89,16 @@ import java.nio.file.Paths;
 //import java.sql.DriverManager;
 //import java.sql.SQLException;
 
+
+
 public final class Main {
-
-	public static final int DEFAULT_MAX_DB_CONNECTIONS = 128;
-	public static final String DEFAULT_GSN_CONF_FOLDER = "../conf";
-	public static final String DEFAULT_VIRTUAL_SENSOR_FOLDER = "../conf/virtual-sensors";
-	public static transient Logger logger = LoggerFactory.getLogger(Main.class);
-
+	
+    public static final int        DEFAULT_MAX_DB_CONNECTIONS       = 8;
+	public static final String     DEFAULT_GSN_CONF_FOLDER            = "../conf";
+	public static final String     DEFAULT_VIRTUAL_SENSOR_FOLDER = "../virtual-sensors";
 	public static String		   DEFAULT_GSN_CONF = "/gsn.xml";
+	public static transient Logger logger                           = LoggerFactory.getLogger ( Main.class );
+
 	/**
 	 * Mapping between the wrapper name (used in addressing of stream source)
 	 * into the class implementing DataSource.
@@ -128,17 +127,13 @@ public final class Main {
      *  It would be used for monitoring CPU time of each virtual sensor
      */
 
-	/*
-	 * Retrieving ThreadMXBean instance of JVM
-	 * It would be used for monitoring CPU time of each virtual sensor
-	 */
+    private static ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
     private Main() throws Exception {
 		ValidityTools.checkAccessibilityOfFiles ( WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE , gsnConfFolder + DEFAULT_GSN_CONF);
 		ValidityTools.checkAccessibilityOfDirs ( virtualSensorDirectory );
 		containerConfig = loadContainerConfiguration();
-		updateSplashIfNeeded(
-				new String[] { "GSN is starting...", "All GSN logs are available at: logs/ch.epfl.gsn.log" });
+		updateSplashIfNeeded(new String[] {"GSN is starting...", "All GSN logs are available at: logs/ch.epfl.gsn.log"});
 		System.out.println("Global Sensor Networks (GSN) is starting...");
         int maxDBConnections = containerConfig.getMaxDBConnections();
         int maxSlidingDBConnections = containerConfig.getMaxSlidingDBConnections();
@@ -151,30 +146,16 @@ public final class Main {
         windowStorage = StorageManagerFactory.getInstance(sc.getJdbcDriver ( ) , sc.getJdbcUsername ( ) , sc.getJdbcPassword ( ) , sc.getJdbcURL ( ), maxSlidingDBConnections);
         validationStorage = StorageManagerFactory.getInstance("org.h2.Driver", "sa", "", "jdbc:h2:mem:validator", Main.DEFAULT_MAX_DB_CONNECTIONS);
 
-		DataStore ds = new DataStore(gsnConf);
-
-		mainStorage = StorageManagerFactory.getInstance(containerConfig.getStorage().getJdbcDriver(),
-				containerConfig.getStorage().getJdbcUsername(), containerConfig.getStorage().getJdbcPassword(),
-				containerConfig.getStorage().getJdbcURL(), maxDBConnections);
-
-		StorageConfig sc = containerConfig.getSliding() != null ? containerConfig.getSliding().getStorage()
-				: containerConfig.getStorage();
-		windowStorage = StorageManagerFactory.getInstance(sc.getJdbcDriver(), sc.getJdbcUsername(),
-				sc.getJdbcPassword(), sc.getJdbcURL(), maxSlidingDBConnections);
-
-		validationStorage = StorageManagerFactory.getInstance("org.h2.Driver", "sa", "", "jdbc:h2:mem:validator",
-				Main.DEFAULT_MAX_DB_CONNECTIONS);
-
-		logger.trace("The Container Configuration file loaded successfully.");
-
-		// starting the monitoring socket
-		toMonitor.add(new MemoryMonitor());
-		monitoringServer = new MonitoringServer(containerConfig.getMonitorPort());
-		monitoringServer.start();
-
-		if (containerConfig.isZMQEnabled()) {
-			// start the 0MQ proxy
-			zmqproxy = new ZeroMQProxy(containerConfig.getZMQProxyPort(), containerConfig.getZMQMetaPort());
+        logger.trace ( "The Container Configuration file loaded successfully." );
+        
+        // starting the monitoring socket
+        toMonitor.add(new MemoryMonitor());
+        monitoringServer = new MonitoringServer(containerConfig.getMonitorPort());
+        monitoringServer.start();
+        
+		if (containerConfig.isZMQEnabled()){
+			//start the 0MQ proxy
+			zmqproxy = new ZeroMQProxy(containerConfig.getZMQProxyPort(),containerConfig.getZMQMetaPort());
 		}
 		
 		VSensorLoader vsloader = VSensorLoader.getInstance ( virtualSensorDirectory );
@@ -194,10 +175,9 @@ public final class Main {
 
 		vsloader.addVSensorStateChangeListener(new SQLValidatorIntegration(SQLValidator.getInstance()));
 		vsloader.addVSensorStateChangeListener(DataDistributer.getInstance(LocalDeliveryWrapper.class));
-		if (containerConfig.isZMQEnabled()) {
+		if (containerConfig.isZMQEnabled())
 			vsloader.addVSensorStateChangeListener(DataDistributer.getInstance(ZeroMQDeliverySync.class));
-			vsloader.addVSensorStateChangeListener(DataDistributer.getInstance(ZeroMQDeliveryAsync.class));
-		}
+		    vsloader.addVSensorStateChangeListener(DataDistributer.getInstance(ZeroMQDeliveryAsync.class));
 
 		ContainerImpl.getInstance().addVSensorDataListener(DataDistributer.getInstance(LocalDeliveryWrapper.class));
 		ContainerImpl.getInstance().addVSensorDataListener(DataDistributer.getInstance(ZeroMQDeliverySync.class));
@@ -207,44 +187,39 @@ public final class Main {
 	}
 
 	private static void closeSplashIfneeded() {
-		if (isHeadless()) {
+		if (isHeadless())
 			return;
-		}
 		SplashScreen splash = SplashScreen.getSplashScreen();
-		// Check if we have specified any splash screen
+		//Check if we have specified any splash screen
 		if (splash == null) {
 			return;
 		}
-		if (splash.isVisible()) {
+		if (splash.isVisible())
 			splash.close();
-		}
-
 	}
+
 
 	private static void updateSplashIfNeeded(String message[]) {
 		boolean headless_check = isHeadless();
 
 		if (!headless_check) {
 			SplashScreen splash = SplashScreen.getSplashScreen();
-			if (splash == null) {
+			if (splash == null)
 				return;
-			}
-
 			if (splash.isVisible()) {
-				// Get a graphics overlay for the splash screen
+				//Get a graphics overlay for the splash screen
 				Graphics2D g = splash.createGraphics();
-				// Do some drawing on the graphics object
-				// Now update to the splash screen
+				//Do some drawing on the graphics object
+				//Now update to the splash screen
 
 				g.setComposite(AlphaComposite.Clear);
-				g.fillRect(0, 0, 400, 70);
+				g.fillRect(0,0,400,70);
 				g.setPaintMode();
 				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g.setColor(Color.BLACK);
-				g.setFont(new Font("Arial", Font.BOLD, 11));
-				for (int i = 0; i < message.length; i++) {
-					g.drawString(message[i], 13, 16 * i + 10);
-				}
+				g.setFont(new Font("Arial",Font.BOLD,11));
+				for (int i=0;i<message.length;i++)
+					g.drawString(message[i], 13, 16*i+10);
 				splash.update();
 			}
 		}
@@ -255,18 +230,17 @@ public final class Main {
 	}
 
 	public synchronized static Main getInstance() {
-		if (singleton == null) {
+		if (singleton==null)
 			try {
-				singleton = new Main();
+				singleton=new Main();
 			} catch (Exception e) {
-				logger.error(e.getMessage(), e);
+				logger.error(e.getMessage(),e);
 				throw new RuntimeException(e);
 			}
-		}
-		return singleton;
+			return singleton;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args)  {
 		if (args.length > 0) {
 			Main.gsnConfFolder = args[0];
 		}
@@ -293,32 +267,30 @@ public final class Main {
 	    					}
 	    				}}).start();
 
-				try {
-					logger.info("Shutting down GSN...");
-					if (vsLoader != null) {
-						vsLoader.stopLoading();
-						logger.info("All virtual sensors have been stopped, shutting down virtual machine.");
-					} else {
-						logger.warn(
-								"Could not shut down virtual sensors properly. We are probably exiting GSN before it has been completely initialized.");
-					}
-				} catch (Exception e) {
-					logger.warn("Error while reading from or writing to control connection: " + e.getMessage(), e);
-				} finally {
-					System.out.println("GSN is stopped.");
-				}
-			}
-		});
-
+	    			try {
+	    				logger.info("Shutting down GSN...");
+	    				if (vsLoader != null) {
+	    					vsLoader.stopLoading();
+	    					logger.info("All virtual sensors have been stopped, shutting down virtual machine.");
+	    				} else {
+	    					logger.warn("Could not shut down virtual sensors properly. We are probably exiting GSN before it has been completely initialized.");
+	    				}
+	    			} catch (Exception e) {
+	    				logger.warn("Error while reading from or writing to control connection: " + e.getMessage(), e);
+	    			}finally {
+	    				System.out.println("GSN is stopped.");
+	    			}
+	            }
+	        });
+		
 		try {
 			Main.getInstance();
-		} catch (Exception e) {
+		}catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			updateSplashIfNeeded(new String[] { "Starting GSN failed! Look at logs/gsn.log for more information." });
+			updateSplashIfNeeded(new String[] {"Starting GSN failed! Look at logs/gsn.log for more information."});
 			try {
 				Thread.sleep(4000);
-			} catch (InterruptedException e1) {
-			}
+			} catch (InterruptedException e1) {}
 		}
 		closeSplashIfneeded();
 	}
@@ -331,11 +303,10 @@ public final class Main {
 			toReturn = loadContainerConfig (gsnConfFolder + DEFAULT_GSN_CONF);
 			logger.info ( "Loading wrappers.properties at : " + WrappersUtil.DEFAULT_WRAPPER_PROPERTIES_FILE);
 			wrappers = WrappersUtil.loadWrappers(new HashMap<String, Class<?>>());
-			logger.info("Wrappers initialization ...");
+			logger.info ( "Wrappers initialization ..." );
 		} catch (ClassNotFoundException e) {
-			logger.error("The file wrapper.properties refers to one or more classes which don't exist in the classpath"
-					+ e.getMessage());
-			System.exit(1);
+			logger.error ("The file wrapper.properties refers to one or more classes which don't exist in the classpath"+ e.getMessage());
+			System.exit (1);
 		}
 		return toReturn;
 
@@ -351,79 +322,73 @@ public final class Main {
 		}	
 		GsnConf gsn = GsnConf.load(gsnXMLpath);
 		gsnConf = gsn;
-		ContainerConfig conf = BeansInitializer.container(gsn);
+		ContainerConfig conf=BeansInitializer.container(gsn);
 		Class.forName(conf.getStorage().getJdbcDriver());
-		conf.setContainerConfigurationFileName(gsnXMLpath);
-		// return conf;
-		// Create a JDBC connection using the URL approach
-		// String jdbcUrl = conf.getStorage().getJdbcURL(); // Get the JDBC URL from
-		// your configuration
-		// String username = conf.getStorage().getJdbcUsername(); // Get the username
-		// String password = conf.getStorage().getJdbcPassword(); // Get the password
-
-		// try{
-		// Connection connection = DriverManager.getConnection(jdbcUrl, username,
-		// password);
-		// Perform any necessary operations with the connection
-		// ...
-		// } catch (SQLException e) {
-		// logger.error("Error creating database connection: " + e.getMessage());
-		// Handle the exception as needed
-		// }
-
-		// conf.setContainerConfigurationFileName(gsnXMLpath);
+		conf.setContainerConfigurationFileName (  gsnXMLpath );
+		//return conf;
+		 // Create a JDBC connection using the URL approach
+		//String jdbcUrl = conf.getStorage().getJdbcURL(); // Get the JDBC URL from your configuration
+		//String username = conf.getStorage().getJdbcUsername(); // Get the username
+		//String password = conf.getStorage().getJdbcPassword(); // Get the password
+		
+		//try{
+			//Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+			// Perform any necessary operations with the connection
+			// ...
+		//} catch (SQLException e) {
+		//	logger.error("Error creating database connection: " + e.getMessage());
+			// Handle the exception as needed
+		//}
+		
+		//conf.setContainerConfigurationFileName(gsnXMLpath);
 		return conf;
 	}
 
-	public static Properties getWrappers() {
-		if (singleton == null) {
+	public static Properties getWrappers()  {
+		if (singleton==null )
 			return WrappersUtil.loadWrappers(new HashMap<String, Class<?>>());
-		}
 		return Main.wrappers;
 	}
-
-	public static Class<?> getWrapperClass(String id) {
+    
+	public  static Class < ? > getWrapperClass ( String id ) {
 		try {
-			String className = getWrappers().getProperty(id);
-			if (className == null) {
-				logger.error("The requested wrapper: " + id + " doesn't exist in the wrappers.properties file.");
+			String className =  getWrappers().getProperty(id);
+			if (className ==null) {
+				logger.error("The requested wrapper: "+id+" doesn't exist in the wrappers.properties file.");
 				return null;
 			}
 
 			return Class.forName(className);
 		} catch (ClassNotFoundException e) {
-			logger.error(e.getMessage(), e);
+			logger.error(e.getMessage(),e);
 		}
 		return null;
 	}
 
 	/**
 	 * Get's the GSN configuration without starting GSN.
-	 * 
 	 * @return
 	 * @throws Exception
 	 */
 	public static ContainerConfig getContainerConfig() {
-		if (singleton == null) {
+		if (singleton == null)
 			try {
 				return loadContainerConfig(Main.gsnConfFolder + DEFAULT_GSN_CONF);
 			} catch (Exception e) {
 				return null;
 			}
-		} else {
-			return singleton.containerConfig;
-		}
+			else
+				return singleton.containerConfig;
 	}
 
-	public static StorageManager getValidationStorage() {
-		return validationStorage;
-	}
+    public static StorageManager getValidationStorage() {
+        return validationStorage;
+    }
 
-	public static StorageManager getStorage(VSensorConfig config) {
-		StorageManager sm = storagesConfigs.get(config == null ? null : config);
-		if (sm != null) {
-			return sm;
-		}
+    public static StorageManager getStorage(VSensorConfig config) {
+        StorageManager sm = storagesConfigs.get(config == null ? null : config);
+        if  (sm != null)
+            return sm;
 
         DBConnectionInfo dci = null;
         if (config == null || config.getStorage() == null || !config.getStorage().isDefined()) {
@@ -447,17 +412,38 @@ public final class Main {
         return sm;
     }
 
-	public static StorageManager getStorage(String vsName) {
-		return getStorage(Mappings.getVSensorConfig(vsName));
-	}
+    public static StorageManager getStorage(String vsName) {
+        return getStorage(Mappings.getVSensorConfig(vsName));
+    }
 
-	public static StorageManager getDefaultStorage() {
-		return getStorage((VSensorConfig) null);
-	}
+    public static StorageManager getDefaultStorage() {
+        return getStorage((VSensorConfig)null);
+    }
 
-	public static StorageManager getWindowStorage() {
-		return windowStorage;
-	}
+    public static StorageManager getWindowStorage() {
+        return windowStorage;
+    }
+    
+    public static ZContext getZmqContext(){
+    	return zmqContext;
+    }
+    
+    public static ZeroMQProxy getZmqProxy(){
+    	return zmqproxy;
+    }
+    public GsnConf getGsnConf(){
+    	return gsnConf;
+    }
+    public Map<String,VsConf> getVsConf(){
+    	return vsConf;
+    }
+    public ArrayList<Monitorable> getToMonitor(){
+    	return toMonitor;
+    }
+    
+    public static ThreadMXBean getThreadMXBean() {
+        return threadBean;
+    }
 
 	public static void setDefaultGsnConf(String newDefaultGsnConf) {
         DEFAULT_GSN_CONF = newDefaultGsnConf;
@@ -465,24 +451,4 @@ public final class Main {
 
 }
 
-	public static ZeroMQProxy getZmqProxy() {
-		return zmqproxy;
-	}
 
-	public GsnConf getGsnConf() {
-		return gsnConf;
-	}
-
-	public Map<String, VsConf> getVsConf() {
-		return vsConf;
-	}
-
-	public ArrayList<Monitorable> getToMonitor() {
-		return toMonitor;
-	}
-
-	public static ThreadMXBean getThreadMXBean() {
-		return threadBean;
-	}
-
-}
