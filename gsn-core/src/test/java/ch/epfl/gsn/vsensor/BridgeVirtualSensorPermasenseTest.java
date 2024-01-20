@@ -15,6 +15,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -147,6 +149,12 @@ public class BridgeVirtualSensorPermasenseTest {
             new Serializable[]{6, 561L,321,"test",5446541645646L,"wrong"},
             System.currentTimeMillis());
         sensor.dataProduced(wrongStreamElement,false);
+        assertTrue(sensor.initialize_wrapper());
+        Hashtable<String, Object> statistics = sensor.getStatistics();
+        assertEquals(0L,statistics.get("vs.bridgevsname.output.produced.counter"));
+        assertEquals(0L,statistics.get("vs.bridgevsname.input.produced.counter"));
+        assertNotNull(sensor.getThreads());
+        assertFalse(sensor.dataFromWeb("", new String[1], new Serializable[1]));
         
     }
 
@@ -260,3 +268,4 @@ public class BridgeVirtualSensorPermasenseTest {
     }
     
 }
+
