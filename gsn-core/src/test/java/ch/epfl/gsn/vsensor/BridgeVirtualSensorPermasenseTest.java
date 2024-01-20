@@ -2,6 +2,7 @@ package ch.epfl.gsn.vsensor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -43,6 +44,7 @@ public class BridgeVirtualSensorPermasenseTest {
     private static StorageManager sm;
     private VSensorConfig testVsensorConfig;
     private ArrayList < KeyValue > params;
+    private VirtualSensor pool;
 
     @BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -85,7 +87,8 @@ public class BridgeVirtualSensorPermasenseTest {
         testVsensorConfig.setMainClassInitialParams( params );
         KeyValue[] emptyAddressingArray = new KeyValue[0];
         testVsensorConfig.setAddressing(emptyAddressingArray);
-        VirtualSensor pool = new VirtualSensor(testVsensorConfig);
+        pool = new VirtualSensor(testVsensorConfig);
+        assertNotEquals(-1, pool.getLastModified());
         Mappings.addVSensorInstance(pool);
         
 
@@ -127,6 +130,8 @@ public class BridgeVirtualSensorPermasenseTest {
 	@After
 	public void teardown() throws SQLException {
 		sm.executeDropTable("bridgevsname");
+        pool.dispose();
+        pool.closePool();
 	}
 
 
@@ -268,4 +273,5 @@ public class BridgeVirtualSensorPermasenseTest {
     }
     
 }
+
 
