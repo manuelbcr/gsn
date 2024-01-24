@@ -1,7 +1,6 @@
 package ch.epfl.gsn.vsensor;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.Serializable;
@@ -134,7 +133,7 @@ public class ScheduledStreamExporterVirtualSensorTest {
                 new Serializable[]{1,2},
                 System.currentTimeMillis()+200);
         vs.dataAvailable("inputstream",streamElement1);
-        Thread.sleep(1000);
+        Thread.sleep(100);
         sm.executeDropTable("initialscheduledstreamexporterTable");
         StreamElement streamElement2 = new StreamElement(
                 new String[]{"value", "value1"},
@@ -142,7 +141,14 @@ public class ScheduledStreamExporterVirtualSensorTest {
                 new Serializable[]{1,2},
                 System.currentTimeMillis()+200);
         vs.dataAvailable("inputstream",streamElement2);
-        Thread.sleep(1000);
+        Thread.sleep(100);
+        StreamElement streamElement3 = new StreamElement(
+                    new String[]{"value", "value1"},
+                    new Byte[]{DataTypes.INTEGER, DataTypes.VARCHAR},
+                    new Serializable[]{1,"s"},
+                    System.currentTimeMillis()+200);
+        vs.dataAvailable("inputstream",streamElement3);
+        Thread.sleep(100);
         vs.dispose();
     }
 
