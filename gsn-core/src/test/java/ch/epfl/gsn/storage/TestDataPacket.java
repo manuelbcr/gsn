@@ -37,7 +37,7 @@ import org.junit.Ignore;
 
 public class TestDataPacket extends TestCase {
    
-   String     dbURL = "jdbc:h2:mem:coreTest";
+   String     dbURL = "jdbc:h2:mem:test";
    Connection con;
    
    protected void setUp ( ) throws Exception {

@@ -36,7 +36,6 @@ import ch.epfl.gsn.utils.KeyValueImp;
 import ch.epfl.gsn.vsensor.AbstractVirtualSensor;
 import thredds.inventory.bdb.MetadataManager.KeyValue;
 
-@Ignore
 public class LocalDeliveryWrapperTest {
 
     private static StorageManager sm;
@@ -53,7 +52,7 @@ public class LocalDeliveryWrapperTest {
 		}
 
 		DriverManager.registerDriver( new org.h2.Driver( ) );
-		sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:coreTest", Main.DEFAULT_MAX_DB_CONNECTIONS);
+		sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:test", Main.DEFAULT_MAX_DB_CONNECTIONS);
 
 		Main.setDefaultGsnConf("/gsn_test.xml");
 		Main.getInstance();
@@ -139,6 +138,49 @@ public class LocalDeliveryWrapperTest {
         assertTrue(localwrapper.isClosed());
     }
 
+    @Test
+    public void testInitialization() throws SQLException, IOException, OperationNotSupportedException{
+        LocalDeliveryWrapper localwrapper= new LocalDeliveryWrapper();
+        ArrayList < KeyValueImp > predicates = new ArrayList < KeyValueImp >( );
+		predicates.add( new KeyValueImp( "name" ,"testvsname" ) );
+        predicates.add( new KeyValueImp( "start-time" ,"-1L" ) );
+        AddressBean addressbean= new AddressBean("Local-wrapper",predicates.toArray(new KeyValueImp[] {}));
+        addressbean.setVirtualSensorName("testvsname");
+        localwrapper.setActiveAddressBean(addressbean);
+        
+
+        localwrapper.writeStructure(new DataField[] {new DataField("data","int")});
+        assertNotNull(localwrapper.getOutputFormat());
+        assertTrue(localwrapper.writeKeepAliveStreamElement());
+        assertTrue(localwrapper.writeStreamElement(new StreamElement(new DataField[] {},new Serializable[] {},System.currentTimeMillis())));
+        assertNotNull(localwrapper.initialize());
+        assertEquals("Local-wrapper", localwrapper.getWrapperName());
+        assertFalse(localwrapper.isClosed());
+        localwrapper.close();
+        assertTrue(localwrapper.isClosed());
+    }
+
+    @Test
+    public void testInitialization1() throws SQLException, IOException, OperationNotSupportedException{
+        LocalDeliveryWrapper localwrapper= new LocalDeliveryWrapper();
+        ArrayList < KeyValueImp > predicates = new ArrayList < KeyValueImp >( );
+		predicates.add( new KeyValueImp( "name" ,"testvsname" ) );
+        predicates.add( new KeyValueImp( "start-time" ,"1L" ) );
+        AddressBean addressbean= new AddressBean("Local-wrapper",predicates.toArray(new KeyValueImp[] {}));
+        addressbean.setVirtualSensorName("testvsname");
+        localwrapper.setActiveAddressBean(addressbean);
+        
+
+        localwrapper.writeStructure(new DataField[] {new DataField("data","int")});
+        assertNotNull(localwrapper.getOutputFormat());
+        assertTrue(localwrapper.writeKeepAliveStreamElement());
+        assertTrue(localwrapper.writeStreamElement(new StreamElement(new DataField[] {},new Serializable[] {},System.currentTimeMillis())));
+        assertFalse(localwrapper.initialize());
+        assertEquals("Local-wrapper", localwrapper.getWrapperName());
+        assertFalse(localwrapper.isClosed());
+        localwrapper.close();
+        assertTrue(localwrapper.isClosed());
+    }
 
 }
 

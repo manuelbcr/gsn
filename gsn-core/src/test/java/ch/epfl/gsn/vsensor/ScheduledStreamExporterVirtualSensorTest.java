@@ -44,7 +44,7 @@ public class ScheduledStreamExporterVirtualSensorTest {
 		}
 
 		DriverManager.registerDriver( new org.h2.Driver( ) );
-		sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:coreTest", Main.DEFAULT_MAX_DB_CONNECTIONS);
+		sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:test", Main.DEFAULT_MAX_DB_CONNECTIONS);
 		Main.setDefaultGsnConf("/gsn_test.xml");
 		Main.getInstance();
 	}
@@ -116,7 +116,7 @@ public class ScheduledStreamExporterVirtualSensorTest {
     public void testInitializeTrue() throws SQLException, InterruptedException {
         params = new ArrayList < KeyValue >( );
         params.add( new KeyValueImp("user" ,"sa" ) );
-        params.add( new KeyValueImp("url", "jdbc:h2:mem:coreTest") );
+        params.add( new KeyValueImp("url", "jdbc:h2:mem:test") );
         params.add( new KeyValueImp("driver", "org.h2.Driver") );
         params.add( new KeyValueImp("password", "") );
         params.add( new KeyValueImp("table", "initialscheduledstreamexporterTable") );
@@ -156,7 +156,7 @@ public class ScheduledStreamExporterVirtualSensorTest {
     public void testInitializeFalse() throws SQLException {
         params = new ArrayList < KeyValue >( );
         params.add( new KeyValueImp("user" ,"sa" ) );
-        params.add( new KeyValueImp("url", "jdbc:h2:mem:coreTest") );
+        params.add( new KeyValueImp("url", "jdbc:h2:mem:test") );
         params.add( new KeyValueImp("driver", "wrong") );
         params.add( new KeyValueImp("password", "") );
         params.add( new KeyValueImp("table", "initialscheduledstreamexporterTable") );
@@ -173,7 +173,7 @@ public class ScheduledStreamExporterVirtualSensorTest {
     public void testInitializeFalse1() throws SQLException {
         params = new ArrayList < KeyValue >( );
         params.add( new KeyValueImp("user" ,"sa" ) );
-        params.add( new KeyValueImp("url", "jdbc:h2:mem:coreTest") );
+        params.add( new KeyValueImp("url", "jdbc:h2:mem:test") );
         params.add( new KeyValueImp("driver", "org.h2.Driver") );
         params.add( new KeyValueImp("password", "") );
         params.add( new KeyValueImp("table", "scheduledstreamexporter") );

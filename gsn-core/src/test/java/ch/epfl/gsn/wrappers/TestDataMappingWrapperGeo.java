@@ -62,7 +62,7 @@ public class TestDataMappingWrapperGeo {
         
 		Main.setDefaultGsnConf("/gsn_test.xml");
 		Main.getInstance();
-        sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:coreTest", Main.DEFAULT_MAX_DB_CONNECTIONS);
+        sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:test", Main.DEFAULT_MAX_DB_CONNECTIONS);
 	}
 
     @Before

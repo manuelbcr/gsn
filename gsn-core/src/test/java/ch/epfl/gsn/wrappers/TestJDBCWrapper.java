@@ -31,7 +31,7 @@ public class TestJDBCWrapper  {
 
     @BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-        sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:coreTest", Main.DEFAULT_MAX_DB_CONNECTIONS);
+        sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:test", Main.DEFAULT_MAX_DB_CONNECTIONS);
 	}
 
     @Before
@@ -41,7 +41,7 @@ public class TestJDBCWrapper  {
 
         ArrayList < KeyValueImp > predicates = new ArrayList < KeyValueImp >( );
 		predicates.add( new KeyValueImp("table-name", "jdbcWrapper"));
-        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:coreTest"));
+        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:test"));
         predicates.add( new KeyValueImp("username", "sa"));
         predicates.add( new KeyValueImp("password", ""));
         predicates.add( new KeyValueImp("driver", "org.h2.Driver"));
@@ -91,7 +91,7 @@ public class TestJDBCWrapper  {
 
         ArrayList < KeyValueImp > predicates = new ArrayList < KeyValueImp >( );
 		predicates.add( new KeyValueImp("table-name", "jdbcWrapper"));
-        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:coreTest"));
+        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:test"));
         predicates.add( new KeyValueImp("username", "sa"));
         predicates.add( new KeyValueImp("password", ""));
         predicates.add( new KeyValueImp("driver", "org.h2.Driver"));
@@ -113,7 +113,7 @@ public class TestJDBCWrapper  {
 
         ArrayList < KeyValueImp > predicates = new ArrayList < KeyValueImp >( );
 		predicates.add( new KeyValueImp("table-name", "jdbcWrapper"));
-        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:coreTest"));
+        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:test"));
         predicates.add( new KeyValueImp("username", "sa"));
         predicates.add( new KeyValueImp("password", ""));
         predicates.add( new KeyValueImp("driver", "org.h2.Driver"));
@@ -134,7 +134,7 @@ public class TestJDBCWrapper  {
         JDBCWrapper wrapper = new JDBCWrapper();
 
         ArrayList < KeyValueImp > predicates = new ArrayList < KeyValueImp >( );
-        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:coreTest"));
+        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:test"));
         predicates.add( new KeyValueImp("username", "sa"));
         predicates.add( new KeyValueImp("password", ""));
         predicates.add( new KeyValueImp("driver", "org.h2.Driver"));
@@ -156,7 +156,7 @@ public class TestJDBCWrapper  {
 
         ArrayList < KeyValueImp > predicates = new ArrayList < KeyValueImp >( );
         predicates.add( new KeyValueImp("table-name", "jdbcWrapper"));
-        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:coreTest"));
+        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:test"));
         predicates.add( new KeyValueImp("username", "sa"));
         predicates.add( new KeyValueImp("password", ""));
         predicates.add( new KeyValueImp("driver", "org.h2.Driver"));
@@ -177,7 +177,7 @@ public class TestJDBCWrapper  {
 
         ArrayList < KeyValueImp > predicates = new ArrayList < KeyValueImp >( );
         predicates.add( new KeyValueImp("table-name", "jdbcWrapper"));
-        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:coreTest"));
+        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:test"));
         predicates.add( new KeyValueImp("username", "sa"));
         predicates.add( new KeyValueImp("password", ""));
         predicates.add( new KeyValueImp("driver", "org.h2.Driver"));
@@ -199,7 +199,7 @@ public class TestJDBCWrapper  {
 
         ArrayList < KeyValueImp > predicates = new ArrayList < KeyValueImp >( );
         predicates.add( new KeyValueImp("table-name", "jdbcWrapper"));
-        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:coreTest"));
+        predicates.add( new KeyValueImp("jdbc-url", "jdbc:h2:mem:test"));
         predicates.add( new KeyValueImp("username", "sa"));
         predicates.add( new KeyValueImp("password", ""));
         predicates.add( new KeyValueImp("driver", "org.h2.Driver"));

@@ -51,7 +51,7 @@ import org.junit.Ignore;
 @Ignore
 public class TestStreamExporterVirtualSensor extends TestCase {
    
-   private final String  user = "sa" , passwd = "" , db = "." , url = "jdbc:h2:mem:coreTest" , streamName = "aJUnitTestStream";
+   private final String  user = "sa" , passwd = "" , db = "." , url = "jdbc:h2:mem:test" , streamName = "aJUnitTestStream";
    
    private VSensorConfig config;
    

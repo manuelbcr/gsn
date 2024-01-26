@@ -56,8 +56,8 @@ public class SensorInternetVSTest {
         };
 
         testVsensorConfig = new VSensorConfig();
-		testVsensorConfig.setName("testvs");
-        File someFile = File.createTempFile("testvs", ".xml");
+		testVsensorConfig.setName("testvsensor");
+        File someFile = File.createTempFile("testvsensor", ".xml");
 		testVsensorConfig.setMainClass("ch.epfl.gsn.vsensor.ChartVirtualSensor");
         testVsensorConfig.setFileName(someFile.getAbsolutePath());
         testVsensorConfig.setOutputStructure(fields);
@@ -69,7 +69,7 @@ public class SensorInternetVSTest {
         testVsensorConfig.setMainClassInitialParams( params );
 
         
-        sm.executeCreateTable("testvs", fields, true);
+        sm.executeCreateTable("testvsensor", fields, true);
     
         StreamElement streamElement1 = new StreamElement(
                 new String[]{"value", "value1"},
@@ -95,15 +95,15 @@ public class SensorInternetVSTest {
                 new Serializable[]{4,9},
                 System.currentTimeMillis()+600);
 
-        sm.executeInsert("testvs", fields, streamElement1);
-        sm.executeInsert("testvs", fields, streamElement2);
-        sm.executeInsert("testvs", fields, streamElement3);
-        sm.executeInsert("testvs", fields, streamElement4);
+        sm.executeInsert("testvsensor", fields, streamElement1);
+        sm.executeInsert("testvsensor", fields, streamElement2);
+        sm.executeInsert("testvsensor", fields, streamElement3);
+        sm.executeInsert("testvsensor", fields, streamElement4);
     }
 
     @After
 	public void teardown() throws SQLException {
-		sm.executeDropTable("testvs");
+		sm.executeDropTable("testvsensor");
 	}
 
     @Test

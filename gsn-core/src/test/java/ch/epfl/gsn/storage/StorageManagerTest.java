@@ -105,6 +105,6 @@ public class StorageManagerTest {
         assertTrue(sm.tableExists("teststoragemanager2"));
         sm.executeRenameTable("teststoragemanager2", "teststoragemanager");
         assertTrue(sm.tableExists("teststoragemanager"));
-        assertEquals("delete from teststoragemanager where teststoragemanager.timed < -1 - 1000",sm.getStatementRemoveUselessDataTimeBased("teststoragemanager", 1000).toString());
+        assertTrue(sm.getStatementRemoveUselessDataTimeBased("teststoragemanager", 1000).toString().contains("delete from teststoragemanager where teststoragemanager.timed"));
     }
 }

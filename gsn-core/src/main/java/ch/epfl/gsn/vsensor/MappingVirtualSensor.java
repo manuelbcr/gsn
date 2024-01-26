@@ -148,7 +148,7 @@ public class MappingVirtualSensor extends BridgeVirtualSensorPermasense {
 					new Serializable[] { baos.toString().getBytes() }, timestamp);
 			dataProduced(se);
 		} catch (JiBXException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			logger.error(e.getMessage(), e);
 		}
 	}

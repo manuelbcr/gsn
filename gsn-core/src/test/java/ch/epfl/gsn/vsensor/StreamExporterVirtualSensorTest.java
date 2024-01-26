@@ -45,7 +45,7 @@ public class StreamExporterVirtualSensorTest {
 		}
 
 		DriverManager.registerDriver( new org.h2.Driver( ) );
-		sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:coreTest", Main.DEFAULT_MAX_DB_CONNECTIONS);
+		sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:test", Main.DEFAULT_MAX_DB_CONNECTIONS);
 
 		Main.setDefaultGsnConf("/gsn_test.xml");
 		Main.getInstance();
@@ -67,7 +67,7 @@ public class StreamExporterVirtualSensorTest {
         params = new ArrayList < KeyValue >( );
         params.add( new KeyValueImp( "user" , "sa" ) );
         params.add( new KeyValueImp( "password", "" ) );
-        params.add( new KeyValueImp( "url" ,"jdbc:h2:mem:coreTest" ) );
+        params.add( new KeyValueImp( "url" ,"jdbc:h2:mem:test" ) );
         params.add( new KeyValueImp( "driver" ,"org.h2.Driver" ) );
         params.add( new KeyValueImp( "entries" ,"5" ) );
         params.add( new KeyValueImp( "table" ,"testtable" ) );
@@ -133,7 +133,7 @@ public class StreamExporterVirtualSensorTest {
         StreamExporterVirtualSensor vs = new StreamExporterVirtualSensor();
         params.add( new KeyValueImp( "user" , "sa" ) );
         params.add( new KeyValueImp( "password", "" ) );
-        params.add( new KeyValueImp( "url" ,"jdbc:h2:mem:coreTest" ) );
+        params.add( new KeyValueImp( "url" ,"jdbc:h2:mem:test" ) );
         params.add( new KeyValueImp( "driver" ,"org.h2.Driver" ) );
         params.add( new KeyValueImp( "entries" ,"10" ) );
         params.add( new KeyValueImp( "table" ,"testtablenew" ) );
@@ -148,7 +148,7 @@ public class StreamExporterVirtualSensorTest {
         StreamExporterVirtualSensor vs = new StreamExporterVirtualSensor();
          params = new ArrayList < KeyValue >( );
         params.add( new KeyValueImp( "password", "" ) );
-        params.add( new KeyValueImp( "url" ,"jdbc:h2:mem:coreTest" ) );
+        params.add( new KeyValueImp( "url" ,"jdbc:h2:mem:test" ) );
         params.add( new KeyValueImp( "driver" ,"org.h2.Driver" ) );
         params.add( new KeyValueImp( "entries" ,"10" ) );
         params.add( new KeyValueImp( "table" ,"testtable" ) );
@@ -163,7 +163,7 @@ public class StreamExporterVirtualSensorTest {
         params = new ArrayList < KeyValue >( );
         params.add( new KeyValueImp( "user" , "sa" ) );
         params.add( new KeyValueImp( "password", "" ) );
-        params.add( new KeyValueImp( "url" ,"jdbc:h2:mem:coreTest" ) );
+        params.add( new KeyValueImp( "url" ,"jdbc:h2:mem:test" ) );
         params.add( new KeyValueImp( "driver" ,"invalid" ) );
         params.add( new KeyValueImp( "entries" ,"10" ) );
         params.add( new KeyValueImp( "table" ,"testtable" ) );

@@ -59,7 +59,7 @@ public class TestHibernateStorage {
 
     @BeforeClass
     public static void initClass() {
-        dbInfo = new DBConnectionInfo("org.h2.Driver", "jdbc:h2:mem:coreTest", "sa", "");
+        dbInfo = new DBConnectionInfo("org.h2.Driver", "jdbc:h2:mem:test", "sa", "");
     }
 
     @Before
