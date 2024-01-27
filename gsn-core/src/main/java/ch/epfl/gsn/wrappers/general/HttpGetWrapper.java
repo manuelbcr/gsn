@@ -131,4 +131,9 @@ public class HttpGetWrapper extends AbstractWrapper {
       return outputStructure;
    }
 
+   // method for testing
+   public void setUrl(URL url){
+      this.url = url;
+   }
+
 }

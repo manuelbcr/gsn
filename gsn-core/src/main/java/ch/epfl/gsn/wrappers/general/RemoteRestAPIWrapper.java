@@ -215,6 +215,7 @@ public class RemoteRestAPIWrapper extends AbstractWrapper {
 			try {
 				getData.setURI(new URI(uri));
 				String content = doRequest(getData);
+
 				for (StreamElement se : StreamElement.fromJSON(content)) {
 					manualDataInsertion(se);
 				}
@@ -253,5 +254,9 @@ public class RemoteRestAPIWrapper extends AbstractWrapper {
 			logger.warn(e.getMessage(), e);
 			return false;
 		}
+	}
+
+	public void setClient(HttpClient client) {
+		this.client = client;
 	}
 }

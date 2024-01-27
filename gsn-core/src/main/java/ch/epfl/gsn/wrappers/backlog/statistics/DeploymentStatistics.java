@@ -55,6 +55,7 @@ public class DeploymentStatistics {
 			for (Iterator<CoreStationStatistics> iter = coreStationToCoreStationStatsList.values().iterator(); iter
 					.hasNext();) {
 				CoreStationStatistics csstat = iter.next();
+
 				Integer id = csstat.getDeviceId();
 				Boolean val = csstat.isConnected();
 				if (id != null && val != null) {
@@ -256,4 +257,12 @@ public class DeploymentStatistics {
 		}
 		return map;
 	}
+
+
+	public Map<String, CoreStationStatistics> getCoreStationToCoreStationStatsList(){
+		return coreStationToCoreStationStatsList;
+	}
+
+
+
 }
