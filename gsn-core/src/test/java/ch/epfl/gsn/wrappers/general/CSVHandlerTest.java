@@ -130,6 +130,14 @@ public class CSVHandlerTest {
 		"01.01.2009,3,10:12,12,\"Ali Salehi\"\n";
 		CSVHandler wrapper = new CSVHandler();
 		assertEquals(true,wrapper.initialize(CHECK_POINT_DIR + "/test.csv.csv", fields,formats,',','\"',0,"NaN,-1234,4321"));
+
+		DataField[] actualFields = wrapper.getDataFields();
+
+		assertEquals("air_temp", actualFields[0].getName());
+		assertEquals("timed", actualFields[1].getName());
+		assertEquals("comments", actualFields[2].getName());
+		assertEquals("air_temp2", actualFields[3].getName());
+
 		ArrayList<TreeMap<String, Serializable>> parsed = wrapper.parseValues(new StringReader(data), -1);
 		assertEquals(3, parsed.size());
 		assertEquals(wrapper.work(new StringReader(data), CHECK_POINT_DIR).size(), parsed.size());
@@ -171,25 +179,6 @@ public class CSVHandlerTest {
 		FileUtils.writeStringToFile(f,content,"UTF-8");
 		assertEquals(content,FileUtils.readFileToString(f,"UTF-8"));
 	}
-
-	@Test
-    public void testGetDataFields() {
-
-		String fields = "TIMED, air_temp , TIMEd , AiR_TeMp2, comments";
-		String formats = "Timestamp(d.M.y ) , Numeric , timestamp(k:m) , numeric ,String   ";
-		String data = "01.01.2009,1,10:10,10,\"Ali Salehi\"\n"+
-		"01.01.2009,2,10:11,11,\"Ali Salehi\"\n"+
-		"01.01.2009,3,10:12,12,\"Ali Salehi\"\n";
-		CSVHandler wrapper = new CSVHandler();
-		assertEquals(true,wrapper.initialize(CHECK_POINT_DIR + "/test.csv.csv", fields,formats,',','\"',0,"NaN,-1234,4321"));
-		
-        DataField[] actualFields = wrapper.getDataFields();
-
-		assertEquals("air_temp", actualFields[0].getName());
-		assertEquals("timed", actualFields[1].getName());
-		assertEquals("comments", actualFields[2].getName());
-		assertEquals("air_temp2", actualFields[3].getName());
-    }
 	
 	public boolean compare(String[] a,String[] b) {
 		if (a.length!=b.length)
