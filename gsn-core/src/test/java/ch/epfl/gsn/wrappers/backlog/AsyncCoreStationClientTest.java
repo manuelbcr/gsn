@@ -21,8 +21,7 @@ import org.junit.Test;
 
 public class AsyncCoreStationClientTest {
 
-
-    /* 
+ 
     @Test
     public void testRegisterListener() {
         try {
@@ -35,7 +34,6 @@ public class AsyncCoreStationClientTest {
             assertTrue(asyncCoreStationClient.isAlive());
             assertEquals("TestCoreStation", listener.getCoreStationName());
             assertEquals(1234, listener.getPort());
-
             asyncCoreStationClient.deregisterListener(listener);
 
 
@@ -44,7 +42,6 @@ public class AsyncCoreStationClientTest {
             fail("Error registering listener: " + e.getMessage());
         }
     }
-
 
     @Test
     public void testAddSendRemoveDeviceId() {
@@ -82,7 +79,7 @@ public class AsyncCoreStationClientTest {
         } catch (Exception e) {
             fail("Error testing add, send, and remove device ID: " + e.getMessage());
         }
-    }*/
+    }
 
     @Test
     public void testChangeRequestInitialization() {

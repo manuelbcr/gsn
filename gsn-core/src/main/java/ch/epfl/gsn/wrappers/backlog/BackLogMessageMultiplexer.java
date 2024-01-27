@@ -647,6 +647,10 @@ public class BackLogMessageMultiplexer extends Thread implements CoreStationList
 	public Integer getDeviceID() {
 		return coreStationDeviceId;
 	}
+	// method for testing
+	public void setDeviceID(Integer coreStationDeviceId) {
+		this.coreStationDeviceId = coreStationDeviceId;
+	}
 
 	protected void sendQueueLimitMsg() {
 		try {

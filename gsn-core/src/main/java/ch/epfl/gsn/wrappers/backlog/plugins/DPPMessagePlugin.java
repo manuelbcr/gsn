@@ -236,4 +236,8 @@ public class DPPMessagePlugin extends AbstractPlugin {
 		return msgDataField;
 	}
 
+	// method for testing
+	public DPPMessageMultiplexer getDPPMessageMultiplexer() {
+		return this.dppMsgMultiplexer;
+	}
 }

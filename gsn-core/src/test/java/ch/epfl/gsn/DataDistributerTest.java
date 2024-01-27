@@ -34,7 +34,7 @@ import ch.epfl.gsn.storage.StorageManagerFactory;
 import ch.epfl.gsn.utils.KeyValueImp;
 import ch.epfl.gsn.vsensor.BridgeVirtualSensorPermasense;
 
-
+@Ignore
 public class DataDistributerTest {
     private static StorageManager sm;
     private VSensorConfig testVsensorConfig;

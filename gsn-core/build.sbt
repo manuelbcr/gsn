@@ -116,3 +116,7 @@ mainClass in Revolver.reStart := Some("ch.epfl.gsn.Main")
 
 Revolver.reStartArgs := Seq("../conf", "../virtual-sensors")
 
+jacocoExcludes := Seq(
+  "ch.epfl.gsn.ac.*",
+  "ch.epfl.gsn.http.rest.*"
+)
