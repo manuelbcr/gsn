@@ -480,4 +480,9 @@ public final class Main {
         DEFAULT_GSN_CONF = newDefaultGsnConf;
     }
 
+	// method for testing
+	public static void setMainStorage(StorageManager sm){
+		mainStorage = sm;
+	}
+
 }

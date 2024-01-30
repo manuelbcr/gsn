@@ -145,11 +145,6 @@ public class SchedulePluginTest {
             System.out.println("CANNOT CREATE TALBE" + e);
         }
 
-        System.out.println("ÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖÖ");
-        System.out.println("SS ALIAS" + ss.getWrapper().getDBAliasInStr());
-        System.out.println("UID STRING " + ss.getUIDStr());
-        
-
         assertTrue(plugin.initialize(backlogWrapper, "coreStationName", "deploymentName"));
         assertEquals("SchedulePlugin", plugin.getPluginName());
 
@@ -165,7 +160,7 @@ public class SchedulePluginTest {
             windowSm.executeDropTable(ss.getUIDStr());
             windowSm.executeDropTable(ss.getWrapper().getDBAliasInStr());
         }catch(Exception e){
-            System.out.println("cannot drop table" + e);
+            System.out.println("CANNOT DROP TABLE" + e);
         }
     }
 

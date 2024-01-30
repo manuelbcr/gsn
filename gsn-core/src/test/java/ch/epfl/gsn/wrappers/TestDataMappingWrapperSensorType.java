@@ -31,7 +31,6 @@ import ch.epfl.gsn.storage.StorageManagerFactory;
 import ch.epfl.gsn.utils.KeyValueImp;
 import java.util.ArrayList;
 
-@Ignore
 public class TestDataMappingWrapperSensorType {
     
     private static StorageManager sm;
@@ -53,7 +52,8 @@ public class TestDataMappingWrapperSensorType {
         
 		Main.setDefaultGsnConf("/gsn_test.xml");
 		Main.getInstance();
-        sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:test", Main.DEFAULT_MAX_DB_CONNECTIONS);
+        sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:coreTest", Main.DEFAULT_MAX_DB_CONNECTIONS);
+        Main.setMainStorage(sm);
 	}
 
     @Before
@@ -113,6 +113,8 @@ public class TestDataMappingWrapperSensorType {
     @AfterClass
 	public static void teardownAfterClass() throws Exception {
         sm.shutdown();
+        StorageManager old_sm = StorageManagerFactory.getInstance( "org.h2.Driver","sa","" ,"jdbc:h2:mem:test", Main.DEFAULT_MAX_DB_CONNECTIONS);
+        Main.setMainStorage(old_sm);
     }
 
 

@@ -1,6 +1,9 @@
 <sensor-server>
+    <zmq-enable>true</zmq-enable>
+    <zmqproxy>22022</zmqproxy>
+    <zmqmeta>22023</zmqmeta>
     <max-db-connections>16</max-db-connections>
     <max-sliding-db-connections>16</max-sliding-db-connections>
 
-    <storage user="sa" password="" driver="org.h2.Driver" url="jdbc:h2:mem:coreTest" />
+    <storage user="sa" password="" driver="org.h2.Driver" url="jdbc:h2:mem:test" />
 </sensor-server>
