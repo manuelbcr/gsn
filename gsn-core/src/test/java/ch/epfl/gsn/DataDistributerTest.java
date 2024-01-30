@@ -34,7 +34,7 @@ import ch.epfl.gsn.storage.StorageManagerFactory;
 import ch.epfl.gsn.utils.KeyValueImp;
 import ch.epfl.gsn.vsensor.BridgeVirtualSensorPermasense;
 
-@Ignore
+
 public class DataDistributerTest {
     private static StorageManager sm;
     private VSensorConfig testVsensorConfig;
@@ -106,7 +106,7 @@ public class DataDistributerTest {
     @Test
     public void testDataDistributer() throws IOException, SQLException, InterruptedException{
         long startTime = System.currentTimeMillis();
-        ZeroMQDeliverySync d = new ZeroMQDeliverySync("datadistributertest", "tcp://127.0.0.1:50030");
+        ZeroMQDeliverySync d = new ZeroMQDeliverySync("datadistributertest", "tcp://127.0.0.1:50530");
         DataDistributer datadist= DataDistributer.getInstance(d.getClass());
         assertNotNull(datadist);
         final DefaultDistributionRequest distributionReq = DefaultDistributionRequest.create(d,testVsensorConfig, "select * from datadistributertest" , startTime);
