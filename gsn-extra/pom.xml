@@ -27,7 +27,7 @@
 					<configuration>
 						<source>1.7</source>
 						<target>1.7</target>
-						<compilerArgument></compilerArgument>
+						<compilerArgument/>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -193,7 +193,7 @@
         <dependency>
 			<groupId>org.slf4j</groupId>
   			<artifactId>slf4j-api</artifactId>
-  			<version>1.7.12</version>
+  			<version>1.7.36</version>
 		</dependency>
   		<dependency>
 			<groupId>org.fusesource.jansi</groupId>
