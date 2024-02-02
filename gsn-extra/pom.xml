@@ -27,7 +27,7 @@
 					<configuration>
 						<source>1.7</source>
 						<target>1.7</target>
-						<compilerArgument></compilerArgument>
+						<compilerArgument/>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -121,7 +121,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.3.2</version>
+			<version>4.5.14</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
