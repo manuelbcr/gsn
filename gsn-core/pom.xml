@@ -27,7 +27,7 @@
 					<configuration>
 						<source>1.7</source>
 						<target>1.7</target>
-						<compilerArgument />
+						<compilerArgument/>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -116,7 +116,7 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>9.3-1102-jdbc41</version>
+			<version>42.7.2</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-dbcp</groupId>
