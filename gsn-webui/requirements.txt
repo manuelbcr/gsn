@@ -1,4 +1,4 @@
-Django>=1.8,<1.9
+Django>=3.2.25,<1.9
 django-bower
 requests
 requests-cache
