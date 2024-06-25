@@ -5,3 +5,4 @@ requests-cache
 django-jsonfield
 django-all-access
 gunicorn
+sqlparse>=0.5.0 # not directly required, pinned by Snyk to avoid a vulnerability
