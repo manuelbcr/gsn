@@ -1,7 +1,8 @@
-Django>=1.8,<1.9
+Django>=4.2.14
 django-bower
 requests
 requests-cache
 django-jsonfield
 django-all-access
 gunicorn
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
